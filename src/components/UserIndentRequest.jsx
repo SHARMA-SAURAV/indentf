@@ -8,10 +8,13 @@ import {
   MenuItem,
   Alert,
   Box,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import axios from "../api/api";
 
 const UserIndentRequest = () => {
+  const [tab, setTab] = useState(0);
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [perPieceCost, setPerPieceCost] = useState("");
@@ -21,7 +24,6 @@ const UserIndentRequest = () => {
   const [status, setStatus] = useState({ type: "", message: "" });
   const [pendingInspections, setPendingInspections] = useState([]);
 
-  // Fetch list of FLA users
   useEffect(() => {
     const fetchFLAs = async () => {
       try {
@@ -34,7 +36,6 @@ const UserIndentRequest = () => {
     fetchFLAs();
   }, []);
 
-
   useEffect(() => {
     const fetchPendingInspections = async () => {
       try {
@@ -46,7 +47,6 @@ const UserIndentRequest = () => {
     };
     fetchPendingInspections();
   }, []);
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,12 +73,22 @@ const UserIndentRequest = () => {
     }
   };
 
+  const handleTabChange = (event, newValue) => {
+    setTab(newValue);
+    setStatus({ type: "", message: "" });
+  };
+
   return (
-    <Card>
+    <Card sx={{ mt: 4 }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Request Indent
+        <Typography variant="h5" gutterBottom>
+          User Panel
         </Typography>
+
+        <Tabs value={tab} onChange={handleTabChange} sx={{ mb: 2 }}>
+          <Tab label="Request Indent" />
+          <Tab label="Pending Inspections" />
+        </Tabs>
 
         {status.message && (
           <Alert severity={status.type} sx={{ mb: 2 }}>
@@ -86,109 +96,310 @@ const UserIndentRequest = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <TextField
-            fullWidth
-            label="Item Name"
-            margin="normal"
-            value={itemName}
-            onChange={(e) => setItemName(e.target.value)}
-            required
-          />
+        {tab === 0 && (
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            <TextField
+              fullWidth
+              label="Item Name"
+              margin="normal"
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
+              required
+            />
 
-          <TextField
-            fullWidth
-            label="Quantity"
-            margin="normal"
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            required
-          />
+            <TextField
+              fullWidth
+              label="Quantity"
+              margin="normal"
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              required
+            />
 
-          <TextField
-            fullWidth
-            label="Per Piece Cost"
-            margin="normal"
-            type="number"
-            value={perPieceCost}
-            onChange={(e) => setPerPieceCost(e.target.value)}
-            required
-          />
+            <TextField
+              fullWidth
+              label="Per Piece Cost"
+              margin="normal"
+              type="number"
+              value={perPieceCost}
+              onChange={(e) => setPerPieceCost(e.target.value)}
+              required
+            />
 
-          <TextField
-            fullWidth
-            label="Description"
-            margin="normal"
-            multiline
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
+            <TextField
+              fullWidth
+              label="Description"
+              margin="normal"
+              multiline
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
 
-          <TextField
-            select
-            fullWidth
-            label="Select FLA"
-            margin="normal"
-            value={selectedFla}
-            onChange={(e) => setSelectedFla(e.target.value)}
-            required
-          >
-            {flaList.map((fla) => (
-              <MenuItem key={fla.id} value={fla.id}>
-                {fla.username}
-              </MenuItem>
-            ))}
-          </TextField>
+            <TextField
+              select
+              fullWidth
+              label="Select FLA"
+              margin="normal"
+              value={selectedFla}
+              onChange={(e) => setSelectedFla(e.target.value)}
+              required
+            >
+              {flaList.map((fla) => (
+                <MenuItem key={fla.id} value={fla.id}>
+                  {fla.username}
+                </MenuItem>
+              ))}
+            </TextField>
 
-          <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-            Submit Indent
-          </Button>
-        </Box>
+            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+              Submit Indent
+            </Button>
+          </Box>
+        )}
 
+        {tab === 1 && (
+          <Box>
+            {pendingInspections.length === 0 ? (
+              <Typography>No pending items for inspection.</Typography>
+            ) : (
+              pendingInspections.map((indent) => (
+                <Card key={indent.id} sx={{ my: 2 }}>
+                  <CardContent>
+                    <Typography><strong>Item:</strong> {indent.itemName}</Typography>
+                    <Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
+                    <Typography><strong>Description:</strong> {indent.description}</Typography>
 
-        <Box sx={{ mt: 4 }}>
-  <Typography variant="h6" gutterBottom>
-    Pending Product Inspections
-  </Typography>
-
-  {pendingInspections.length === 0 ? (
-    <Typography>No pending items for inspection.</Typography>
-  ) : (
-    pendingInspections.map((indent) => (
-      <Card key={indent.id} sx={{ my: 2 }}>
-        <CardContent>
-          <Typography><strong>Item:</strong> {indent.itemName}</Typography>
-          <Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
-          <Typography><strong>Description:</strong> {indent.description}</Typography>
-
-          <Button
-            variant="outlined"
-            sx={{ mt: 2 }}
-            onClick={async () => {
-              try {
-                await axios.post(`/indent/${indent.id}/confirm-inspection`);
-                setStatus({ type: "success", message: "Product confirmed OK!" });
-                setPendingInspections(prev => prev.filter(i => i.id !== indent.id));
-              } catch (err) {
-                console.error(err);
-                setStatus({ type: "error", message: "Failed to confirm inspection" });
-              }
-            }}
-          >
-            Confirm Product is OK
-          </Button>
-        </CardContent>
-      </Card>
-    ))
-  )}
-</Box>
-
+                    <Button
+                      variant="outlined"
+                      sx={{ mt: 2 }}
+                      onClick={async () => {
+                        try {
+                          await axios.post(`/indent/${indent.id}/confirm-inspection`);
+                          setStatus({ type: "success", message: "Product confirmed OK!" });
+                          setPendingInspections((prev) =>
+                            prev.filter((i) => i.id !== indent.id)
+                          );
+                        } catch (err) {
+                          console.error(err);
+                          setStatus({
+                            type: "error",
+                            message: "Failed to confirm inspection",
+                          });
+                        }
+                      }}
+                    >
+                      Confirm Product is OK
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </Box>
+        )}
       </CardContent>
     </Card>
   );
 };
 
 export default UserIndentRequest;
+
+
+
+
+// import React, { useEffect, useState } from "react";
+// import {
+//   Card,
+//   CardContent,
+//   Typography,
+//   TextField,
+//   Button,
+//   MenuItem,
+//   Alert,
+//   Box,
+// } from "@mui/material";
+// import axios from "../api/api";
+
+// const UserIndentRequest = () => {
+//   const [itemName, setItemName] = useState("");
+//   const [quantity, setQuantity] = useState("");
+//   const [perPieceCost, setPerPieceCost] = useState("");
+//   const [description, setDescription] = useState("");
+//   const [flaList, setFlaList] = useState([]);
+//   const [selectedFla, setSelectedFla] = useState("");
+//   const [status, setStatus] = useState({ type: "", message: "" });
+//   const [pendingInspections, setPendingInspections] = useState([]);
+
+//   // Fetch list of FLA users
+//   useEffect(() => {
+//     const fetchFLAs = async () => {
+//       try {
+//         const res = await axios.get("/auth/users/by-role?role=FLA");
+//         setFlaList(res.data);
+//       } catch (err) {
+//         console.error("Error fetching FLAs", err);
+//       }
+//     };
+//     fetchFLAs();
+//   }, []);
+
+
+//   useEffect(() => {
+//     const fetchPendingInspections = async () => {
+//       try {
+//         const res = await axios.get("/indent/user/pending-inspection");
+//         setPendingInspections(res.data);
+//       } catch (err) {
+//         console.error("Error fetching pending inspections", err);
+//       }
+//     };
+//     fetchPendingInspections();
+//   }, []);
+
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const body = {
+//         itemName,
+//         quantity: parseInt(quantity),
+//         perPieceCost: parseInt(perPieceCost),
+//         description,
+//         flaId: selectedFla,
+//       };
+//       await axios.post("/indent/create", body);
+//       setStatus({ type: "success", message: "Indent submitted successfully!" });
+
+//       // Reset form
+//       setItemName("");
+//       setQuantity("");
+//       setPerPieceCost("");
+//       setDescription("");
+//       setSelectedFla("");
+//     } catch (err) {
+//       console.error("Failed to submit indent", err);
+//       setStatus({ type: "error", message: "Failed to submit indent." });
+//     }
+//   };
+
+//   return (
+//     <Card>
+//       <CardContent>
+//         <Typography variant="h6" gutterBottom>
+//           Request Indent
+//         </Typography>
+
+//         {status.message && (
+//           <Alert severity={status.type} sx={{ mb: 2 }}>
+//             {status.message}
+//           </Alert>
+//         )}
+
+//         <Box component="form" onSubmit={handleSubmit} noValidate>
+//           <TextField
+//             fullWidth
+//             label="Item Name"
+//             margin="normal"
+//             value={itemName}
+//             onChange={(e) => setItemName(e.target.value)}
+//             required
+//           />
+
+//           <TextField
+//             fullWidth
+//             label="Quantity"
+//             margin="normal"
+//             type="number"
+//             value={quantity}
+//             onChange={(e) => setQuantity(e.target.value)}
+//             required
+//           />
+
+//           <TextField
+//             fullWidth
+//             label="Per Piece Cost"
+//             margin="normal"
+//             type="number"
+//             value={perPieceCost}
+//             onChange={(e) => setPerPieceCost(e.target.value)}
+//             required
+//           />
+
+//           <TextField
+//             fullWidth
+//             label="Description"
+//             margin="normal"
+//             multiline
+//             rows={3}
+//             value={description}
+//             onChange={(e) => setDescription(e.target.value)}
+//             required
+//           />
+
+//           <TextField
+//             select
+//             fullWidth
+//             label="Select FLA"
+//             margin="normal"
+//             value={selectedFla}
+//             onChange={(e) => setSelectedFla(e.target.value)}
+//             required
+//           >
+//             {flaList.map((fla) => (
+//               <MenuItem key={fla.id} value={fla.id}>
+//                 {fla.username}
+//               </MenuItem>
+//             ))}
+//           </TextField>
+
+//           <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+//             Submit Indent
+//           </Button>
+//         </Box>
+
+
+//         <Box sx={{ mt: 4 }}>
+//   <Typography variant="h6" gutterBottom>
+//     Pending Product Inspections
+//   </Typography>
+
+//   {pendingInspections.length === 0 ? (
+//     <Typography>No pending items for inspection.</Typography>
+//   ) : (
+//     pendingInspections.map((indent) => (
+//       <Card key={indent.id} sx={{ my: 2 }}>
+//         <CardContent>
+//           <Typography><strong>Item:</strong> {indent.itemName}</Typography>
+//           <Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
+//           <Typography><strong>Description:</strong> {indent.description}</Typography>
+
+//           <Button
+//             variant="outlined"
+//             sx={{ mt: 2 }}
+//             onClick={async () => {
+//               try {
+//                 await axios.post(`/indent/${indent.id}/confirm-inspection`);
+//                 setStatus({ type: "success", message: "Product confirmed OK!" });
+//                 setPendingInspections(prev => prev.filter(i => i.id !== indent.id));
+//               } catch (err) {
+//                 console.error(err);
+//                 setStatus({ type: "error", message: "Failed to confirm inspection" });
+//               }
+//             }}
+//           >
+//             Confirm Product is OK
+//           </Button>
+//         </CardContent>
+//       </Card>
+//     ))
+//   )}
+// </Box>
+
+//       </CardContent>
+//     </Card>
+//   );
+// };
+
+// export default UserIndentRequest;
