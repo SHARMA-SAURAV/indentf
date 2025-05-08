@@ -34,6 +34,8 @@ const FLADashboard = () => {
     }
   };
 
+  
+
   const fetchSLAs = async () => {
     try {
       const res = await axios.get("/auth/users/by-role?role=SLA");
