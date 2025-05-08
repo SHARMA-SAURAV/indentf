@@ -1,3 +1,4 @@
+// yeh sirf dikhane ke liye hai ki kaise hum ek page bana sakte hain jo finance wale indents ko approve karega aur payment ke liye mark karega.
 import React, { useEffect, useState } from 'react';
 import axios from "../api/api";
 import {
