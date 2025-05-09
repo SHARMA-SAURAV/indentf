@@ -23,6 +23,20 @@ const UserIndentRequest = () => {
   const [selectedFla, setSelectedFla] = useState("");
   const [status, setStatus] = useState({ type: "", message: "" });
   const [pendingInspections, setPendingInspections] = useState([]);
+  const [allIndents, setAllIndents] = useState([]);
+
+
+  useEffect(() => {
+    const fetchIndents = async () => {
+      try {
+        const res = await axios.get("/indent/user/all");
+        setAllIndents(res.data);
+      } catch (err) {
+        console.error("Error fetching indents", err);
+      }
+    };
+    if (tab === 2) fetchIndents(); // Only fetch when tab is selected
+  }, [tab]);
 
   useEffect(() => {
     const fetchFLAs = async () => {
@@ -88,6 +102,7 @@ const UserIndentRequest = () => {
         <Tabs value={tab} onChange={handleTabChange} sx={{ mb: 2 }}>
           <Tab label="Request Indent" />
           <Tab label="Pending Inspections" />
+          <Tab label="Track Indents" />
         </Tabs>
 
         {status.message && (
@@ -199,6 +214,46 @@ const UserIndentRequest = () => {
             )}
           </Box>
         )}
+
+{tab === 2 && (
+  <Box>
+    {allIndents.length === 0 ? (
+      <Typography>No indents found.</Typography>
+    ) : (
+      allIndents.map((indent) => (
+        <Card key={indent.id} sx={{ my: 2 }}>
+          <CardContent>
+            <Typography variant="h6">{indent.itemName}</Typography>
+            <Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
+            <Typography><strong>Description:</strong> {indent.description}</Typography>
+            <Typography><strong>Status:</strong> {indent.status}</Typography>
+            <Typography><strong>Created:</strong> {new Date(indent.createdAt).toLocaleString()}</Typography>
+
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1">Tracking:</Typography>
+              {indent.tracking && indent.tracking.length > 0 ? (
+                indent.tracking.map((step, index) => (
+                  <Box key={index} sx={{ ml: 2, my: 1 }}>
+                    <Typography><strong>{step.role}:</strong> {step.remark}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {new Date(step.date).toLocaleString()}
+                    </Typography>
+                  </Box>
+                ))
+              ) : (
+                <Typography>No tracking info yet.</Typography>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      ))
+    )}
+  </Box>
+)}
+
+
+
+        
       </CardContent>
     </Card>
   );
