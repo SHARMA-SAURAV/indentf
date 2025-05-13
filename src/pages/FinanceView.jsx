@@ -28,18 +28,22 @@ const FinanceView = () => {
   const fetchApprovalIndents = async () => {
     try {
       const res = await axios.get('/indent/finance/pending');
+      console.log('Approval indents response:', res.data); // <- add this
       setApprovalIndents(res.data);
     } catch (err) {
       console.error('Failed to fetch approval indents:', err);
+      setApprovalIndents([]); // fallback to empty array
     }
   };
 
   const fetchPaymentIndents = async () => {
     try {
       const res = await axios.get('/indent/finance/payment/pending');
+      console.log('Payment indents response:', res.data); // <- add this
       setPaymentIndents(res.data);
     } catch (err) {
       console.error('Failed to fetch payment indents:', err);
+       setPaymentIndents([]); // fallback to empty array
     }
   };
 
@@ -67,7 +71,7 @@ const FinanceView = () => {
     try {
       await axios.post('/indent/finance/payment/submit', {
         indentId: id,
-        gfrNote: paymentNotes[id] || ''
+        paymentNote: paymentNotes[id] || ''
       });
       alert('Payment marked as completed.');
       setPaymentIndents(prev => prev.filter(i => i.id !== id));
@@ -131,7 +135,7 @@ const FinanceView = () => {
                 <Typography variant="h6">Item: {indent.itemName}</Typography>
                 <Typography>Description: {indent.description}</Typography>
                 <Typography>Quantity: {indent.quantity}</Typography>
-                <Typography>GFR Note: {indent.gfrNote}</Typography>
+                <Typography>GFR Note: {indent.paymentNote}</Typography>
                 <Typography>Requested By: {indent.requestedBy?.name}</Typography>
 
                 <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -223,7 +227,7 @@ export default FinanceView;
 //     try {
 //       await axios.post('/indent/finance/payment/submit', {
 //         indentId: id,
-//         gfrNote: paymentNotes[id] || ''
+//         paymentNote: paymentNotes[id] || ''
 //       });
 //       alert('Payment marked as completed.');
 //       setPaymentIndents(prev => prev.filter(i => i.id !== id));
@@ -285,7 +289,7 @@ export default FinanceView;
 //               <Typography variant="h6">Item: {indent.itemName}</Typography>
 //               <Typography>Description: {indent.description}</Typography>
 //               <Typography>Quantity: {indent.quantity}</Typography>
-//               <Typography>GFR Note: {indent.gfrNote}</Typography>
+//               <Typography>GFR Note: {indent.paymentNote}</Typography>
 //               <Typography>Requested By: {indent.requestedBy?.name}</Typography>
 
 //               <Grid container spacing={2} style={{ marginTop: 12 }}>

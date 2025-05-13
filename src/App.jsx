@@ -7,6 +7,8 @@ import SLAView from "./components/SLAView";
 import StoreView from "./components/StoreView";
 import FinanceView from "./pages/FinanceView";
 import PurchasePanel from "./pages/PurchasePanel";
+// import TrackIndent from "./components/TrackIndent";
+// import TrackIndentStepper from "./components/TrackIndentStepper";
 // import FinancePanel from "./components/FinancePanel";
 
 function App() {
@@ -22,9 +24,6 @@ function App() {
           <Route path="/dashboard/store" element={<StoreView />} />
           <Route path="/finance" element={<FinanceView />} />
           <Route path="/purchase" element={<PurchasePanel />} />
-          {/* add finance route*/}
-          {/* <Route path="/dashboard/finance" element={<FinancePanel />} /> */}
-
         </Routes>
       </BrowserRouter>
     </AuthProvider>
