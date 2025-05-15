@@ -1,9 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import axios from "../api/api";
 import {
-  Card, CardContent, Typography, TextField, Button, Grid,
-  Tabs, Tab, Box
-} from '@mui/material';
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Tabs,
+  Tab,
+  Box,
+} from "@mui/material";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -27,65 +34,110 @@ const FinanceView = () => {
 
   const fetchApprovalIndents = async () => {
     try {
-      const res = await axios.get('/indent/finance/pending');
-      console.log('Approval indents response:', res.data); // <- add this
+      const res = await axios.get("/indent/finance/pending");
+      console.log("Approval indents response:", res.data); // <- add this
       setApprovalIndents(res.data);
     } catch (err) {
-      console.error('Failed to fetch approval indents:', err);
+      console.error("Failed to fetch approval indents:", err);
       setApprovalIndents([]); // fallback to empty array
     }
   };
 
   const fetchPaymentIndents = async () => {
     try {
-      const res = await axios.get('/indent/finance/payment/pending');
-      console.log('Payment indents response:', res.data); // <- add this
+      const res = await axios.get("/indent/finance/payment/pending");
+      console.log("Payment indents response:", res.data); // <- add this
       setPaymentIndents(res.data);
     } catch (err) {
-      console.error('Failed to fetch payment indents:', err);
-       setPaymentIndents([]); // fallback to empty array
+      console.error("Failed to fetch payment indents:", err);
+      setPaymentIndents([]); // fallback to empty array
     }
   };
 
   const handleRemarkChange = (id, value) => {
-    setRemarks(prev => ({ ...prev, [id]: value }));
+    setRemarks((prev) => ({ ...prev, [id]: value }));
   };
 
   const handlePaymentNoteChange = (id, value) => {
-    setPaymentNotes(prev => ({ ...prev, [id]: value }));
+    setPaymentNotes((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleApprove = async (id) => {
     try {
-      await axios.post('/indent/finance/approve', {
+      await axios.post("/indent/finance/approve", {
         indentId: id,
-        remark: remarks[id] || ''
+        remark: remarks[id] || "",
       });
-      setApprovalIndents(prev => prev.filter(i => i.id !== id));
+      setApprovalIndents((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
-      console.error('Approval failed:', err);
+      console.error("Approval failed:", err);
+    }
+  };
+
+  const handleReject = async (id) => {
+    const confirm = window.confirm(
+      "Are you sure you want to reject this indent?"
+    );
+    if (!confirm) return;
+
+    try {
+      await axios.post("/indent/finance/reject", {
+        indentId: id,
+        remark: remarks[id] || "",
+      });
+      alert("Indent rejected.");
+      setApprovalIndents((prev) => prev.filter((i) => i.id !== id));
+    } catch (err) {
+      console.error("Rejection failed:", err);
+      alert("Failed to reject indent.");
     }
   };
 
   const handlePaymentComplete = async (id) => {
     try {
-      await axios.post('/indent/finance/payment/submit', {
+      await axios.post("/indent/finance/payment/submit", {
         indentId: id,
-        paymentNote: paymentNotes[id] || ''
+        paymentNote: paymentNotes[id] || "",
       });
-      alert('Payment marked as completed.');
-      setPaymentIndents(prev => prev.filter(i => i.id !== id));
+      alert("Payment marked as completed.");
+      setPaymentIndents((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
-      alert('Error submitting payment');
-      console.error('Payment submission failed:', err);
+      alert("Error submitting payment");
+      console.error("Payment submission failed:", err);
     }
   };
 
+
+  const handlePaymentReject = async (id) => {
+  const confirm = window.confirm("Are you sure you want to reject this payment?");
+  if (!confirm) return;
+
+  try {
+    await axios.post('/indent/finance/payment/reject', {
+      indentId: id,
+      paymentNote: paymentNotes[id] || ''
+    });
+    alert("Payment rejected.");
+    setPaymentIndents(prev => prev.filter(i => i.id !== id));
+  } catch (err) {
+    console.error('Payment rejection failed:', err);
+    alert('Failed to reject payment.');
+  }
+};
+
+
+
   return (
     <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>Finance Panel</Typography>
+      <Typography variant="h4" gutterBottom>
+        Finance Panel
+      </Typography>
 
-      <Tabs value={tabIndex} onChange={(e, val) => setTabIndex(val)} sx={{ mb: 2 }}>
+      <Tabs
+        value={tabIndex}
+        onChange={(e, val) => setTabIndex(val)}
+        sx={{ mb: 2 }}
+      >
         <Tab label="Approve & Forward" />
         <Tab label="Mark Payment Done" />
       </Tabs>
@@ -94,14 +146,16 @@ const FinanceView = () => {
         {approvalIndents.length === 0 ? (
           <Typography>No pending approvals</Typography>
         ) : (
-          approvalIndents.map(indent => (
+          approvalIndents.map((indent) => (
             <Card key={indent.id} sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h6">Item: {indent.itemName}</Typography>
                 <Typography>Description: {indent.description}</Typography>
                 <Typography>Quantity: {indent.quantity}</Typography>
                 <Typography>Cost: ₹{indent.perPieceCost}</Typography>
-                <Typography>Requested By: {indent.requestedBy?.name}</Typography>
+                <Typography>
+                  Requested By: {indent.requestedBy?.name}
+                </Typography>
                 <Typography>Approved By Store: {indent.store?.name}</Typography>
 
                 <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -109,13 +163,28 @@ const FinanceView = () => {
                     <TextField
                       label="Finance Remark"
                       fullWidth
-                      value={remarks[indent.id] || ''}
-                      onChange={(e) => handleRemarkChange(indent.id, e.target.value)}
+                      value={remarks[indent.id] || ""}
+                      onChange={(e) =>
+                        handleRemarkChange(indent.id, e.target.value)
+                      }
                     />
                   </Grid>
                   <Grid item xs={4}>
-                    <Button variant="contained" onClick={() => handleApprove(indent.id)}>
+                    <Button
+                      variant="contained"
+                      onClick={() => handleApprove(indent.id)}
+                    >
                       Approve & Forward
+                    </Button>
+                  </Grid>
+
+                  <Grid item xs={3}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleReject(indent.id)}
+                    >
+                      Reject
                     </Button>
                   </Grid>
                 </Grid>
@@ -129,27 +198,44 @@ const FinanceView = () => {
         {paymentIndents.length === 0 ? (
           <Typography>No pending payments</Typography>
         ) : (
-          paymentIndents.map(indent => (
+          paymentIndents.map((indent) => (
             <Card key={indent.id} sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h6">Item: {indent.itemName}</Typography>
                 <Typography>Description: {indent.description}</Typography>
                 <Typography>Quantity: {indent.quantity}</Typography>
                 <Typography>GFR Note: {indent.paymentNote}</Typography>
-                <Typography>Requested By: {indent.requestedBy?.name}</Typography>
+                <Typography>
+                  Requested By: {indent.requestedBy?.name}
+                </Typography>
 
                 <Grid container spacing={2} sx={{ mt: 2 }}>
                   <Grid item xs={8}>
                     <TextField
                       label="Payment Note"
                       fullWidth
-                      value={paymentNotes[indent.id] || ''}
-                      onChange={(e) => handlePaymentNoteChange(indent.id, e.target.value)}
+                      value={paymentNotes[indent.id] || ""}
+                      onChange={(e) =>
+                        handlePaymentNoteChange(indent.id, e.target.value)
+                      }
                     />
                   </Grid>
                   <Grid item xs={4}>
-                    <Button variant="contained" color="success" onClick={() => handlePaymentComplete(indent.id)}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() => handlePaymentComplete(indent.id)}
+                    >
                       Mark as Paid
+                    </Button>
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handlePaymentReject(indent.id)}
+                    >
+                      Reject Payment
                     </Button>
                   </Grid>
                 </Grid>
@@ -163,9 +249,6 @@ const FinanceView = () => {
 };
 
 export default FinanceView;
-
-
-
 
 // yeh sirf dikhane ke liye hai ki kaise hum ek page bana sakte hain jo finance wale indents ko approve karega aur payment ke liye mark karega.
 // import React, { useEffect, useState } from 'react';
@@ -316,14 +399,6 @@ export default FinanceView;
 // };
 
 // export default FinanceView;
-
-
-
-
-
-
-
-
 
 // import React, { useEffect, useState } from 'react';
 // import axios from "../api/api";

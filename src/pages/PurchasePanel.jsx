@@ -66,6 +66,25 @@ const PurchasePanel = () => {
     }
   };
 
+const handleReject = async (id) => {
+  const confirm = window.confirm("Are you sure you want to reject this indent?");
+  if (!confirm) return;
+
+  try {
+    await axios.post("/indent/purchase/reject", {
+      indentId: id,
+      remark: remarkMap[id] || "",
+    });
+    alert("Indent rejected by Purchase.");
+    fetchPendingIndents();
+  } catch (err) {
+    console.error("Failed to reject indent:", err);
+    alert("Error rejecting indent.");
+  }
+};
+  
+
+
   const handleGfrNoteChange = (id, value) => {
     setGfrNoteMap((prev) => ({ ...prev, [id]: value }));
   };
@@ -136,6 +155,13 @@ const PurchasePanel = () => {
                         >
                           Mark as Completed
                         </Button>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleReject(indent.id)}
+                        >
+                          Reject
+                        </Button>
                       </Box>
                     </Grid>
                   </Grid>
@@ -200,12 +226,6 @@ const PurchasePanel = () => {
 };
 
 export default PurchasePanel;
-
-
-
-
-
-
 
 // import React, { useEffect, useState } from "react";
 // import axios from "../api/api";
@@ -398,28 +418,9 @@ export default PurchasePanel;
 
 // export default PurchasePanel;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import React, { useEffect, useState } from "react";
 // // import axios from "@/api/axios";
 // import axios from "../api/api";
-
 
 // import {
 //   Container,

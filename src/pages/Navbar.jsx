@@ -81,7 +81,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/login');
+    navigate('/');
   };
 
   // Get initials for the avatar

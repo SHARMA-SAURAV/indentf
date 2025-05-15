@@ -391,7 +391,7 @@ const UserIndentRequest = () => {
                             role: "Purchase",
                             remark: indent.gfrNote,
                             date: indent.gfrCreatedAt,
-                            status: "PENDING_FINANCE_PAYMENT",
+                            status: "Approved",
                           });
                         }
 
