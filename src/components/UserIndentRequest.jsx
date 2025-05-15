@@ -4,7 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-
   Card,
   CardContent,
   Typography,
@@ -35,8 +34,7 @@ const UserIndentRequest = () => {
   const [purpose, setPurpose] = useState(""); // for Purpose
   const [specification, setSpecification] = useState(""); // for Specification/Model Details
   const [department, setDepartment] = useState(""); // for Department
-
-
+  
 
   const handleTabChange = (event, newValue) => {
     setTab(newValue);
@@ -82,10 +80,9 @@ const UserIndentRequest = () => {
     if (tab === 1) fetchPendingInspections();
   }, [tab]);
   useEffect(() => {
-  const cost = quantity && perPieceCost ? quantity * perPieceCost : 0;
-  setTotalCost(cost);
-}, [quantity, perPieceCost]);
-
+    const cost = quantity && perPieceCost ? quantity * perPieceCost : 0;
+    setTotalCost(cost);
+  }, [quantity, perPieceCost]);
 
   useEffect(() => {
     const fetchIndents = async () => {
@@ -110,8 +107,8 @@ const UserIndentRequest = () => {
         description,
         flaId: selectedFla,
         totalCost,
-        purpose, 
-        specification, 
+        purpose,
+        specification,
         department,
       };
       await axios.post("/indent/create", body);
@@ -126,7 +123,7 @@ const UserIndentRequest = () => {
       setSelectedFla("");
       setPurpose(""); // Reset purpose
       setSpecification(""); // Reset specification
-      setDepartment(""); 
+      setDepartment("");
     } catch (err) {
       console.error("Failed to submit indent", err);
       setStatus({ type: "error", message: "Failed to submit indent." });
@@ -154,14 +151,13 @@ const UserIndentRequest = () => {
 
         {tab === 0 && (
           <Box component="form" onSubmit={handleSubmit} noValidate>
-
             <TextField
-               label="Project Name"
-               value={projectName}
-               onChange={(e) => setProjectName(e.target.value)}
+              label="Project Name"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
               fullWidth
               margin="normal"
-              />
+            />
 
             <TextField
               fullWidth
@@ -192,12 +188,12 @@ const UserIndentRequest = () => {
             <TextField
               label="Total Cost"
               value={totalCost}
-               InputProps={{
-               readOnly: true,
+              InputProps={{
+                readOnly: true,
               }}
-               fullWidth
-                margin="normal"
-              />
+              fullWidth
+              margin="normal"
+            />
             <TextField
               fullWidth
               label="Description"
@@ -226,20 +222,20 @@ const UserIndentRequest = () => {
             <TextField
               fullWidth
               label="Purpose"
-               margin="normal"
-               value={purpose}
-               onChange={(e) => setPurpose(e.target.value)}
-               required
+              margin="normal"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              required
             />
 
             <TextField
               fullWidth
               label="Specification/Model Details"
-               margin="normal"
-               value={specification}
-               onChange={(e) => setSpecification(e.target.value)}
-               required
-              />
+              margin="normal"
+              value={specification}
+              onChange={(e) => setSpecification(e.target.value)}
+              required
+            />
 
             <TextField
               fullWidth
@@ -256,18 +252,20 @@ const UserIndentRequest = () => {
           </Box>
         )}
 
-  {tab === 1 && (
+        {tab === 1 && (
           <Box>
             {pendingInspections.length === 0 ? (
               <Typography>No pending items for inspection.</Typography>
             ) : (
               pendingInspections.map((indent) => (
-                <InspectionItem 
-                  key={indent.id} 
+                <InspectionItem
+                  key={indent.id}
                   indent={indent}
                   onConfirm={async (id, remark) => {
                     try {
-                     await axios.post(`/indent/${id}/confirm-inspection`, { remark });
+                      await axios.post(`/indent/${id}/confirm-inspection`, {
+                        remark,
+                      });
                       setStatus({
                         type: "success",
                         message: "Product confirmed OK!",
@@ -320,10 +318,8 @@ const UserIndentRequest = () => {
                         Tracking Progress:
                       </Typography>
 
-
-                      
                       {/* Updated tracking progress section */}
-                      {(() => {
+                      {/* {(() => {
                         const trackingSteps = [];
 
                         // FLA Step
@@ -446,6 +442,191 @@ const UserIndentRequest = () => {
                         ) : (
                           <Typography>No tracking info available yet.</Typography>
                         );
+                      })()} */}
+
+                      {(() => {
+                        const trackingSteps = [];
+
+                        // FLA Step
+                        if (
+                          indent.remarkByFla &&
+                          (indent.flaApprovalDate ||
+                            indent.status === "REJECTED_BY_FLA")
+                        ) {
+                          trackingSteps.push({
+                            role: "FLA",
+                            remark: indent.remarkByFla,
+                            date: indent.flaApprovalDate || indent.updatedAt,
+                            status:
+                              indent.status === "REJECTED_BY_FLA"
+                                ? "Rejected"
+                                : "Approved",
+                          });
+                        }
+
+                        // SLA Step
+                        if (
+                          indent.remarkBySla &&
+                          (indent.slaApprovalDate ||
+                            indent.status === "REJECTED_BY_SLA")
+                        ) {
+                          trackingSteps.push({
+                            role: "SLA",
+                            remark: indent.remarkBySla,
+                            date: indent.slaApprovalDate || indent.updatedAt,
+                            status:
+                              indent.status === "REJECTED_BY_SLA"
+                                ? "Rejected"
+                                : "Approved",
+                          });
+                        }
+
+                        // Store Step
+                        if (
+                          indent.remarkByStore &&
+                          (indent.storeApprovalDate ||
+                            indent.status === "REJECTED_BY_STORE")
+                        ) {
+                          trackingSteps.push({
+                            role: "Store",
+                            remark: indent.remarkByStore,
+                            date: indent.storeApprovalDate || indent.updatedAt,
+                            status:
+                              indent.status === "REJECTED_BY_STORE"
+                                ? "Rejected"
+                                : "Approved",
+                          });
+                        }
+
+                        // Finance Step
+                        if (
+                          indent.remarkByFinance &&
+                          (indent.financeApprovalDate ||
+                            indent.status === "REJECTED_BY_FINANCE")
+                            
+                        ) {
+                          console.log(indent.status, "indent.status");
+                          trackingSteps.push({
+                            role: "Finance",
+                            remark: indent.remarkByFinance,
+                            date:
+                              indent.financeApprovalDate || indent.updatedAt,
+                            status:
+                              indent.status === "REJECTED_BY_FINANCE"
+                                ? "Rejected"
+                                : "Approved",
+                          });
+                        }
+
+                        // Purchase Step
+                        if (
+                          indent.remarkByPurchase &&
+                          (indent.purchaseCompletionDate ||
+                            indent.status === "REJECTED_BY_PURCHASE")
+                        ) {
+                          trackingSteps.push({
+                            role: "Purchase",
+                            remark: indent.remarkByPurchase,
+                            date:
+                              indent.purchaseCompletionDate || indent.updatedAt,
+                            status:
+                              indent.status === "REJECTED_BY_PURCHASE"
+                                ? "Rejected"
+                                : "Completed",
+                          });
+                        }
+
+                        // User Inspection
+                        if (indent.remarkByUser && indent.userInspectionDate) {
+                          trackingSteps.push({
+                            role: "User",
+                            remark: indent.remarkByUser,
+                            date: indent.userInspectionDate,
+                            status: "Inspection Done",
+                          });
+                        }
+
+                        // GFR Note
+                        if (indent.gfrNote && indent.gfrCreatedAt) {
+                          trackingSteps.push({
+                            role: "Purchase",
+                            remark: indent.gfrNote,
+                            date: indent.gfrCreatedAt,
+                            status: "GFR Submitted",
+                          });
+                        }
+
+                        // Payment Done
+                        if (indent.paymentNote && (indent.paymentCreatedAt|| indent.status === "PAYMENT_REJECTED")) {
+                          trackingSteps.push({
+                            role: "Finance",
+                            remark: indent.paymentNote,
+                            date: indent.paymentCreatedAt,
+                           status:
+                              indent.status === "PAYMENT_REJECTED"
+                                ? "Rejected"
+                                : "Payment Done",
+                          });
+                        }
+
+                        return trackingSteps.length > 0 ? (
+                          trackingSteps
+                            .sort((a, b) => new Date(a.date) - new Date(b.date))
+                            .map((step, index) => (
+                              <Box
+                                key={index}
+                                sx={{
+                                  ml: 2,
+                                  my: 1,
+                                  borderLeft: "3px solid #1976d2",
+                                  pl: 2,
+                                  position: "relative",
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    position: "absolute",
+                                    left: "-7px",
+                                    top: "5px",
+                                    width: "10px",
+                                    height: "10px",
+                                    borderRadius: "50%",
+                                    backgroundColor:
+                                      step.status === "Rejected"
+                                        ? "red"
+                                        : "#1976d2",
+                                  }}
+                                />
+                                <Typography>
+                                  <strong>{step.role}</strong>{" "}
+                                  <span
+                                    style={{
+                                      fontStyle: "italic",
+                                      color:
+                                        step.status === "Rejected"
+                                          ? "red"
+                                          : "inherit",
+                                    }}
+                                  >
+                                    ({step.status})
+                                  </span>
+                                </Typography>
+                                <Typography sx={{ mb: 0.5 }}>
+                                  {step.remark}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {new Date(step.date).toLocaleString()}
+                                </Typography>
+                              </Box>
+                            ))
+                        ) : (
+                          <Typography>
+                            No tracking info available yet.
+                          </Typography>
+                        );
                       })()}
                     </Box>
                   </CardContent>
@@ -460,17 +641,6 @@ const UserIndentRequest = () => {
 };
 
 export default UserIndentRequest;
-
-
-
-
-
-
-
-
-
-
-
 
 // import React, { useEffect, useState } from "react";
 // import {
@@ -672,8 +842,8 @@ export default UserIndentRequest;
 //               <Typography>No pending items for inspection.</Typography>
 //             ) : (
 //               pendingInspections.map((indent) => (
-//                 <InspectionItem 
-//                   key={indent.id} 
+//                 <InspectionItem
+//                   key={indent.id}
 //                   indent={indent}
 //                   onConfirm={async (id, remark) => {
 //                     try {
@@ -730,8 +900,6 @@ export default UserIndentRequest;
 //                         Tracking Progress:
 //                       </Typography>
 
-
-                      
 //                       {/* Updated tracking progress section */}
 //                       {(() => {
 //                         const trackingSteps = [];
@@ -870,8 +1038,3 @@ export default UserIndentRequest;
 // };
 
 // export default UserIndentRequest;
-
-
-
-
-
