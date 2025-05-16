@@ -1,3 +1,4 @@
+// src/pages/SLAView.jsx
 import React, { useEffect, useState } from "react";
 import axios from "../api/api";
 import {
@@ -8,21 +9,27 @@ import {
   TextField,
   Box,
   CircularProgress,
+  Snackbar,
   Alert,
-  Paper,
-  Chip,
-  Grow,
+  Stack,
+  Container,
+  Grid,
+  Divider,
 } from "@mui/material";
-import { CheckCircle } from "@mui/icons-material";
 
 const SLAView = () => {
   const [indents, setIndents] = useState([]);
   const [remarks, setRemarks] = useState({});
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState("");
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const fetchIndents = async () => {
     try {
+      setLoading(true);
       const res = await axios.get("/indent/sla/pending", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -31,6 +38,11 @@ const SLAView = () => {
       setIndents(res.data);
     } catch (err) {
       console.error("Error fetching indents", err);
+      setNotification({
+        open: true,
+        message: "Failed to fetch pending indents.",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -45,140 +57,122 @@ const SLAView = () => {
     try {
       await axios.post(
         "/indent/sla/approve",
-        {
-          indentId,
-          remark,
-        },
+        { indentId, remark },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      setStatus("✅ Indent approved and forwarded to Store.");
-      fetchIndents(); // Refresh
+      setNotification({
+        open: true,
+        message: "Indent approved and forwarded to Store",
+        severity: "success",
+      });
+      fetchIndents();
+      setRemarks((prev) => ({ ...prev, [indentId]: "" }));
     } catch (err) {
       console.error("Approval failed", err);
-      setStatus("❌ Approval failed. Try again.");
+      setNotification({
+        open: true,
+        message: "Approval failed. Please try again.",
+        severity: "error",
+      });
     }
   };
 
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="50vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{
-        maxWidth: "1000px",
-        mx: "auto",
-        mt: 5,
-        px: 2,
-        background: "linear-gradient(135deg, #f0f4ff, #e8f5e9)",
-        borderRadius: 4,
-        pb: 5,
-        boxShadow: 3,
-      }}
-    >
+    <Container maxWidth="lg" sx={{ pt: 3, pb: 3 }}>
       <Typography
-        variant="h4"
-        textAlign="center"
+        variant="h6"
         fontWeight="bold"
-        sx={{ py: 3, color: "#2e7d32" }}
+        align="center"
+        gutterBottom
+        sx={{ mb: 2 }}
       >
-         SLA Approval Panel
+        SLA Approval Dashboard
       </Typography>
 
-      {status && (
-        <Alert severity="info" sx={{ mb: 3, mx: 1 }}>
-          {status}
-        </Alert>
-      )}
+      <Divider sx={{ mb: 2 }} />
 
-      {indents.length === 0 ? (
-        <Typography textAlign="center" sx={{ fontSize: 18 }}>
-             No pending indents for SLA
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
+          <CircularProgress />
+        </Box>
+      ) : indents.length === 0 ? (
+        <Typography variant="body1" align="center" color="text.secondary">
+          No pending indents for SLA approval.
         </Typography>
       ) : (
-        indents.map((indent, index) => (
-          <Grow in key={indent.id} timeout={500 + index * 200}>
-            <Paper
-              elevation={4}
-              sx={{
-                p: 3,
-                m: 2,
-                borderRadius: 3,
-                background: "#fff",
-                transition: "transform 0.3s ease, box-shadow 0.3s",
-                "&:hover": {
-                  transform: "scale(1.01)",
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.12)",
-                },
-              }}
-            >
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={1}
-              >
-                <Chip label={`Indent ID: ${indent.id}`} color="secondary" />
-                <Typography variant="subtitle2" sx={{ color: "gray" }}>
-                  Cost: ₹{indent.perPieceCost} × {indent.quantity}
-                </Typography>
-              </Box>
+        <Grid container spacing={2}>
+          {indents.map((indent) => (
+            <Grid item xs={12} sm={6} md={4} key={indent.id}>
+              <Card variant="outlined" sx={{ borderRadius: 2, height: "100%" }}>
+                <CardContent>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom noWrap>
+                    {indent.projectName}
+                  </Typography>
 
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
-                {indent.itemName}
-              </Typography>
-              <Typography sx={{ mb: 1 }}>
-                📦 Quantity: {indent.quantity}
-              </Typography>
-              <Typography sx={{ mb: 2 }}>📝 {indent.description}</Typography>
+                  <Typography variant="body2">
+                    <strong>Item:</strong> {indent.itemName}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Quantity:</strong> {indent.quantity}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Cost/Piece:</strong> ₹{indent.perPieceCost}
+                  </Typography>
+                  <Typography variant="body2" gutterBottom noWrap>
+                    <strong>Description:</strong> {indent.description}
+                  </Typography>
 
-              <TextField
-                label="Add a Remark"
-                fullWidth
-                multiline
-                rows={2}
-                value={remarks[indent.id] || ""}
-                onChange={(e) =>
-                  setRemarks({ ...remarks, [indent.id]: e.target.value })
-                }
-              />
+                  <TextField
+                    label="SLA Remark"
+                    fullWidth
+                    multiline
+                    rows={2}
+                    variant="outlined"
+                    size="small"
+                    value={remarks[indent.id] || ""}
+                    onChange={(e) =>
+                      setRemarks({ ...remarks, [indent.id]: e.target.value })
+                    }
+                    sx={{ mt: 1 }}
+                  />
 
-              <Button
-                variant="contained"
-                color="success"
-                endIcon={<CheckCircle />}
-                fullWidth
-                sx={{
-                  mt: 3,
-                  py: 1.2,
-                  fontSize: 16,
-                  fontWeight: "bold",
-                  "&:hover": {
-                    backgroundColor: "#2e7d32",
-                  },
-                }}
-                onClick={() => handleApprove(indent.id)}
-              >
-                Approve & Forward to Store
-              </Button>
-            </Paper>
-          </Grow>
-        ))
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    size="small"
+                    sx={{ mt: 2, textTransform: "none" }}
+                    onClick={() => handleApprove(indent.id)}
+                  >
+                    Approve & Forward to Store
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
-    </Box>
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
+          severity={notification.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 

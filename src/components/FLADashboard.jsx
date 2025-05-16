@@ -7,198 +7,197 @@ import {
   Button,
   MenuItem,
   Alert,
+  Collapse,
+  IconButton,
+  Grid,
   Box,
-  Divider,
-  Paper,
-  Chip,
-  Grow,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Stack,
 } from "@mui/material";
-import { Send } from "@mui/icons-material";
+import {
+  ExpandMore as ExpandMoreIcon,
+  DoneOutline as DoneOutlineIcon,
+  Close as CloseIcon,
+  FileDownload as FileDownloadIcon,
+} from "@mui/icons-material";
 import axios from "../api/api";
 
 const FLADashboard = () => {
-  const [indents, setIndents] = useState([]);
-  const [slaList, setSlaList] = useState([]);
-  const [remarks, setRemarks] = useState({});
-  const [selectedSla, setSelectedSla] = useState({});
-  const [status, setStatus] = useState("");
+  const [pendingIndents, setPendingIndents] = useState([]);
+  const [slaUsers, setSlaUsers] = useState([]);
+  const [remarksMap, setRemarksMap] = useState({});
+  const [selectedSlaMap, setSelectedSlaMap] = useState({});
+  const [notification, setNotification] = useState({ message: "", visible: false });
 
   useEffect(() => {
-    fetchIndents();
-    fetchSLAs();
+    fetchPendingIndents();
+    fetchSlaUsers();
   }, []);
 
-  const fetchIndents = async () => {
+  const fetchPendingIndents = async () => {
     try {
-      const res = await axios.get("/indent/fla/pending");
-      setIndents(res.data);
-    } catch (err) {
-      console.error("Failed to load indents", err);
+      const { data } = await axios.get("/indent/fla/pending");
+      setPendingIndents(data);
+    } catch (error) {
+      console.error("Error fetching pending indents:", error);
     }
   };
 
-  const fetchSLAs = async () => {
+  const fetchSlaUsers = async () => {
     try {
-      const res = await axios.get("/auth/users/by-role?role=SLA");
-      setSlaList(res.data);
-    } catch (err) {
-      console.error("Failed to load SLA list", err);
+      const { data } = await axios.get("/auth/users/by-role?role=SLA");
+      setSlaUsers(data);
+    } catch (error) {
+      console.error("Error fetching SLA users:", error);
     }
   };
 
-  const handleApprove = async (indentId) => {
+  const handleApproveIndent = async (indentId) => {
     try {
       const payload = {
         indentId,
-        remark: remarks[indentId] || "",
-        slaId: selectedSla[indentId],
+        remark: remarksMap[indentId] || "",
+        slaId: selectedSlaMap[indentId],
       };
       await axios.post("/indent/fla/approve", payload);
-      setStatus("✅ Indent approved and forwarded.");
-      fetchIndents(); // Refresh list
-    } catch (err) {
-      console.error("Error approving indent", err);
-      setStatus("❌ Failed to approve.");
+      setNotification({ message: "Indent successfully approved and forwarded.", visible: true });
+      fetchPendingIndents();
+    } catch (error) {
+      console.error("Approval failed:", error);
+      setNotification({ message: "Failed to approve the indent.", visible: true });
+    } finally {
+      setTimeout(() => setNotification({ ...notification, visible: false }), 3000);
     }
   };
 
+  const handleExportToCSV = () => {
+    const headers = ["Project Name", "Item Name", "Quantity", "Per Piece Cost", "Description"];
+    const rows = pendingIndents.map((indent) => [
+      indent.projectName,
+      indent.itemName,
+      indent.quantity,
+      indent.perPieceCost,
+      indent.description,
+    ]);
+
+    const csvData =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((row) => row.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvData);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "pending_indents.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <Box
-      sx={{
-        maxWidth: "1000px",
-        margin: "auto",
-        mt: 5,
-        px: 2,
-        background: "linear-gradient(135deg, #f0f4ff, #e9f7ef)",
-        borderRadius: 4,
-        boxShadow: 4,
-        pb: 4,
-      }}
-    >
-      <Card elevation={6} sx={{ borderRadius: 4, mt: -4 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#ffffff", py: 4, px: { xs: 2, md: 4 } }}>
+      <Card elevation={3} sx={{ borderRadius: 2, px: 3, py: 2 }}>
         <CardContent>
-          <Typography
-            variant="h4"
-            gutterBottom
-            sx={{
-              fontWeight: "bold",
-              textAlign: "center",
-              color: "#2f4f4f",
-              mb: 3,
-              mt: 2,
-            }}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems="center"
+            spacing={2}
+            sx={{ mb: 3 }}
           >
-             FLA Dashboard – Pending Indents
-          </Typography>
+            <Typography variant="h5" fontWeight="bold" color="primary.main">
+              FLA Dashboard
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExportToCSV}
+              sx={{ textTransform: "none", color: "primary.main", borderColor: "primary.main" }}
+            >
+              Export as CSV
+            </Button>
+          </Stack>
 
-          {status && (
-            <Alert severity="info" sx={{ mb: 2, fontWeight: 500 }}>
-              {status}
+          <Collapse in={notification.visible}>
+            <Alert
+              severity={notification.message.includes("Failed") ? "error" : "info"}
+              action={
+                <IconButton size="small" onClick={() => setNotification({ ...notification, visible: false })}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              }
+              sx={{ mb: 2 }}
+            >
+              {notification.message}
             </Alert>
-          )}
+          </Collapse>
 
-          {indents.length === 0 ? (
-            <Typography sx={{ mt: 3, textAlign: "center", fontSize: 18 }}>
-               No pending indents.
+          {pendingIndents.length === 0 ? (
+            <Typography variant="body1" color="text.secondary" textAlign="center" mt={6}>
+              No pending indents available for review at this time.
             </Typography>
           ) : (
-            indents.map((indent, index) => (
-              <Grow in key={indent.id} timeout={500 + index * 300}>
-                <Paper
-                  elevation={4}
-                  sx={{
-                    mb: 4,
-                    p: 3,
-                    borderRadius: 3,
-                    background: "#ffffff",
-                    transition: "transform 0.3s ease, box-shadow 0.3s",
-                    "&:hover": {
-                      transform: "scale(1.01)",
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 1,
-                    }}
-                  >
-                    <Chip
-                      label={`Indent ID: ${indent.id}`}
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ color: "gray", fontStyle: "italic" }}
-                    >
-                      Pending Approval
-                    </Typography>
-                  </Box>
-
-                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                    {indent.itemName}
+            pendingIndents.map((indent, index) => (
+              <Accordion key={indent.id} sx={{ mb: 2, borderRadius: 2, border: 1, borderColor: "primary.light" }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography fontWeight={600} color="primary.dark">
+                    {index + 1}. {indent.projectName}
                   </Typography>
-                  <Typography sx={{ mb: 1 }}>📦 Quantity: {indent.quantity}</Typography>
-                  <Typography sx={{ mb: 2 }}>📝 {indent.description}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Typography><strong>Item Name:</strong> {indent.itemName}</Typography>
+                      <Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
+                      <Typography><strong>Per Unit Cost:</strong> ₹{Number(indent.perPieceCost).toLocaleString()}</Typography>
+                      <Typography><strong>Description:</strong> {indent.description}</Typography>
+                    </Grid>
 
-                  <TextField
-                    label="Add a Remark"
-                    fullWidth
-                    margin="dense"
-                    variant="outlined"
-                    value={remarks[indent.id] || ""}
-                    onChange={(e) =>
-                      setRemarks({ ...remarks, [indent.id]: e.target.value })
-                    }
-                  />
-
-                  <TextField
-                    select
-                    label="Assign SLA"
-                    fullWidth
-                    margin="dense"
-                    variant="outlined"
-                    value={selectedSla[indent.id] || ""}
-                    onChange={(e) =>
-                      setSelectedSla({
-                        ...selectedSla,
-                        [indent.id]: e.target.value,
-                      })
-                    }
-                    sx={{ mt: 2 }}
-                  >
-                    {slaList.map((sla) => (
-                      <MenuItem key={sla.id} value={sla.id}>
-                        👤 {sla.username}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <Button
-                    variant="contained"
-                    color="success"
-                    fullWidth
-                    endIcon={<Send />}
-                    sx={{
-                      mt: 3,
-                      py: 1.3,
-                      fontSize: 16,
-                      fontWeight: "bold",
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        backgroundColor: "#28a745",
-                      },
-                    }}
-                    onClick={() => handleApprove(indent.id)}
-                  >
-                    Approve & Forward
-                  </Button>
-                </Paper>
-              </Grow>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Remarks"
+                        fullWidth
+                        margin="dense"
+                        multiline
+                        value={remarksMap[indent.id] || ""}
+                        onChange={(e) =>
+                          setRemarksMap((prev) => ({ ...prev, [indent.id]: e.target.value }))
+                        }
+                        sx={{ mb: 2 }}
+                      />
+                      <TextField
+                        select
+                        label="Assign to SLA"
+                        fullWidth
+                        margin="dense"
+                        value={selectedSlaMap[indent.id] || ""}
+                        onChange={(e) =>
+                          setSelectedSlaMap((prev) => ({ ...prev, [indent.id]: e.target.value }))
+                        }
+                        sx={{ mb: 2 }}
+                      >
+                        {slaUsers.map((user) => (
+                          <MenuItem key={user.id} value={user.id}>
+                            {user.username}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        startIcon={<DoneOutlineIcon />}
+                        onClick={() => handleApproveIndent(indent.id)}
+                        disabled={!selectedSlaMap[indent.id]}
+                        sx={{ fontWeight: 600, textTransform: "none" }}
+                      >
+                        Approve & Forward
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
             ))
           )}
         </CardContent>

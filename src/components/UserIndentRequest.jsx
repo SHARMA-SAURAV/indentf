@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+
   Card,
   CardContent,
   Typography,
@@ -12,9 +17,11 @@ import {
   Tab,
 } from "@mui/material";
 import axios from "../api/api";
+import InspectionItem from "./InspectionItem";
 
 const UserIndentRequest = () => {
   const [tab, setTab] = useState(0);
+  const [projectName, setProjectName] = useState("");
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [perPieceCost, setPerPieceCost] = useState("");
@@ -24,18 +31,32 @@ const UserIndentRequest = () => {
   const [status, setStatus] = useState({ type: "", message: "" });
   const [pendingInspections, setPendingInspections] = useState([]);
   const [allIndents, setAllIndents] = useState([]);
+  const [totalCost, setTotalCost] = useState(0);
+  const [purpose, setPurpose] = useState(""); // for Purpose
+  const [specification, setSpecification] = useState(""); // for Specification/Model Details
+  const [department, setDepartment] = useState(""); // for Department
 
-  useEffect(() => {
-    const fetchIndents = async () => {
-      try {
-        const res = await axios.get("/indent/user/all");
-        setAllIndents(res.data);
-      } catch (err) {
-        console.error("Error fetching indents", err);
-      }
-    };
-    if (tab === 2) fetchIndents(); // Only fetch when tab is selected
-  }, [tab]);
+
+
+  const handleTabChange = (event, newValue) => {
+    setTab(newValue);
+    setStatus({ type: "", message: "" });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "orange";
+      case "approved":
+      case "completed":
+      case "inspected":
+        return "green";
+      case "rejected":
+        return "red";
+      default:
+        return "gray";
+    }
+  };
 
   useEffect(() => {
     const fetchFLAs = async () => {
@@ -58,72 +79,68 @@ const UserIndentRequest = () => {
         console.error("Error fetching pending inspections", err);
       }
     };
-    fetchPendingInspections();
-  }, []);
+    if (tab === 1) fetchPendingInspections();
+  }, [tab]);
+  useEffect(() => {
+  const cost = quantity && perPieceCost ? quantity * perPieceCost : 0;
+  setTotalCost(cost);
+}, [quantity, perPieceCost]);
+
+
+  useEffect(() => {
+    const fetchIndents = async () => {
+      try {
+        const res = await axios.get("/indent/user/all");
+        setAllIndents(res.data);
+      } catch (err) {
+        console.error("Error fetching indents", err);
+      }
+    };
+    if (tab === 2) fetchIndents();
+  }, [tab]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const body = {
+        projectName,
         itemName,
         quantity: parseInt(quantity),
         perPieceCost: parseInt(perPieceCost),
         description,
         flaId: selectedFla,
+        totalCost,
+        purpose, 
+        specification, 
+        department,
       };
       await axios.post("/indent/create", body);
       setStatus({ type: "success", message: "Indent submitted successfully!" });
 
       // Reset form
       setItemName("");
+      setProjectName("");
       setQuantity("");
       setPerPieceCost("");
       setDescription("");
       setSelectedFla("");
+      setPurpose(""); // Reset purpose
+      setSpecification(""); // Reset specification
+      setDepartment(""); 
     } catch (err) {
       console.error("Failed to submit indent", err);
       setStatus({ type: "error", message: "Failed to submit indent." });
     }
   };
-
-  const handleTabChange = (event, newValue) => {
-    setTab(newValue);
-    setStatus({ type: "", message: "" });
-  };
-
-  // Polling function to fetch and update tracking data at each level
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const updatedIndents = await Promise.all(
-        allIndents.map(async (indent) => {
-          try {
-            const res = await axios.get(`/indent/${indent.id}/tracking`);
-            return { ...indent, tracking: res.data };
-          } catch (err) {
-            console.error("Error fetching tracking data", err);
-            return indent;
-          }
-        })
-      );
-      setAllIndents(updatedIndents);
-    }, 5000); // Poll every 5 seconds for updates
-
-    // Clean up the interval on component unmount
-    return () => clearInterval(interval);
-  }, [allIndents]);
-
+  //  console.log("indnet tracking--------",indent.tracking);
   return (
-    <Card sx={{ mt: 4, borderRadius: 2, boxShadow: 3 }}>
-      <CardContent sx={{ padding: 3 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
+    <Card sx={{ mt: 4 }}>
+      <CardContent>
+        <Typography variant="h5" gutterBottom>
           User Panel
         </Typography>
 
-        <Tabs
-          value={tab}
-          onChange={handleTabChange}
-          sx={{ mb: 2, borderBottom: 2, borderColor: "divider" }}
-        >
+        <Tabs value={tab} onChange={handleTabChange} sx={{ mb: 2 }}>
           <Tab label="Request Indent" />
           <Tab label="Pending Inspections" />
           <Tab label="Track Indents" />
@@ -136,7 +153,16 @@ const UserIndentRequest = () => {
         )}
 
         {tab === 0 && (
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+
+            <TextField
+               label="Project Name"
+               value={projectName}
+               onChange={(e) => setProjectName(e.target.value)}
+              fullWidth
+              margin="normal"
+              />
+
             <TextField
               fullWidth
               label="Item Name"
@@ -144,10 +170,7 @@ const UserIndentRequest = () => {
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
               required
-              variant="outlined"
-              sx={{ backgroundColor: "#f9f9f9" }}
             />
-
             <TextField
               fullWidth
               label="Quantity"
@@ -156,10 +179,7 @@ const UserIndentRequest = () => {
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
-              variant="outlined"
-              sx={{ backgroundColor: "#f9f9f9" }}
             />
-
             <TextField
               fullWidth
               label="Per Piece Cost"
@@ -168,10 +188,16 @@ const UserIndentRequest = () => {
               value={perPieceCost}
               onChange={(e) => setPerPieceCost(e.target.value)}
               required
-              variant="outlined"
-              sx={{ backgroundColor: "#f9f9f9" }}
             />
-
+            <TextField
+              label="Total Cost"
+              value={totalCost}
+               InputProps={{
+               readOnly: true,
+              }}
+               fullWidth
+                margin="normal"
+              />
             <TextField
               fullWidth
               label="Description"
@@ -181,10 +207,7 @@ const UserIndentRequest = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              variant="outlined"
-              sx={{ backgroundColor: "#f9f9f9" }}
             />
-
             <TextField
               select
               fullWidth
@@ -193,8 +216,6 @@ const UserIndentRequest = () => {
               value={selectedFla}
               onChange={(e) => setSelectedFla(e.target.value)}
               required
-              variant="outlined"
-              sx={{ backgroundColor: "#f9f9f9" }}
             >
               {flaList.map((fla) => (
                 <MenuItem key={fla.id} value={fla.id}>
@@ -202,99 +223,233 @@ const UserIndentRequest = () => {
                 </MenuItem>
               ))}
             </TextField>
-            <Button type="submit" variant="contained" sx={{ mt: 2, backgroundColor: "#3f51b5", color: "#fff" }}>
+            <TextField
+              fullWidth
+              label="Purpose"
+               margin="normal"
+               value={purpose}
+               onChange={(e) => setPurpose(e.target.value)}
+               required
+            />
+
+            <TextField
+              fullWidth
+              label="Specification/Model Details"
+               margin="normal"
+               value={specification}
+               onChange={(e) => setSpecification(e.target.value)}
+               required
+              />
+
+            <TextField
+              fullWidth
+              label="Department"
+              margin="normal"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              required
+            />
+
+            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
               Submit Indent
             </Button>
           </Box>
         )}
 
-        {tab === 1 && (
-          <Box sx={{ mt: 2 }}>
+  {tab === 1 && (
+          <Box>
             {pendingInspections.length === 0 ? (
               <Typography>No pending items for inspection.</Typography>
             ) : (
               pendingInspections.map((indent) => (
-                <Card key={indent.id} sx={{ my: 2, borderRadius: 2, boxShadow: 1 }}>
-                  <CardContent>
-                    <Typography><strong>Item:</strong> {indent.itemName}</Typography>
-                    <Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
-                    <Typography><strong>Description:</strong> {indent.description}</Typography>
-
-                    <Button
-                      variant="outlined"
-                      sx={{ mt: 2, borderColor: "#4caf50", color: "#4caf50", borderRadius: 1 }}
-                      onClick={async () => {
-                        try {
-                          await axios.post(`/indent/${indent.id}/confirm-inspection`);
-                          setStatus({ type: "success", message: "Product confirmed OK!" });
-                          setPendingInspections((prev) =>
-                            prev.filter((i) => i.id !== indent.id)
-                          );
-                        } catch (err) {
-                          console.error(err);
-                          setStatus({
-                            type: "error",
-                            message: "Failed to confirm inspection",
-                          });
-                        }
-                      }}
-                    >
-                      Confirm Product is OK
-                    </Button>
-                  </CardContent>
-                </Card>
+                <InspectionItem 
+                  key={indent.id} 
+                  indent={indent}
+                  onConfirm={async (id, remark) => {
+                    try {
+                     await axios.post(`/indent/${id}/confirm-inspection`, { remark });
+                      setStatus({
+                        type: "success",
+                        message: "Product confirmed OK!",
+                      });
+                      setPendingInspections((prev) =>
+                        prev.filter((i) => i.id !== id)
+                      );
+                    } catch (err) {
+                      console.error(err);
+                      setStatus({
+                        type: "error",
+                        message: "Failed to confirm inspection",
+                      });
+                      throw err;
+                    }
+                  }}
+                />
               ))
             )}
           </Box>
         )}
 
         {tab === 2 && (
-          <Box sx={{ mt: 2 }}>
+          <Box>
             {allIndents.length === 0 ? (
               <Typography>No indents found.</Typography>
             ) : (
               allIndents.map((indent) => (
-                <Card key={indent.id} sx={{ my: 2, borderRadius: 2, boxShadow: 1 }}>
+                <Card key={indent.id} sx={{ my: 2 }}>
                   <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>{indent.itemName}</Typography>
-                    <Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
-                    <Typography><strong>Description:</strong> {indent.description}</Typography>
-                    <Typography><strong>Status:</strong> {indent.status}</Typography>
-                    <Typography><strong>Created:</strong> {new Date(indent.createdAt).toLocaleString()}</Typography>
-
+                    <Typography>
+                       <strong>Project Name:</strong> {indent.projectName}
+                    </Typography>
+                    <Typography><strong>Item Name:</strong>{indent.itemName}</Typography>
+                    <Typography>
+                      <strong>Quantity:</strong> {indent.quantity}
+                    </Typography>
+                    <Typography>
+                      <strong>Description:</strong> {indent.description}
+                    </Typography>
+                    <Typography>
+                      <strong>Status:</strong>{" "}
+                      <span style={{ color: getStatusColor(indent.status) }}>
+                        {indent.status}
+                      </span>
+                    </Typography>
+                    <Typography>
+                      <strong>Created:</strong>{" "}
+                      {new Date(indent.createdAt).toLocaleString()}
+                    </Typography>
                     <Box sx={{ mt: 2 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>Tracking:</Typography>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Tracking Progress:
+                      </Typography>
 
-                      {["FLA", "SLA", "STORE", "FINANCE", "PURCHASE"].map((role) => {
-                        const step = indent.tracking?.find(
-                          (entry) => entry.role?.trim().toUpperCase() === role
+
+                      
+                      {/* Updated tracking progress section */}
+                      {(() => {
+                        const trackingSteps = [];
+
+                        // FLA Step
+                        if (indent.remarkByFla && indent.flaApprovalDate) {
+                          trackingSteps.push({
+                            role: "FLA",
+                            remark: indent.remarkByFla,
+                            date: indent.flaApprovalDate,
+                            status: "Approved",
+                          });
+                        }
+
+                        // SLA Step
+                        if (indent.remarkBySla && indent.slaApprovalDate) {
+                          trackingSteps.push({
+                            role: "SLA",
+                            remark: indent.remarkBySla,
+                            date: indent.slaApprovalDate,
+                            status: "Approved",
+                          });
+                        }
+
+                        // Store Step
+                        if (indent.remarkByStore && indent.storeApprovalDate) {
+                          trackingSteps.push({
+                            role: "Store",
+                            remark: indent.remarkByStore,
+                            date: indent.storeApprovalDate,
+                            status: "Approved",
+                          });
+                        }
+
+                        // Finance Step
+                        if (indent.remarkByFinance && indent.financeApprovalDate) {
+                          trackingSteps.push({
+                            role: "Finance",
+                            remark: indent.remarkByFinance,
+                            date: indent.financeApprovalDate,
+                            status: "Approved",
+                          });
+                        }
+
+                        // Purchase Step
+                        if (indent.remarkByPurchase && indent.purchaseCompletionDate) {
+                          trackingSteps.push({
+                            role: "Purchase",
+                            remark: indent.remarkByPurchase,
+                            date: indent.purchaseCompletionDate,
+                            status: "Completed",
+                          });
+                        }
+
+                        // Additional remarks
+                       if (indent.remarkByUser && indent.userInspectionDate) {
+                          trackingSteps.push({
+                            role: "User",
+                            remark: indent.remarkByUser,
+                            date: indent.userInspectionDate,
+                            status: "Inspection Done",
+                          });
+                        }
+
+                         if (indent.gfrNote && indent.gfrCreatedAt) {
+                          trackingSteps.push({
+                            role: "Purchase",
+                            remark: indent.gfrNote,
+                            date: indent.gfrCreatedAt,
+                            status: "PENDING_FINANCE_PAYMENT",
+                          });
+                        }
+
+                         if (indent.paymentNote && indent.paymentCreatedAt) {
+                          trackingSteps.push({
+                            role: "Finance",
+                            remark: indent.paymentNote,
+                            date: indent.paymentCreatedAt,
+                            status: "Completed Payment ",
+                          });
+                        }
+
+                        return trackingSteps.length > 0 ? (
+                          trackingSteps
+                            .sort((a, b) => new Date(a.date) - new Date(b.date))
+                            .map((step, index) => (
+                              <Box
+                                key={index}
+                                sx={{
+                                  ml: 2,
+                                  my: 1,
+                                  borderLeft: "3px solid #1976d2",
+                                  pl: 2,
+                                  position: "relative",
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    position: "absolute",
+                                    left: "-7px",
+                                    top: "5px",
+                                    width: "10px",
+                                    height: "10px",
+                                    borderRadius: "50%",
+                                    backgroundColor: "#1976d2",
+                                  }}
+                                />
+                                <Typography>
+                                  <strong>{step.role}</strong>{" "}
+                                  <span style={{ fontStyle: "italic" }}>
+                                    ({step.status})
+                                  </span>
+                                </Typography>
+                                <Typography sx={{ mb: 0.5 }}>
+                                  {step.remark}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {new Date(step.date).toLocaleString()}
+                                </Typography>
+                              </Box>
+                            ))
+                        ) : (
+                          <Typography>No tracking info available yet.</Typography>
                         );
-
-                        return (
-                          <Box key={role} sx={{ ml: 2, my: 1 }}>
-                            <Typography>
-                              <strong>{role}:</strong>{" "}
-                              {step?.remark || (
-                                <span style={{ color: "gray" }}>Pending...</span>
-                              )}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {step?.date
-                                ? new Date(step.date).toLocaleString()
-                                : "Awaiting update"}
-                            </Typography>
-                          </Box>
-                        );
-                      })}
-
-                      {/* Final status check */}
-                      {indent.status === "PAYMENT_COMPLETED" && (
-                        <Box sx={{ ml: 2, mt: 2 }}>
-                          <Typography sx={{ color: "green", fontWeight: "bold" }}>
-                            ✅ Payment Completed – Indent fully processed.
-                          </Typography>
-                        </Box>
-                      )}
+                      })()}
                     </Box>
                   </CardContent>
                 </Card>
@@ -306,5 +461,5 @@ const UserIndentRequest = () => {
     </Card>
   );
 };
-
 export default UserIndentRequest;
+
