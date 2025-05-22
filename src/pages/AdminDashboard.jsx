@@ -75,10 +75,11 @@ const AdminPanel = () => {
     });
   };
 
-  const handleDeleteUser = async (id) => {
-    await axios.delete(`/admin/users/${id}`);
-    fetchUsers();
-  };
+  // const handleDeleteUser = async (id) => {
+  //   console.log("Deleting user with ID:", id);
+  //   await axios.delete(`/admin/users/${id}`);
+  //   fetchUsers();
+  // };
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
@@ -160,14 +161,14 @@ const AdminPanel = () => {
                     ))}
                   </Box>
                 </Box>
-                <Button
+                {/* <Button
                   variant="outlined"
                   color="error"
-                  onClick={() => handleDeleteUser(user._id)}
+                  onClick={() => handleDeleteUser(user.id)}
                   sx={{ ml: 2 }}
                 >
                   Delete
-                </Button>
+                </Button> */}
               </Paper>
               {idx !== users.length - 1 && (
                 <Divider sx={{ my: 2 }} variant="middle" />

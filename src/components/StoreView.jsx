@@ -295,6 +295,7 @@ import {
   DialogContent,
   DialogActions,
   Fade,
+  Grid,
 } from "@mui/material";
 
 const GRADIENT_BG = "linear-gradient(135deg, #FAFAFA 0%, #EDEDED 100%)";
@@ -324,60 +325,111 @@ const IndentCard = ({
   onApprove,
   onRejectClick,
   index,
+  actionLoading,
+  approvingId,
 }) => (
   <Fade in timeout={500 + index * 150} key={indent.id}>
     <Card
       sx={{
         my: 3,
-        backgroundColor: CARD_BG,
-        color: TEXT_COLOR,
-        borderRadius: 3,
-        boxShadow: `0 4px 12px ${SHADOW_COLOR}`,
+        background: '#fff',
+        borderRadius: 5,
+        boxShadow: '0 8px 32px 0 rgba(13,71,161,0.10)',
+        border: 'none',
+        maxWidth: 480,
+        minWidth: 320,
+        position: 'relative',
+        overflow: 'hidden',
+        p: 0,
+        transition: 'box-shadow 0.25s, transform 0.18s',
+        '&:hover': {
+          boxShadow: '0 16px 48px 0 rgba(13,71,161,0.18)',
+          transform: 'scale(1.018)',
+        },
       }}
     >
-      <CardContent>
-      <Typography sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-  <strong>Project Name:</strong> {indent.projectName}
-</Typography>
-
-<Typography sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-  <strong>Item Name:</strong> {indent.itemName}
-</Typography>
-
-<Typography><strong>Indent Id:</strong> {indent.id}</Typography>
-<Typography><strong>Quantity:</strong> {indent.quantity}</Typography>
-<Typography><strong>PerPieceCost:</strong> {indent.perPieceCost}</Typography>
-<Typography><strong>Total Cost:</strong> {indent.totalCost}</Typography>
-<Typography><strong>Department:</strong> {indent.department}</Typography>
-<Typography><strong>Indent Status:</strong> {indent.status}</Typography>
-<Typography><strong>Description:</strong> {indent.description}</Typography>
-
-       
+      <CardContent sx={{ p: 4, pb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Box sx={{
+            bgcolor: '#1976d2',
+            color: '#fff',
+            width: 54,
+            height: 54,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 700,
+            fontSize: 26,
+            mr: 2,
+            boxShadow: '0 2px 8px #1976d222',
+          }}>
+            {indent.itemName?.[0]?.toUpperCase() || '?'}
+          </Box>
+          <Box>
+            <Typography sx={{ fontWeight: 700, fontSize: 20, color: '#0d47a1', lineHeight: 1 }}>{indent.itemName}</Typography>
+            <Typography sx={{ color: '#b0b8c1', fontWeight: 500, fontSize: 15, mt: 0.2 }}>Project: {indent.projectName}</Typography>
+          </Box>
+        </Box>
+        <Box sx={{ mb: 1.5 }}>
+          <Typography sx={{ fontSize: 15, color: '#222', mb: 0.5 }}><b>Indent Id:</b> {indent.id}</Typography>
+          <Typography sx={{ fontSize: 15, color: '#222', mb: 0.5 }}><b>Department:</b> {indent.department}</Typography>
+          <Typography sx={{ fontSize: 15, color: '#222', mb: 0.5 }}><b>Quantity:</b> {indent.quantity}</Typography>
+          <Typography sx={{ fontSize: 15, color: '#222', mb: 0.5 }}><b>Per Piece Cost:</b> {indent.perPieceCost}</Typography>
+          <Typography sx={{ fontSize: 15, color: '#222', mb: 0.5 }}><b>Total Cost:</b> {indent.totalCost}</Typography>
+          <Typography sx={{ fontSize: 15, color: '#222', mb: 0.5 }}><b>Status:</b> {indent.status}</Typography>
+          <Typography sx={{ fontSize: 15, color: '#222', mb: 0.5 }}><b>Description:</b> {indent.description}</Typography>
+        </Box>
         <TextField
-          label="Store Remark"
+          label="Store Remark *"
           fullWidth
+          required
           multiline
           rows={2}
-          sx={inputFieldSx}
+          sx={{ background: '#f6f8fa', borderRadius: 2, mb: 1, fontWeight: 500 }}
           value={remark || ""}
           onChange={(e) => onRemarkChange(indent.id, e.target.value)}
         />
-
-        <Box sx={{ mt: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ mt: 2.5, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
           <Button
             variant="contained"
             sx={{
-              backgroundColor: ACCENT_COLOR,
-              "&:hover": { backgroundColor: "#4957a0" },
+              background: remark && remark.trim() !== '' ? 'linear-gradient(90deg, #0d47a1 60%, #42a5f5 100%)' : '#b0b8c1',
+              fontWeight: 800,
+              px: 3,
+              borderRadius: 2,
+              boxShadow: '0 2px 8px #0d47a122',
+              textTransform: 'none',
+              fontSize: 16,
+              letterSpacing: 0.5,
+              minWidth: 170,
+              transition: 'all 0.18s',
+              '&:hover': remark && remark.trim() !== '' ? { background: 'linear-gradient(90deg, #1565c0 60%, #64b5f6 100%)', transform: 'translateY(-2px) scale(1.03)' } : {},
             }}
             onClick={() => onApprove(indent.id)}
+            disabled={actionLoading || !remark || remark.trim() === ''}
+            endIcon={actionLoading && approvingId === indent.id ? <CircularProgress size={20} color="inherit" /> : null}
           >
-            Approve & Forward
+            {actionLoading && approvingId === indent.id ? 'Processing...' : 'Approve & Forward'}
           </Button>
           <Button
             variant="outlined"
             color="error"
+            sx={{
+              fontWeight: 800,
+              px: 3,
+              borderRadius: 2,
+              borderWidth: 2,
+              boxShadow: '0 2px 8px #d32f2f22',
+              textTransform: 'none',
+              fontSize: 16,
+              letterSpacing: 0.5,
+              minWidth: 120,
+              transition: 'all 0.18s',
+              '&:hover': { background: '#fff0f0', transform: 'translateY(-2px) scale(1.03)' },
+            }}
             onClick={() => onRejectClick(indent.id)}
+            disabled={actionLoading}
           >
             Reject
           </Button>
@@ -451,6 +503,8 @@ const StoreView = () => {
   const [loading, setLoading] = useState(true);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedIndentId, setSelectedIndentId] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [approvingId, setApprovingId] = useState(null);
 
   const fetchIndents = useCallback(async () => {
     setLoading(true);
@@ -476,6 +530,12 @@ const StoreView = () => {
   const handleApprove = useCallback(
     async (indentId) => {
       const remark = remarks[indentId] || "";
+      if (!remark || remark.trim() === "") {
+        alert("Remark is required to approve.");
+        return;
+      }
+      setActionLoading(true);
+      setApprovingId(indentId);
       try {
         await axios.post(
           "/indent/store/approve",
@@ -491,6 +551,9 @@ const StoreView = () => {
       } catch (err) {
         console.error("Approval failed", err);
         alert("Something went wrong during approval.");
+      } finally {
+        setActionLoading(false);
+        setApprovingId(null);
       }
     },
     [remarks, fetchIndents]
@@ -562,37 +625,45 @@ const StoreView = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: GRADIENT_BG,
-        padding: 4,
-        color: TEXT_COLOR,
+        background: "linear-gradient(135deg, #f8fafc 0%, #e3eafc 100%)",
+        py: { xs: 3, md: 6 },
+        px: { xs: 1, md: 6 },
+        fontFamily: "'Roboto', sans-serif",
+        width: '100vw',
+        position: 'relative',
+        left: '50%',
+        right: '50%',
+        ml: '-50vw',
+        mr: '-50vw',
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-        <Typography variant="h4" gutterBottom sx={{ color: ACCENT_COLOR, fontWeight: "bold" }}>
-      <FontAwesomeIcon icon={faUser} />
-
-          Store Dashboard
+        <Typography variant="h4" gutterBottom sx={{ color: ACCENT_COLOR, fontWeight: "bold", letterSpacing: 1.2, textShadow: '0 2px 12px #e3eafc', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FontAwesomeIcon icon={faUser} /> Store Dashboard
         </Typography>
       </Box>
-
       {indents.length === 0 ? (
-        <Typography sx={{ mt: 4, color: SUBTEXT_COLOR, textAlign: "center" }}>
+        <Typography sx={{ mt: 4, color: SUBTEXT_COLOR, textAlign: "center", fontWeight: 600, fontSize: 22 }}>
           No pending indents for Store
         </Typography>
       ) : (
-        indents.map((indent, index) => (
-          <IndentCard
-            key={indent.id}
-            indent={indent}
-            remark={remarks[indent.id]}
-            onRemarkChange={handleRemarkChange}
-            onApprove={handleApprove}
-            onRejectClick={openRejectDialog}
-            index={index}
-          />
-        ))
+        <Grid container spacing={4} justifyContent="center">
+          {indents.map((indent, index) => (
+            <Grid item xs={12} sm={6} md={6} lg={5} xl={4} key={indent.id} display="flex" justifyContent="center">
+              <IndentCard
+                indent={indent}
+                remark={remarks[indent.id]}
+                onRemarkChange={handleRemarkChange}
+                onApprove={handleApprove}
+                onRejectClick={openRejectDialog}
+                index={index}
+                actionLoading={actionLoading}
+                approvingId={approvingId}
+              />
+            </Grid>
+          ))}
+        </Grid>
       )}
-
       <RejectDialog
         open={rejectDialogOpen}
         onClose={closeRejectDialog}

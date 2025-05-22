@@ -1,540 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import axios from "../api/api";
-// import {
-//   Container,
-//   Typography,
-//   Card,
-//   CardContent,
-//   CardHeader,
-//   TextField,
-//   Button,
-//   Grid,
-//   Divider,
-//   Box,
-//   Alert,
-//   Tabs,
-//   Tab,
-// } from "@mui/material";
-
-// const PurchasePanel = () => {
-//   const [tab, setTab] = useState(0);
-//   const [indents, setIndents] = useState([]);
-//   const [remarkMap, setRemarkMap] = useState({});
-//   const [gfrIndents, setGfrIndents] = useState([]);
-//   const [gfrNoteMap, setGfrNoteMap] = useState({});
-//   const [status, setStatus] = useState("");
-
-//   useEffect(() => {
-//     fetchPendingIndents();
-//     fetchPendingGFRIndents();
-//   }, []);
-
-//   const handleTabChange = (event, newValue) => setTab(newValue);
-
-//   const fetchPendingIndents = async () => {
-//     try {
-//       const res = await axios.get("/indent/purchase/pending");
-//       setIndents(res.data);
-//     } catch (err) {
-//       console.error("Failed to fetch purchase indents", err);
-//     }
-//   };
-
-//   const fetchPendingGFRIndents = async () => {
-//     try {
-//       const res = await axios.get("/indent/purchase/gfr/pending");
-//       setGfrIndents(res.data);
-//     } catch (err) {
-//       console.error("Failed to fetch GFR indents", err);
-//     }
-//   };
-
-//   const handleRemarkChange = (id, value) => {
-//     setRemarkMap((prev) => ({ ...prev, [id]: value }));
-//   };
-
-//   const handleComplete = async (id) => {
-//     try {
-//       await axios.post("/indent/purchase/complete", {
-//         indentId: id,
-//         remark: remarkMap[id] || "",
-//       });
-//       alert("Indent marked as COMPLETED.");
-//       fetchPendingIndents();
-//     } catch (err) {
-//       alert("Error completing indent.");
-//     }
-//   };
-
-// const handleReject = async (id) => {
-//   const confirm = window.confirm("Are you sure you want to reject this indent?");
-//   if (!confirm) return;
-
-//   try {
-//     await axios.post("/indent/purchase/reject", {
-//       indentId: id,
-//       remark: remarkMap[id] || "",
-//     });
-//     alert("Indent rejected by Purchase.");
-//     fetchPendingIndents();
-//   } catch (err) {
-//     console.error("Failed to reject indent:", err);
-//     alert("Error rejecting indent.");
-//   }
-// };
-  
-
-
-//   const handleGfrNoteChange = (id, value) => {
-//     setGfrNoteMap((prev) => ({ ...prev, [id]: value }));
-//   };
-
-//   const handleSubmitGFR = async (id) => {
-//     try {
-//       await axios.post("/indent/purchase/gfr/submit", {
-//         indentId: id,
-//         gfrNote: gfrNoteMap[id] || "",
-//       });
-//       setStatus("GFR submitted successfully.");
-//       fetchPendingGFRIndents();
-//     } catch (err) {
-//       console.error("GFR submission failed", err);
-//       setStatus("Error submitting GFR.");
-//     }
-//   };
-
-//   return (
-//     <Container maxWidth="md" sx={{ mt: 4 }}>
-//       <Typography variant="h4" gutterBottom>
-//         Purchase Panel
-//       </Typography>
-
-//       <Tabs value={tab} onChange={handleTabChange} sx={{ mb: 2 }}>
-//         <Tab label="Pending Indents" />
-//         <Tab label="GFR Submission" />
-//       </Tabs>
-
-//       {tab === 0 && (
-//         <>
-//           {indents.length === 0 ? (
-//             <Typography>No indents at Purchase stage.</Typography>
-//           ) : (
-//             indents.map((indent) => (
-//               <Card key={indent.id} sx={{ mb: 3 }}>
-//                 <CardHeader subheader={indent.itemName} />
-//                 <CardContent>
-//                   <Grid container spacing={2}>
-//                     <Grid item xs={6}>
-//                       <Typography>
-//                         <strong>Quantity:</strong> {indent.quantity}
-//                       </Typography>
-//                     </Grid>
-//                     <Grid item xs={6}>
-//                       <Typography>
-//                         <strong>Department:</strong>{" "}
-//                         {indent.requestedBy?.department || "N/A"}
-//                       </Typography>
-//                     </Grid>
-//                     <Grid item xs={12}>
-//                       <TextField
-//                         fullWidth
-//                         multiline
-//                         label="Purchase Remark"
-//                         value={remarkMap[indent.id] || ""}
-//                         onChange={(e) =>
-//                           handleRemarkChange(indent.id, e.target.value)
-//                         }
-//                       />
-//                     </Grid>
-//                     <Grid item xs={12}>
-//                       <Box display="flex" justifyContent="flex-end">
-//                         <Button
-//                           variant="contained"
-//                           color="primary"
-//                           onClick={() => handleComplete(indent.id)}
-//                         >
-//                           Mark as Completed
-//                         </Button>
-//                         <Button
-//                           variant="outlined"
-//                           color="error"
-//                           onClick={() => handleReject(indent.id)}
-//                         >
-//                           Reject
-//                         </Button>
-//                       </Box>
-//                     </Grid>
-//                   </Grid>
-//                 </CardContent>
-//               </Card>
-//             ))
-//           )}
-//         </>
-//       )}
-
-//       {tab === 1 && (
-//         <>
-//           {status && (
-//             <Alert severity="info" sx={{ mb: 2 }}>
-//               {status}
-//             </Alert>
-//           )}
-
-//           {gfrIndents.length === 0 ? (
-//             <Typography>No indents awaiting GFR submission.</Typography>
-//           ) : (
-//             gfrIndents.map((indent) => (
-//               <Card key={indent.id} sx={{ mb: 3 }}>
-//                 <CardHeader subheader={indent.itemName} />
-//                 <CardContent>
-//                   <Typography>
-//                     <strong>Quantity:</strong> {indent.quantity}
-//                   </Typography>
-//                   <Typography>
-//                     <strong>Approved By:</strong>{" "}
-//                     {indent.approvedBy?.username || "N/A"}
-//                   </Typography>
-
-//                   <TextField
-//                     fullWidth
-//                     multiline
-//                     rows={3}
-//                     label="GFR Note"
-//                     value={gfrNoteMap[indent.id] || ""}
-//                     onChange={(e) =>
-//                       handleGfrNoteChange(indent.id, e.target.value)
-//                     }
-//                     sx={{ mt: 2 }}
-//                   />
-
-//                   <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
-//                     <Button
-//                       variant="contained"
-//                       onClick={() => handleSubmitGFR(indent.id)}
-//                     >
-//                       Submit GFR
-//                     </Button>
-//                   </Box>
-//                 </CardContent>
-//               </Card>
-//             ))
-//           )}
-//         </>
-//       )}
-//     </Container>
-//   );
-// };
-
-// export default PurchasePanel;
-
-// // import React, { useEffect, useState } from "react";
-// // import axios from "../api/api";
-// // import {
-// //   Container,
-// //   Typography,
-// //   Card,
-// //   CardContent,
-// //   CardHeader,
-// //   TextField,
-// //   Button,
-// //   Grid,
-// //   Divider,
-// //   Box,
-// //   Alert,
-// // } from "@mui/material";
-
-// // const PurchasePanel = () => {
-// //   const [indents, setIndents] = useState([]);
-// //   const [remarkMap, setRemarkMap] = useState({});
-
-// //   const [gfrIndents, setGfrIndents] = useState([]);
-// //   const [gfrNoteMap, setGfrNoteMap] = useState({});
-// //   const [status, setStatus] = useState("");
-
-// //   useEffect(() => {
-// //     fetchPendingIndents();
-// //     fetchPendingGFRIndents();
-// //   }, []);
-
-// //   const fetchPendingIndents = async () => {
-// //     try {
-// //       const res = await axios.get("/indent/purchase/pending");
-// //       setIndents(res.data);
-// //     } catch (err) {
-// //       console.error("Failed to fetch purchase indents", err);
-// //     }
-// //   };
-
-// //   const fetchPendingGFRIndents = async () => {
-// //     try {
-// //       const res = await axios.get("/indent/purchase/gfr/pending");
-// //       setGfrIndents(res.data);
-// //     } catch (err) {
-// //       console.error("Failed to fetch GFR indents", err);
-// //     }
-// //   };
-
-// //   const handleRemarkChange = (id, value) => {
-// //     setRemarkMap((prev) => ({ ...prev, [id]: value }));
-// //   };
-
-// //   const handleComplete = async (id) => {
-// //     try {
-// //       await axios.post("/indent/purchase/complete", {
-// //         indentId: id,
-// //         remark: remarkMap[id] || "",
-// //       });
-// //       alert("Indent marked as COMPLETED.");
-// //       fetchPendingIndents();
-// //     } catch (err) {
-// //       alert("Error completing indent.");
-// //     }
-// //   };
-
-// //   const handleGfrNoteChange = (id, value) => {
-// //     setGfrNoteMap((prev) => ({ ...prev, [id]: value }));
-// //   };
-
-// //   const handleSubmitGFR = async (id) => {
-// //     try {
-// //       await axios.post("/indent/purchase/gfr/submit", {
-// //         indentId: id,
-// //         gfrNote: gfrNoteMap[id] || "",
-// //       });
-// //       setStatus("GFR submitted successfully.");
-// //       fetchPendingGFRIndents();
-// //     } catch (err) {
-// //       console.error("GFR submission failed", err);
-// //       setStatus("Error submitting GFR.");
-// //     }
-// //   };
-
-// //   return (
-// //     <Container maxWidth="md" sx={{ mt: 4 }}>
-// //       <Typography variant="h4" gutterBottom>
-// //         Purchase Panel – Pending Indents
-// //       </Typography>
-
-// //       {indents.length === 0 ? (
-// //         <Typography>No indents at Purchase stage.</Typography>
-// //       ) : (
-// //         indents.map((indent) => (
-// //           <Card key={indent.id} sx={{ mb: 3 }}>
-// //             <CardHeader subheader={indent.itemName} />
-// //             <CardContent>
-// //               <Grid container spacing={2}>
-// //                 <Grid item xs={6}>
-// //                   <Typography variant="body1">
-// //                     <strong>Quantity:</strong> {indent.quantity}
-// //                   </Typography>
-// //                 </Grid>
-// //                 <Grid item xs={6}>
-// //                   <Typography variant="body1">
-// //                     <strong>Department:</strong>{" "}
-// //                     {indent.requestedBy?.department || "N/A"}
-// //                   </Typography>
-// //                 </Grid>
-
-// //                 <Grid item xs={12}>
-// //                   <TextField
-// //                     fullWidth
-// //                     multiline
-// //                     label="Purchase Remark"
-// //                     value={remarkMap[indent.id] || ""}
-// //                     onChange={(e) =>
-// //                       handleRemarkChange(indent.id, e.target.value)
-// //                     }
-// //                   />
-// //                 </Grid>
-
-// //                 <Grid item xs={12}>
-// //                   <Box display="flex" justifyContent="flex-end">
-// //                     <Button
-// //                       variant="contained"
-// //                       color="primary"
-// //                       onClick={() => handleComplete(indent.id)}
-// //                     >
-// //                       Mark as Completed
-// //                     </Button>
-// //                   </Box>
-// //                 </Grid>
-// //               </Grid>
-// //             </CardContent>
-// //           </Card>
-// //         ))
-// //       )}
-
-// //       <Divider sx={{ my: 4 }} />
-
-// //       <Typography variant="h5" gutterBottom>
-// //         GFR Generation – Indents Ready
-// //       </Typography>
-
-// //       {status && (
-// //         <Alert severity="info" sx={{ mb: 2 }}>
-// //           {status}
-// //         </Alert>
-// //       )}
-
-// //       {gfrIndents.length === 0 ? (
-// //         <Typography>No indents awaiting GFR submission.</Typography>
-// //       ) : (
-// //         gfrIndents.map((indent) => (
-// //           <Card key={indent.id} sx={{ mb: 3 }}>
-// //             <CardHeader subheader={indent.itemName} />
-// //             <CardContent>
-// //               <Typography>
-// //                 <strong>Quantity:</strong> {indent.quantity}
-// //               </Typography>
-// //               <Typography>
-// //                 <strong>Approved By:</strong> {indent.approvedBy?.username || "N/A"}
-// //               </Typography>
-
-// //               <TextField
-// //                 fullWidth
-// //                 multiline
-// //                 rows={3}
-// //                 label="GFR Note"
-// //                 value={gfrNoteMap[indent.id] || ""}
-// //                 onChange={(e) => handleGfrNoteChange(indent.id, e.target.value)}
-// //                 sx={{ mt: 2 }}
-// //               />
-
-// //               <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
-// //                 <Button
-// //                   variant="contained"
-// //                   onClick={() => handleSubmitGFR(indent.id)}
-// //                 >
-// //                   Submit GFR
-// //                 </Button>
-// //               </Box>
-// //             </CardContent>
-// //           </Card>
-// //         ))
-// //       )}
-// //     </Container>
-// //   );
-// // };
-
-// // export default PurchasePanel;
-
-// // import React, { useEffect, useState } from "react";
-// // // import axios from "@/api/axios";
-// // import axios from "../api/api";
-
-// // import {
-// //   Container,
-// //   Typography,
-// //   Card,
-// //   CardContent,
-// //   CardHeader,
-// //   TextField,
-// //   Button,
-// //   Grid,
-// //   Divider,
-// //   Box,
-// // } from "@mui/material";
-
-// // const PurchasePanel = () => {
-// //   const [indents, setIndents] = useState([]);
-// //   const [remarkMap, setRemarkMap] = useState({});
-
-// //   useEffect(() => {
-// //     fetchPendingIndents();
-// //   }, []);
-
-// //   const fetchPendingIndents = async () => {
-// //     try {
-// //       const res = await axios.get("/indent/purchase/pending");
-// //       setIndents(res.data);
-// //     } catch (err) {
-// //       console.error("Failed to fetch purchase indents", err);
-// //     }
-// //   };
-
-// //   const handleRemarkChange = (id, value) => {
-// //     setRemarkMap((prev) => ({ ...prev, [id]: value }));
-// //   };
-
-// //   const handleComplete = async (id) => {
-// //     try {
-// //       await axios.post("/indent/purchase/complete", {
-// //         indentId: id,
-// //         remark: remarkMap[id] || "",
-// //       });
-// //       alert("Indent marked as COMPLETED.");
-// //       fetchPendingIndents();
-// //     } catch (err) {
-// //       alert("Error completing indent.");
-// //     }
-// //   };
-
-// //   return (
-// //     <Container maxWidth="md" sx={{ mt: 4 }}>
-// //       <Typography variant="h4" gutterBottom>
-// //         Purchase Panel – Pending Indents
-// //       </Typography>
-
-// //       {indents.length === 0 ? (
-// //         <Typography>No indents at Purchase stage.</Typography>
-// //       ) : (
-// //         indents.map((indent) => (
-// //           <Card key={indent.id} sx={{ mb: 3 }}>
-// //             <CardHeader
-// //             //   title={`Indent #${indent.id}`}
-// //               subheader={indent.itemName}
-// //             />
-// //             <CardContent>
-// //               <Grid container spacing={2}>
-// //                 <Grid item xs={6}>
-// //                   <Typography variant="body1">
-// //                     <strong>Quantity:</strong> {indent.quantity}
-// //                   </Typography>
-// //                 </Grid>
-// //                 <Grid item xs={6}>
-// //                   <Typography variant="body1">
-// //                     <strong>Department:</strong>{" "}
-// //                     {indent.requestedBy?.department || "N/A"}
-// //                   </Typography>
-// //                 </Grid>
-
-// //                 <Grid item xs={12}>
-// //                   <TextField
-// //                     fullWidth
-// //                     multiline
-// //                     label="Purchase Remark"
-// //                     value={remarkMap[indent.id] || ""}
-// //                     onChange={(e) =>
-// //                       handleRemarkChange(indent.id, e.target.value)
-// //                     }
-// //                   />
-// //                 </Grid>
-
-// //                 <Grid item xs={12}>
-// //                   <Box display="flex" justifyContent="flex-end">
-// //                     <Button
-// //                       variant="contained"
-// //                       color="primary"
-// //                       onClick={() => handleComplete(indent.id)}
-// //                     >
-// //                       Mark as Completed
-// //                     </Button>
-// //                   </Box>
-// //                 </Grid>
-// //               </Grid>
-// //             </CardContent>
-// //           </Card>
-// //         ))
-// //       )}
-// //     </Container>
-// //   );
-// // };
-
-// // export default PurchasePanel;
-
-
-
-
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -557,6 +20,7 @@ import {
   Grow,
   Fade,
   CircularProgress,
+  Snackbar,
 } from "@mui/material";
 
 // Design Tokens
@@ -575,6 +39,10 @@ const PurchasePanel = () => {
   const [status, setStatus] = useState("");
   const [loadingIndents, setLoadingIndents] = useState(false);
   const [loadingGfr, setLoadingGfr] = useState(false);
+  const [completeLoading, setCompleteLoading] = useState({});
+  const [rejectLoading, setRejectLoading] = useState({});
+  const [gfrLoading, setGfrLoading] = useState({});
+  const [actionSnackbar, setActionSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   const fetchPendingIndents = useCallback(async () => {
     try {
@@ -612,6 +80,8 @@ const PurchasePanel = () => {
   };
 
   const handleComplete = async (id) => {
+    setCompleteLoading((prev) => ({ ...prev, [id]: true }));
+    setActionSnackbar({ open: true, message: 'Processing completion...', severity: 'info' });
     try {
       await axios.post("/indent/purchase/complete", {
         indentId: id,
@@ -624,16 +94,19 @@ const PurchasePanel = () => {
         delete copy[id];
         return copy;
       });
-      // Clear status after 4 seconds
       setTimeout(() => setStatus(""), 4000);
     } catch {
       alert("Error completing indent.");
+    } finally {
+      setCompleteLoading((prev) => ({ ...prev, [id]: false }));
+      setActionSnackbar({ open: false, message: '', severity: 'info' });
     }
   };
 
   const handleReject = async (id) => {
     if (!window.confirm("Are you sure you want to reject this indent?")) return;
-
+    setRejectLoading((prev) => ({ ...prev, [id]: true }));
+    setActionSnackbar({ open: true, message: 'Processing rejection...', severity: 'info' });
     try {
       await axios.post("/indent/purchase/reject", {
         indentId: id,
@@ -650,6 +123,9 @@ const PurchasePanel = () => {
     } catch (err) {
       console.error("Failed to reject indent:", err);
       alert("Error rejecting indent.");
+    } finally {
+      setRejectLoading((prev) => ({ ...prev, [id]: false }));
+      setActionSnackbar({ open: false, message: '', severity: 'info' });
     }
   };
 
@@ -658,6 +134,8 @@ const PurchasePanel = () => {
   };
 
   const handleSubmitGFR = async (id) => {
+    setGfrLoading((prev) => ({ ...prev, [id]: true }));
+    setActionSnackbar({ open: true, message: 'Submitting GFR...', severity: 'info' });
     try {
       await axios.post("/indent/purchase/gfr/submit", {
         indentId: id,
@@ -675,6 +153,9 @@ const PurchasePanel = () => {
       console.error("GFR submission failed", err);
       setStatus("Error submitting GFR.");
       setTimeout(() => setStatus(""), 4000);
+    } finally {
+      setGfrLoading((prev) => ({ ...prev, [id]: false }));
+      setActionSnackbar({ open: false, message: '', severity: 'info' });
     }
   };
 
@@ -735,46 +216,42 @@ const PurchasePanel = () => {
           ) : (
             indents.map((indent) => (
               <Grow key={indent.id} in timeout={600}>
-                <Card sx={{ mb: 3, backgroundColor: CARD_BG, boxShadow: 3 }}>
-                  <CardContent sx={{ color: TEXT_COLOR }}>
-                 
-
-<Typography variant="body1" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-  <strong>Project Name:</strong> {indent.projectName}
-</Typography>
-
-<Typography variant="body1" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-  <strong>Item Name:</strong> {indent.itemName}
-</Typography>
-
- <Typography variant="body1" gutterBottom>
-  <strong>Indent Id:</strong> {indent.id}
-</Typography>
-
-<Typography variant="body1" gutterBottom>
-  <strong>Department:</strong> {indent.requestedBy?.department || "N/A"}
-</Typography>
-
-<Typography variant="body1" gutterBottom>
-  <strong>Quantity:</strong> {indent.quantity}
-</Typography>
-
-<Typography variant="body1" gutterBottom>
-  <strong>PerPieceCost:</strong> {indent.perPieceCost}
-</Typography>
-
-<Typography variant="body1" gutterBottom>
-  <strong>Total Cost:</strong> {indent.totalCost}
-</Typography>
-
-<Typography variant="body1" gutterBottom>
-  <strong>Indent Status:</strong> {indent.status}
-</Typography>
-
-<Typography variant="body1" gutterBottom>
-  <strong>Description:</strong> {indent.description}
-</Typography>
-
+                <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #f8fafc 0%, #e3e9f7 100%)', boxShadow: 6, borderRadius: 3, border: '1px solid #e3e9f7' }}>
+                  <CardContent sx={{ color: TEXT_COLOR, p: 3 }}>
+                    <Box display="flex" alignItems="center" mb={2}>
+                      <Box sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        background: ACCENT_COLOR,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: 2,
+                        mr: 2,
+                      }}>
+                        <FontAwesomeIcon icon={faUser} style={{ color: '#fff', fontSize: 24 }} />
+                      </Box>
+                      <Box>
+                        <Typography sx={{ color: ACCENT_COLOR, fontWeight: 700, fontSize: 20 }}>
+                          {indent.projectName}
+                        </Typography>
+                        <Typography sx={{ color: SUBTEXT_COLOR, fontSize: 15 }}>
+                          {indent.itemName}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box display="flex" flexWrap="wrap" gap={2} mb={2}>
+                      <Typography variant="body2"><strong>Indent Id:</strong> {indent.id}</Typography>
+                      <Typography variant="body2"><strong>Department:</strong> {indent.requestedBy?.department || "N/A"}</Typography>
+                      <Typography variant="body2"><strong>Quantity:</strong> {indent.quantity}</Typography>
+                      <Typography variant="body2"><strong>Per Piece:</strong> ₹{indent.perPieceCost}</Typography>
+                      <Typography variant="body2"><strong>Total:</strong> ₹{indent.totalCost}</Typography>
+                      <Typography variant="body2"><strong>Status:</strong> {indent.status}</Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ color: SUBTEXT_COLOR, mb: 2 }}>
+                      <strong>Description:</strong> {indent.description}
+                    </Typography>
                     <TextField
                       fullWidth
                       multiline
@@ -783,20 +260,36 @@ const PurchasePanel = () => {
                       onChange={(e) => handleRemarkChange(indent.id, e.target.value)}
                       sx={{
                         mt: 2,
-                        "& .MuiInputBase-root": { color: TEXT_COLOR },
+                        bgcolor: '#f7fafd',
+                        borderRadius: 1,
+                        '& .MuiInputBase-root': { color: TEXT_COLOR },
                       }}
                     />
-
                     <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
                       <Button
                         variant="contained"
                         onClick={() => handleComplete(indent.id)}
-                        sx={{ backgroundColor: ACCENT_COLOR }}
+                        sx={{ backgroundColor: ACCENT_COLOR, minWidth: 140, position: 'relative' }}
+                        disabled={completeLoading[indent.id] || rejectLoading[indent.id]}
                       >
-                        Mark as Completed
+                        {completeLoading[indent.id] ? (
+                          <CircularProgress size={22} sx={{ color: '#fff', position: 'absolute', left: '50%', top: '50%', marginTop: '-11px', marginLeft: '-11px' }} />
+                        ) : (
+                          'Mark as Completed'
+                        )}
                       </Button>
-                      <Button variant="outlined" color="error" onClick={() => handleReject(indent.id)}>
-                        Reject
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleReject(indent.id)}
+                        sx={{ minWidth: 100, position: 'relative' }}
+                        disabled={completeLoading[indent.id] || rejectLoading[indent.id]}
+                      >
+                        {rejectLoading[indent.id] ? (
+                          <CircularProgress size={22} sx={{ color: ACCENT_COLOR, position: 'absolute', left: '50%', top: '50%', marginTop: '-11px', marginLeft: '-11px' }} />
+                        ) : (
+                          'Reject'
+                        )}
                       </Button>
                     </Box>
                   </CardContent>
@@ -856,9 +349,14 @@ const PurchasePanel = () => {
                       <Button
                         variant="contained"
                         onClick={() => handleSubmitGFR(indent.id)}
-                        sx={{ backgroundColor: ACCENT_COLOR }}
+                        sx={{ backgroundColor: ACCENT_COLOR, minWidth: 140, position: 'relative' }}
+                        disabled={gfrLoading[indent.id]}
                       >
-                        Submit GFR
+                        {gfrLoading[indent.id] ? (
+                          <CircularProgress size={22} sx={{ color: '#fff', position: 'absolute', left: '50%', top: '50%', marginTop: '-11px', marginLeft: '-11px' }} />
+                        ) : (
+                          'Submit GFR'
+                        )}
                       </Button>
                     </Box>
                   </CardContent>
@@ -868,6 +366,17 @@ const PurchasePanel = () => {
           )}
         </>
       )}
+
+      <Snackbar
+        open={actionSnackbar.open}
+        autoHideDuration={null}
+        onClose={() => setActionSnackbar({ ...actionSnackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={actionSnackbar.severity} sx={{ width: '100%' }}>
+          {actionSnackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

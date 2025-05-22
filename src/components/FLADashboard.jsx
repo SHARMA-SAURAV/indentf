@@ -1,8 +1,3 @@
-
-
-
-
-
 // import React, { useEffect, useState } from "react";
 // import {
 //   Card,
@@ -321,223 +316,246 @@ const FLADashboard = () => {
         minHeight: "100vh",
         p: isMobile ? 2 : 6,
         fontFamily: "'Roboto', sans-serif",
+        width: '100vw',
+        position: 'relative',
+        left: '50%',
+        right: '50%',
+        ml: '-50vw',
+        mr: '-50vw',
       }}
     >
       <Typography
-  variant={isMobile ? "h5" : "h4"}
-  sx={{
-    mb: 5,
-    color: COLORS.accent,
-    fontWeight: 700,
-    textAlign: "center",
-    letterSpacing: 1.2,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 1,
-  }}
->
-  <FontAwesomeIcon icon={faUser} />
-  FLA Dashboard
-</Typography>
-
+        variant={isMobile ? "h5" : "h4"}
+        sx={{
+          mb: 5,
+          color: COLORS.accent,
+          fontWeight: 700,
+          textAlign: "center",
+          letterSpacing: 1.2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
+          textShadow: '0 2px 12px #e3eafc',
+        }}
+      >
+        <FontAwesomeIcon icon={faUser} /> FLA Dashboard
+      </Typography>
 
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-          <CircularProgress color="primary" />
+          <CircularProgress color="primary" size={48} thickness={5} />
         </Box>
       )}
 
       {!loading && indents.length === 0 && (
         <Typography
           variant="body1"
-          sx={{ color: COLORS.textSecondary, textAlign: "center", mt: 8 }}
+          sx={{ color: COLORS.textSecondary, textAlign: "center", mt: 8, fontSize: 20, fontWeight: 500 }}
         >
           No pending indents.
         </Typography>
       )}
 
-      {indents.map((indent) => {
-        const remark = remarks[indent.id]?.trim();
-        const sla = selectedSla[indent.id];
-
-        return (
-          <Card
-            key={indent.id}
-            elevation={6}
-            sx={{
-              maxWidth: 720,
-              mx: "auto",
-              mb: 5,
-              backgroundColor: COLORS.cardBg,
-              borderRadius: 3,
-              boxShadow: `0 3px 10px rgba(26, 35, 126, 0.2)`,
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              "&:hover": {
-                transform: "scale(1.02)",
-                boxShadow: `0 10px 30px rgba(26, 35, 126, 0.4)`,
-              },
-            }}
-            tabIndex={0}
-            role="region"
-            aria-labelledby={`indent-title-${indent.id}`}
-          >
-            <CardContent>
-  <Stack direction="row" spacing={4} flexWrap="wrap" mb={2}></Stack>
-
-  
-
-  <Typography variant="subtitle1" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-  <strong>Project Name:</strong> {indent.projectName}
-</Typography>
-
-  <Typography variant="subtitle1" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-  <strong>Item Name:</strong> {indent.itemName}
-</Typography>
-
-
-
-<Typography variant="body2" sx={{ color: COLORS.textPrimary, fontWeight: 400 }}>
-    <strong>Indent Id:</strong> {indent.id}
-  </Typography>
-  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
-  <strong>Department:</strong> {indent.department}
-</Typography>
-  
-
-<Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
-  <strong>Quantity:</strong> {indent.quantity}
-</Typography>
-
-<Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
-  <strong>Per Piece Cost:</strong> {indent.perPieceCost}
-</Typography>
-
-<Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
-  <strong>Total Cost:</strong> {indent.perPieceCost * indent.quantity}
-</Typography>
-
-<Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
-  <strong>Indent Status:</strong> {indent.status}
-</Typography>
-
-<Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
-  <strong>Description:</strong> {indent.description}
-</Typography>
-
-
-
-              <TextField
-                label="Remark"
-                fullWidth
-                margin="normal"
-                size="small"
-                multiline
-                minRows={2}
-                value={remarks[indent.id] || ""}
-                onChange={(e) =>
-                  setRemarks({ ...remarks, [indent.id]: e.target.value })
-                }
-                required
-              />
-
-              <TextField
-                select
-                label="Select SLA"
-                fullWidth
-                margin="normal"
-                size="small"
-                value={selectedSla[indent.id] || ""}
-                onChange={(e) =>
-                  setSelectedSla({ ...selectedSla, [indent.id]: e.target.value })
-                }
-                displayEmpty
-                required
-              >
-                <MenuItem disabled value="">
-                  -- Select SLA --
-                </MenuItem>
-                {slaList.map((sla) => (
-                  <MenuItem key={sla.id} value={sla.id}>
-                    {sla.username}
+      <Stack direction="row" flexWrap="wrap" justifyContent="center" gap={4}>
+        {indents.map((indent) => {
+          const remark = remarks[indent.id]?.trim();
+          const sla = selectedSla[indent.id];
+          return (
+            <Card
+              key={indent.id}
+              elevation={6}
+              sx={{
+                width: 480,
+                minWidth: 320,
+                mb: 5,
+                backgroundColor: COLORS.cardBg,
+                borderRadius: 4,
+                boxShadow: '0 3px 18px rgba(26, 35, 126, 0.13)',
+                transition: "transform 0.3s, box-shadow 0.3s",
+                '&:hover': {
+                  transform: 'translateY(-4px) scale(1.025)',
+                  boxShadow: '0 10px 32px rgba(26, 35, 126, 0.18)'
+                },
+                border: '1.5px solid #e3eafc',
+                mx: 'auto',
+              }}
+              tabIndex={0}
+              role="region"
+              aria-labelledby={`indent-title-${indent.id}`}
+            >
+              <CardContent>
+                <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+                  <Box sx={{
+                    bgcolor: COLORS.accent,
+                    color: 'white',
+                    width: 44,
+                    height: 44,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: 22,
+                    boxShadow: '0 2px 8px #0d47a133',
+                  }}>
+                    {indent.itemName?.[0]?.toUpperCase() || '?'}
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ color: COLORS.accent, fontWeight: 700 }}>
+                      {indent.itemName}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontWeight: 500 }}>
+                      Project: {indent.projectName}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Stack spacing={0.5} mb={2}>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                    <strong>Indent Id:</strong> {indent.id}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                    <strong>Department:</strong> {indent.department}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                    <strong>Quantity:</strong> {indent.quantity}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                    <strong>Per Piece Cost:</strong> {indent.perPieceCost}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                    <strong>Total Cost:</strong> {indent.perPieceCost * indent.quantity}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                    <strong>Status:</strong> {indent.status}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                    <strong>Description:</strong> {indent.description}
+                  </Typography>
+                </Stack>
+                <TextField
+                  label="Remark"
+                  fullWidth
+                  margin="normal"
+                  size="small"
+                  multiline
+                  rows={3}
+                  value={remarks[indent.id] || ""}
+                  onChange={(e) => setRemarks({ ...remarks, [indent.id]: e.target.value })}
+                  required
+                  sx={{ background: '#f6f8fa', borderRadius: 2, mb: 1 }}
+                />
+                <TextField
+                  select
+                  label="Select SLA"
+                  fullWidth
+                  margin="normal"
+                  size="small"
+                  value={selectedSla[indent.id] || ""}
+                  onChange={(e) => setSelectedSla({ ...selectedSla, [indent.id]: e.target.value })}
+                  displayEmpty
+                  required
+                  sx={{ background: '#f6f8fa', borderRadius: 2 }}
+                >
+                  <MenuItem disabled value="">
+                    -- Select SLA --
                   </MenuItem>
-                ))}
-              </TextField>
-
-              <Stack
-                direction={isMobile ? "column" : "row"}
-                spacing={2}
-                sx={{ mt: 3 }}
-                justifyContent="flex-end"
-              >
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: COLORS.accent,
-                    "&:hover": { backgroundColor: "#3F51B5" },
-                  }}
-                  disabled={!sla || !remark || loading}
-                  onClick={() => openDialog("approve", indent.id)}
+                  {slaList.map((sla) => (
+                    <MenuItem key={sla.id} value={sla.id} sx={{ fontWeight: 600 }}>
+                      {sla.username}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Stack
+                  direction={isMobile ? "column" : "row"}
+                  spacing={2}
+                  sx={{ mt: 3 }}
+                  justifyContent="flex-end"
                 >
-                  Approve & Forward
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  disabled={!remark || loading}
-                  onClick={() => openDialog("reject", indent.id)}
-                >
-                  Reject
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
-        );
-      })}
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: COLORS.accent,
+                      fontWeight: 700,
+                      px: 3,
+                      borderRadius: 2,
+                      boxShadow: '0 2px 8px #0d47a122',
+                      '&:hover': { backgroundColor: '#3F51B5' },
+                    }}
+                    disabled={!sla || !remark || loading}
+                    onClick={() => openDialog("approve", indent.id)}
+                  >
+                    Approve & Forward
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    sx={{
+                      fontWeight: 700,
+                      px: 3,
+                      borderRadius: 2,
+                      borderWidth: 2,
+                      boxShadow: '0 2px 8px #d32f2f22',
+                    }}
+                    disabled={!remark || loading}
+                    onClick={() => openDialog("reject", indent.id)}
+                  >
+                    Reject
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Stack>
 
-      <Dialog open={dialog.open} onClose={closeDialog}>
-        <DialogTitle>
-          {dialog.type === "approve" ? "Confirm Approve" : "Confirm Reject"}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={closeSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={closeSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      <Dialog
+        open={dialog.open}
+        onClose={closeDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle id="alert-dialog-title">
+          {dialog.type === "approve" ? "Approve Indent" : "Reject Indent"}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText id="alert-dialog-description">
             {dialog.type === "approve"
               ? "Are you sure you want to approve and forward this indent?"
               : "Are you sure you want to reject this indent?"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDialog} color="inherit">
+          <Button onClick={closeDialog} color="primary">
             Cancel
           </Button>
           <Button
-            onClick={() =>
+            onClick={() => {
               dialog.type === "approve"
                 ? handleApprove(dialog.indentId)
-                : handleReject(dialog.indentId)
-            }
-            color={dialog.type === "approve" ? "primary" : "error"}
-            variant="contained"
+                : handleReject(dialog.indentId);
+            }}
+            color="primary"
+            autoFocus
+            disabled={loading}
           >
-            Confirm
+            {loading ? <CircularProgress size={24} /> : dialog.type === "approve" ? "Approve" : "Reject"}
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={closeSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={closeSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
