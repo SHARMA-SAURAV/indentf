@@ -11,6 +11,9 @@ import Navbar from "./pages/Navbar";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import "./App.css";
+import ProfilePage from "./pages/ProfilePage";
+// import AdminPanel from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 // import TrackIndent from "./components/TrackIndent";
 // import TrackIndentStepper from "./components/TrackIndentStepper";
 // import FinancePanel from "./components/FinancePanel";
@@ -104,12 +107,15 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
           {/* <Route path="/dashboard" element={<Dashboard />} /> */}
           <Route path="/user/indent" element={<UserIndentRequest />} />
           <Route path="/dashboard/sla" element={<SLAView />} />
           <Route path="/dashboard/store" element={<StoreView />} />
           <Route path="/finance" element={<FinanceView />} />
           <Route path="/purchase" element={<PurchasePanel />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+
         </Routes>
         </div>
       </BrowserRouter>

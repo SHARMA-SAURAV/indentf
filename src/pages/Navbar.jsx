@@ -1,60 +1,3 @@
-// import React from 'react';
-// import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-// import { Link, useNavigate } from 'react-router-dom';
-
-// const Navbar = () => {
-//   const navigate = useNavigate();
-//   const user = JSON.parse(localStorage.getItem('user'));
-//   const currentRole = localStorage.getItem('currentRole');
-
-//   const handleLogout = () => {
-//     localStorage.clear();
-//     navigate('/login');
-//   };
-
-//   return (
-//     <AppBar position="static" sx={{ backgroundColor: '#1565c0' }}>
-//       <Toolbar>
-//         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-//           Indent Management System
-//         </Typography>
-
-//         {/* If logged in, show user info and logout */}
-//         {user ? (
-//           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-//             <Typography variant="body1">
-//               {user.name} ({currentRole})
-//             </Typography>
-//             <Button component={Link} to="/dashboard" color="inherit">Dashboard</Button>
-//             <Button onClick={handleLogout} color="inherit">Logout</Button>
-//           </Box>
-//         ) : (
-//           // If not logged in, just show login button
-//           <Button component={Link} to="/login" color="inherit">Login</Button>
-//         )}
-//       </Toolbar>
-//     </AppBar>
-//   );
-// };
-
-// export default Navbar;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box, Avatar, Menu, MenuItem, IconButton, Divider } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -62,7 +5,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-
 const Navbar = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
@@ -211,7 +153,7 @@ const Navbar = () => {
           // If not logged in, just show login button
           <Button 
             component={Link} 
-            to="/login" 
+            to="/" 
             variant="contained"
             sx={{ 
               borderRadius: 2,
