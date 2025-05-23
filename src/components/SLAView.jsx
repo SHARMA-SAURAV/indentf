@@ -327,8 +327,8 @@ const IndentCard = React.memo(({ indent, remark, onRemarkChange, onApprove, onRe
           {indent.itemName?.[0]?.toUpperCase() || '?'}
         </Box>
         <Box>
-          <Typography sx={{ fontWeight: 700, fontSize: 20, color: '#0d47a1', lineHeight: 1 }}>Item Name: {indent.itemName}</Typography>
-          <Typography sx={{ color: 'Black', fontWeight: 500, fontSize: 15, mt: 0.2 }}>Project:Project Name: {indent.projectName}</Typography>
+          <Typography sx={{ fontWeight: 700, fontSize: 20, color: '#0d47a1', lineHeight: 1 }}>Project Name: {indent.projectName}</Typography>
+          <Typography sx={{ color: 'Black', fontWeight: 500, fontSize: 15, mt: 0.2 }}>Project:Item Name: {indent.itemName}</Typography>
         </Box>
       </Box>
       <Box sx={{ mb: 1.5 }}>

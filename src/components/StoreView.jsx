@@ -367,8 +367,8 @@ const IndentCard = ({
             {indent.itemName?.[0]?.toUpperCase() || '?'}
           </Box>
           <Box>
-            <Typography sx={{ fontWeight: 700, fontSize: 20, color: '#0d47a1', lineHeight: 1 }}>{indent.itemName}</Typography>
-            <Typography sx={{ color: '#b0b8c1', fontWeight: 500, fontSize: 15, mt: 0.2 }}>Project: {indent.projectName}</Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: 20, color: '#0d47a1', lineHeight: 1 }}> Project Name: {indent.projectName}</Typography>
+            <Typography sx={{ color: '#black', fontWeight: 700, fontSize: 15, mt: 0.2 }}>Item Name: {indent.itemName}</Typography>
           </Box>
         </Box>
         <Box sx={{ mb: 1.5 }}>

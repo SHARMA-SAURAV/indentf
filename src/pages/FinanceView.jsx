@@ -267,18 +267,18 @@ const FinanceView = () => {
                         </Box>
                         <Box>
                           <Typography sx={{ color: ACCENT_COLOR, fontWeight: 700, fontSize: 18 }}>
-                            {indent.projectName}
+                            Project Name: {indent.projectName}
                           </Typography>
-                          <Typography sx={{ color: SUBTEXT_COLOR, fontSize: 14 }}>
-                            {indent.department}
+                          <Typography sx={{ color: "black", fontSize: 14, fontWeight: 600 }}>
+                            Department: {indent.department}
                           </Typography>
                         </Box>
                       </Box>
                       <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 0.5 }}>
-                        {indent.itemName}
+                        Item Name: {indent.itemName}
                       </Typography>
-                      <Typography sx={{ color: SUBTEXT_COLOR, fontSize: 13, mb: 1 }}>
-                        {indent.description}
+                      <Typography sx={{ color: "black", fontSize: 13, mb: 1, fontWeight: 500 }}>
+                        Description: {indent.description}
                       </Typography>
                       <Grid container spacing={1}>
                         <Grid item xs={6}>
@@ -393,18 +393,19 @@ const FinanceView = () => {
                         </Box>
                         <Box>
                           <Typography sx={{ color: ACCENT_COLOR, fontWeight: 700, fontSize: 18 }}>
-                            {indent.projectName}
+                            Project Name: {indent.projectName}
                           </Typography>
                           <Typography sx={{ color: SUBTEXT_COLOR, fontSize: 14 }}>
-                            {indent.department}
+                            Department: {indent.department}
                           </Typography>
                         </Box>
                       </Box>
+                      
                       <Typography sx={{ fontWeight: 600, fontSize: 16, mb: 0.5 }}>
-                        {indent.itemName}
+                        Item name: {indent.itemName}
                       </Typography>
-                      <Typography sx={{ color: SUBTEXT_COLOR, fontSize: 13, mb: 1 }}>
-                        {indent.description}
+                      <Typography sx={{ color: "black", fontSize: 13, mb: 1 }}>
+                       Description:  {indent.description}
                       </Typography>
                       <Grid container spacing={1}>
                         <Grid item xs={6}>
@@ -427,12 +428,12 @@ const FinanceView = () => {
                           </Typography>
                         </Grid>
                       </Grid>
-                      <Typography sx={{ color: SUBTEXT_COLOR, mt: 1, fontSize: 13 }}>
+                      {/* <Typography sx={{ color: SUBTEXT_COLOR, mt: 1, fontSize: 13 }}>
                         <strong>GFR Note:</strong> {indent.paymentNote}
                       </Typography>
                       <Typography sx={{ color: SUBTEXT_COLOR, fontSize: 13 }}>
                         <strong>Requested Amount:</strong> ₹{indent.amountRequested}
-                      </Typography>
+                      </Typography> */}
                     </CardContent>
                     <Box sx={{ mt: 2, px: 2, pb: 1 }}>
                       <Grid container spacing={1} alignItems="center">

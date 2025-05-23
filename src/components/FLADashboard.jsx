@@ -403,18 +403,18 @@ const FLADashboard = () => {
                   </Box>
                   <Box>
                     <Typography variant="subtitle1" sx={{ color: COLORS.accent, fontWeight: 700 }}>
-                      {indent.itemName}
+                     Project Name: {indent.projectName}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: COLORS.textSecondary, fontWeight: 500 }}>
-                      Project: {indent.projectName}
+                    <Typography variant="body2" sx={{ color: "black", fontWeight: 700 }}>
+                      Item Name: {indent.itemName}
                     </Typography>
                   </Box>
                 </Stack>
                 <Stack spacing={0.5} mb={2}>
-                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }} >
                     <strong>Indent Id:</strong> {indent.id}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>
+                  <Typography variant="body2" sx={{ color: COLORS.textPrimary  }}>
                     <strong>Department:</strong> {indent.department}
                   </Typography>
                   <Typography variant="body2" sx={{ color: COLORS.textPrimary }}>

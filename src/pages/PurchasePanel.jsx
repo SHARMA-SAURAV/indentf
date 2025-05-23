@@ -3,8 +3,6 @@ import axios from "../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 
-
-
 import {
   Container,
   Typography,
@@ -18,6 +16,7 @@ import {
   Tabs,
   Tab,
   Grow,
+  Grid,
   Fade,
   CircularProgress,
   Snackbar,
@@ -42,7 +41,11 @@ const PurchasePanel = () => {
   const [completeLoading, setCompleteLoading] = useState({});
   const [rejectLoading, setRejectLoading] = useState({});
   const [gfrLoading, setGfrLoading] = useState({});
-  const [actionSnackbar, setActionSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const [actionSnackbar, setActionSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const fetchPendingIndents = useCallback(async () => {
     try {
@@ -81,7 +84,11 @@ const PurchasePanel = () => {
 
   const handleComplete = async (id) => {
     setCompleteLoading((prev) => ({ ...prev, [id]: true }));
-    setActionSnackbar({ open: true, message: 'Processing completion...', severity: 'info' });
+    setActionSnackbar({
+      open: true,
+      message: "Processing completion...",
+      severity: "info",
+    });
     try {
       await axios.post("/indent/purchase/complete", {
         indentId: id,
@@ -99,14 +106,18 @@ const PurchasePanel = () => {
       alert("Error completing indent.");
     } finally {
       setCompleteLoading((prev) => ({ ...prev, [id]: false }));
-      setActionSnackbar({ open: false, message: '', severity: 'info' });
+      setActionSnackbar({ open: false, message: "", severity: "info" });
     }
   };
 
   const handleReject = async (id) => {
     if (!window.confirm("Are you sure you want to reject this indent?")) return;
     setRejectLoading((prev) => ({ ...prev, [id]: true }));
-    setActionSnackbar({ open: true, message: 'Processing rejection...', severity: 'info' });
+    setActionSnackbar({
+      open: true,
+      message: "Processing rejection...",
+      severity: "info",
+    });
     try {
       await axios.post("/indent/purchase/reject", {
         indentId: id,
@@ -125,7 +136,7 @@ const PurchasePanel = () => {
       alert("Error rejecting indent.");
     } finally {
       setRejectLoading((prev) => ({ ...prev, [id]: false }));
-      setActionSnackbar({ open: false, message: '', severity: 'info' });
+      setActionSnackbar({ open: false, message: "", severity: "info" });
     }
   };
 
@@ -135,7 +146,11 @@ const PurchasePanel = () => {
 
   const handleSubmitGFR = async (id) => {
     setGfrLoading((prev) => ({ ...prev, [id]: true }));
-    setActionSnackbar({ open: true, message: 'Submitting GFR...', severity: 'info' });
+    setActionSnackbar({
+      open: true,
+      message: "Submitting GFR...",
+      severity: "info",
+    });
     try {
       await axios.post("/indent/purchase/gfr/submit", {
         indentId: id,
@@ -155,7 +170,7 @@ const PurchasePanel = () => {
       setTimeout(() => setStatus(""), 4000);
     } finally {
       setGfrLoading((prev) => ({ ...prev, [id]: false }));
-      setActionSnackbar({ open: false, message: '', severity: 'info' });
+      setActionSnackbar({ open: false, message: "", severity: "info" });
     }
   };
 
@@ -178,15 +193,19 @@ const PurchasePanel = () => {
           fontWeight: "bold",
         }}
       >
-      
-      <FontAwesomeIcon icon={faUser} />
+        <FontAwesomeIcon icon={faUser} />
         Purchase Dashboard
       </Typography>
 
       <Tabs
         value={tab}
         onChange={handleTabChange}
-        sx={{ mb: 2, color: ACCENT_COLOR, borderBottom: 1, borderColor: "divider" }}
+        sx={{
+          mb: 2,
+          color: ACCENT_COLOR,
+          borderBottom: 1,
+          borderColor: "divider",
+        }}
         textColor="inherit"
         indicatorColor="primary"
       >
@@ -216,40 +235,76 @@ const PurchasePanel = () => {
           ) : (
             indents.map((indent) => (
               <Grow key={indent.id} in timeout={600}>
-                <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #f8fafc 0%, #e3e9f7 100%)', boxShadow: 6, borderRadius: 3, border: '1px solid #e3e9f7' }}>
+                <Card
+                  sx={{
+                    mb: 3,
+                    background:
+                      "linear-gradient(135deg, #f8fafc 0%, #e3e9f7 100%)",
+                    boxShadow: 6,
+                    borderRadius: 3,
+                    border: "1px solid #e3e9f7",
+                  }}
+                >
                   <CardContent sx={{ color: TEXT_COLOR, p: 3 }}>
                     <Box display="flex" alignItems="center" mb={2}>
-                      <Box sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '50%',
-                        background: ACCENT_COLOR,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: 2,
-                        mr: 2,
-                      }}>
-                        <FontAwesomeIcon icon={faUser} style={{ color: '#fff', fontSize: 24 }} />
+                      <Box
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          background: ACCENT_COLOR,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: 2,
+                          mr: 2,
+                        }}
+                      >
+                        <FontAwesomeIcon
+                          icon={faUser}
+                          style={{ color: "#fff", fontSize: 24 }}
+                        />
                       </Box>
                       <Box>
-                        <Typography sx={{ color: ACCENT_COLOR, fontWeight: 700, fontSize: 20 }}>
-                          {indent.projectName}
+                        <Typography
+                          sx={{
+                            color: ACCENT_COLOR,
+                            fontWeight: 700,
+                            fontSize: 20,
+                          }}
+                        >
+                          Project Name: {indent.projectName}
                         </Typography>
                         <Typography sx={{ color: SUBTEXT_COLOR, fontSize: 15 }}>
-                          {indent.itemName}
+                          Item Name: {indent.itemName}
                         </Typography>
                       </Box>
                     </Box>
                     <Box display="flex" flexWrap="wrap" gap={2} mb={2}>
-                      <Typography variant="body2"><strong>Indent Id:</strong> {indent.id}</Typography>
-                      <Typography variant="body2"><strong>Department:</strong> {indent.requestedBy?.department || "N/A"}</Typography>
-                      <Typography variant="body2"><strong>Quantity:</strong> {indent.quantity}</Typography>
-                      <Typography variant="body2"><strong>Per Piece:</strong> ₹{indent.perPieceCost}</Typography>
-                      <Typography variant="body2"><strong>Total:</strong> ₹{indent.totalCost}</Typography>
-                      <Typography variant="body2"><strong>Status:</strong> {indent.status}</Typography>
+                      <Typography variant="body2">
+                        <strong>Indent Id:</strong> {indent.id}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Department:</strong>{" "}
+                        {indent.requestedBy?.department || "N/A"}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Quantity:</strong> {indent.quantity}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Per Piece:</strong> ₹{indent.perPieceCost}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Total:</strong> ₹{indent.totalCost}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Status:</strong> {indent.status}
+                      </Typography>
                     </Box>
-                    <Typography variant="body2" sx={{ color: SUBTEXT_COLOR, mb: 2 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: SUBTEXT_COLOR, mb: 2 }}
+                    >
                       <strong>Description:</strong> {indent.description}
                     </Typography>
                     <TextField
@@ -257,38 +312,73 @@ const PurchasePanel = () => {
                       multiline
                       label="Purchase Remark"
                       value={remarkMap[indent.id] || ""}
-                      onChange={(e) => handleRemarkChange(indent.id, e.target.value)}
+                      onChange={(e) =>
+                        handleRemarkChange(indent.id, e.target.value)
+                      }
                       sx={{
                         mt: 2,
-                        bgcolor: '#f7fafd',
+                        bgcolor: "#f7fafd",
                         borderRadius: 1,
-                        '& .MuiInputBase-root': { color: TEXT_COLOR },
+                        "& .MuiInputBase-root": { color: TEXT_COLOR },
                       }}
                     />
-                    <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
+                    <Box
+                      display="flex"
+                      justifyContent="flex-end"
+                      gap={2}
+                      mt={2}
+                    >
                       <Button
                         variant="contained"
                         onClick={() => handleComplete(indent.id)}
-                        sx={{ backgroundColor: ACCENT_COLOR, minWidth: 140, position: 'relative' }}
-                        disabled={completeLoading[indent.id] || rejectLoading[indent.id]}
+                        sx={{
+                          backgroundColor: ACCENT_COLOR,
+                          minWidth: 140,
+                          position: "relative",
+                        }}
+                        disabled={
+                          completeLoading[indent.id] || rejectLoading[indent.id]
+                        }
                       >
                         {completeLoading[indent.id] ? (
-                          <CircularProgress size={22} sx={{ color: '#fff', position: 'absolute', left: '50%', top: '50%', marginTop: '-11px', marginLeft: '-11px' }} />
+                          <CircularProgress
+                            size={22}
+                            sx={{
+                              color: "#fff",
+                              position: "absolute",
+                              left: "50%",
+                              top: "50%",
+                              marginTop: "-11px",
+                              marginLeft: "-11px",
+                            }}
+                          />
                         ) : (
-                          'Mark as Completed'
+                          "Mark as Completed"
                         )}
                       </Button>
                       <Button
                         variant="outlined"
                         color="error"
                         onClick={() => handleReject(indent.id)}
-                        sx={{ minWidth: 100, position: 'relative' }}
-                        disabled={completeLoading[indent.id] || rejectLoading[indent.id]}
+                        sx={{ minWidth: 100, position: "relative" }}
+                        disabled={
+                          completeLoading[indent.id] || rejectLoading[indent.id]
+                        }
                       >
                         {rejectLoading[indent.id] ? (
-                          <CircularProgress size={22} sx={{ color: ACCENT_COLOR, position: 'absolute', left: '50%', top: '50%', marginTop: '-11px', marginLeft: '-11px' }} />
+                          <CircularProgress
+                            size={22}
+                            sx={{
+                              color: ACCENT_COLOR,
+                              position: "absolute",
+                              left: "50%",
+                              top: "50%",
+                              marginTop: "-11px",
+                              marginLeft: "-11px",
+                            }}
+                          />
                         ) : (
-                          'Reject'
+                          "Reject"
                         )}
                       </Button>
                     </Box>
@@ -315,47 +405,89 @@ const PurchasePanel = () => {
             gfrIndents.map((indent) => (
               <Grow key={indent.id} in timeout={600}>
                 <Card sx={{ mb: 3, backgroundColor: CARD_BG, boxShadow: 3 }}>
-                  <CardHeader subheader={indent.itemName} sx={{ color: ACCENT_COLOR }} />
-                  <CardContent sx={{ color: TEXT_COLOR }}>
-                    <Typography variant="body1" gutterBottom>
-                      <strong>Item:</strong> {indent.itemName}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      <strong>Quantity:</strong> {indent.quantity}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      <strong>Indent Status:</strong> {indent.status}
-                    </Typography>
-                    
-                    
-                    <Typography variant="body1" gutterBottom>
-                      <strong>Approved By:</strong> {indent.approvedBy?.username || "N/A"}
-                    </Typography>
+                  {/* <CardHeader  subheader={indent.projectName} sx={{ color: ACCENT_COLOR }} />
+                  <CardHeader subheader={indent.itemName} sx={{ color: ACCENT_COLOR }} /> */}
 
+                  <CardContent sx={{ color: TEXT_COLOR }}>
+                    <Typography
+                      sx={{
+                        color: ACCENT_COLOR,
+                        fontWeight: 700,
+                        fontSize: 18,
+                      }}
+                    >
+                      Project Name: {indent.projectName}
+                    </Typography>
+                    <Typography
+                      sx={{ color: "black", fontSize: 14, fontWeight: 600 }}
+                    >
+                      Item Name: {indent.itemName}
+                    </Typography>
+                       <Grid container spacing={1}>
+                        <Grid item xs={6}>
+                          <Typography sx={{ fontSize: 13 }}>
+                            <strong>Indent Id:</strong> {indent.id}
+                          </Typography>
+                          <Typography sx={{ fontSize: 13 }}>
+                            <strong>Quantity:</strong> {indent.quantity}
+                          </Typography>
+                          <Typography sx={{ fontSize: 13 }}>
+                            <strong>Per Piece:</strong> ₹{indent.perPieceCost}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography sx={{ fontSize: 13 }}>
+                            <strong>Total:</strong> ₹{indent.totalCost}
+                          </Typography>
+                          <Typography sx={{ fontSize: 13 }}>
+                            <strong>Status:</strong> {indent.status}
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     <TextField
                       fullWidth
                       multiline
                       rows={3}
                       label="GFR Note"
                       value={gfrNoteMap[indent.id] || ""}
-                      onChange={(e) => handleGfrNoteChange(indent.id, e.target.value)}
+                      onChange={(e) =>
+                        handleGfrNoteChange(indent.id, e.target.value)
+                      }
                       sx={{
                         mt: 2,
                         "& .MuiInputBase-root": { color: TEXT_COLOR },
                       }}
                     />
 
-                    <Box display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
+                    <Box
+                      display="flex"
+                      justifyContent="flex-end"
+                      sx={{ mt: 2 }}
+                    >
                       <Button
                         variant="contained"
                         onClick={() => handleSubmitGFR(indent.id)}
-                        sx={{ backgroundColor: ACCENT_COLOR, minWidth: 140, position: 'relative' }}
+                        sx={{
+                          backgroundColor: ACCENT_COLOR,
+                          minWidth: 140,
+                          position: "relative",
+                        }}
                         disabled={gfrLoading[indent.id]}
                       >
                         {gfrLoading[indent.id] ? (
-                          <CircularProgress size={22} sx={{ color: '#fff', position: 'absolute', left: '50%', top: '50%', marginTop: '-11px', marginLeft: '-11px' }} />
+                          <CircularProgress
+                            size={22}
+                            sx={{
+                              color: "#fff",
+                              position: "absolute",
+                              left: "50%",
+                              top: "50%",
+                              marginTop: "-11px",
+                              marginLeft: "-11px",
+                            }}
+                          />
                         ) : (
-                          'Submit GFR'
+                          "Submit GFR"
                         )}
                       </Button>
                     </Box>
@@ -371,9 +503,9 @@ const PurchasePanel = () => {
         open={actionSnackbar.open}
         autoHideDuration={null}
         onClose={() => setActionSnackbar({ ...actionSnackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert severity={actionSnackbar.severity} sx={{ width: '100%' }}>
+        <Alert severity={actionSnackbar.severity} sx={{ width: "100%" }}>
           {actionSnackbar.message}
         </Alert>
       </Snackbar>

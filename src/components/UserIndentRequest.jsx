@@ -560,11 +560,11 @@ const UserIndentRequest = () => {
                   <Card key={indent.id} sx={{ my: 2, borderRadius: 3, boxShadow: '0 2px 12px 0 rgba(25, 118, 210, 0.08)' }}>
                     <CardContent>
                       <Typography variant="h6" color="primary.main" fontWeight={600} gutterBottom>
-                        {indent.itemName}
+                        Project Name: {indent.projectName}
                       </Typography>
                       <Grid container spacing={1}>
                         <Grid item xs={12} sm={6}>
-                          <Typography><strong>Project Name:</strong> {indent.projectName}</Typography>
+                          <Typography><strong>Item Name:</strong> {indent.itemName}</Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <Typography><strong>Department:</strong> {indent.department}</Typography>
