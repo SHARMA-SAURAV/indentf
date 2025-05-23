@@ -392,7 +392,7 @@ const AdminPanel = () => {
       const res = await axios.get("/admin/users");
       setUsers(res.data);
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      // console.error("Failed to fetch users:", error);
     }
   };
 
@@ -401,7 +401,7 @@ const AdminPanel = () => {
       const res = await axios.get("/admin/all-indents-with-remarks");
       setIndents(res.data);
     } catch (error) {
-      console.error("Failed to fetch indents:", error);
+      // console.error("Failed to fetch indents:", error);
     }
   };
 
@@ -412,7 +412,7 @@ const AdminPanel = () => {
       resetForm();
       setTabIndex(0); // Switch to Users tab after adding
     } catch (error) {
-      console.error("Failed to add user:", error);
+      // console.error("Failed to add user:", error);
     }
   };
 

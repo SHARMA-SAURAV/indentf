@@ -67,7 +67,7 @@ const UserIndentRequest = () => {
         );
         setRecipientList(res.data);
       } catch (err) {
-        console.error(`Error fetching ${recipientType}s`, err);
+        // console.error(`Error fetching ${recipientType}s`, err);
       }
     };
     fetchRecipients();
@@ -94,7 +94,7 @@ const UserIndentRequest = () => {
         const res = await axios.get("/auth/users/by-role?role=FLA");
         setFlaList(res.data);
       } catch (err) {
-        console.error("Error fetching FLAs", err);
+        // console.error("Error fetching FLAs", err);
       }
     };
     fetchFLAs();
@@ -106,7 +106,7 @@ const UserIndentRequest = () => {
         const res = await axios.get("/indent/user/pending-inspection");
         setPendingInspections(res.data);
       } catch (err) {
-        console.error("Error fetching pending inspections", err);
+        // console.error("Error fetching pending inspections", err);
       }
     };
     if (tab === 1) fetchPendingInspections();
@@ -122,7 +122,7 @@ const UserIndentRequest = () => {
         const res = await axios.get("/indent/user/all");
         setAllIndents(res.data);
       } catch (err) {
-        console.error("Error fetching indents", err);
+        // console.error("Error fetching indents", err);
       }
     };
     if (tab === 2) fetchIndents();
@@ -161,7 +161,7 @@ const UserIndentRequest = () => {
       setSpecification("");
       setDepartment("");
     } catch (err) {
-      console.error("Failed to submit indent", err);
+      // console.error("Failed to submit indent", err);
       setStatus({ type: "error", message: "Failed to submit indent." });
       setSnackbar({ open: true, message: 'Failed to submit indent.', severity: 'error' });
     } finally {
@@ -539,7 +539,7 @@ const UserIndentRequest = () => {
                         setSnackbar({ open: true, message: 'Product confirmed OK!', severity: 'success' });
                         setPendingInspections((prev) => prev.filter((i) => i.id !== id));
                       } catch (err) {
-                        console.error(err);
+                        // console.error(err);
                         setStatus({ type: "error", message: "Failed to confirm inspection" });
                         setSnackbar({ open: true, message: 'Failed to confirm inspection', severity: 'error' });
                         throw err;

@@ -516,7 +516,7 @@ const StoreView = () => {
       });
       setIndents(res.data);
     } catch (err) {
-      console.error("Error fetching store indents", err);
+      // console.error("Error fetching store indents", err);
       alert("Failed to load indents, please try again.");
     } finally {
       setLoading(false);
@@ -549,7 +549,7 @@ const StoreView = () => {
         alert("Indent approved and forwarded to Finance");
         fetchIndents();
       } catch (err) {
-        console.error("Approval failed", err);
+        // console.error("Approval failed", err);
         alert("Something went wrong during approval.");
       } finally {
         setActionLoading(false);
@@ -577,7 +577,7 @@ const StoreView = () => {
       setRejectDialogOpen(false);
       fetchIndents();
     } catch (err) {
-      console.error("Rejection failed", err);
+      // console.error("Rejection failed", err);
       alert("Something went wrong during rejection.");
     }
   }, [remarks, selectedIndentId, fetchIndents]);

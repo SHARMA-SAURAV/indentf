@@ -55,7 +55,7 @@ const FinanceView = () => {
       const res = await axios.get("/indent/finance/pending");
       setApprovalIndents(res.data);
     } catch (err) {
-      console.error("Failed to fetch approval indents:", err);
+      // console.error("Failed to fetch approval indents:", err);
       setApprovalIndents([]);
     }
   };
@@ -65,7 +65,7 @@ const FinanceView = () => {
       const res = await axios.get("/indent/finance/payment/pending");
       setPaymentIndents(res.data);
     } catch (err) {
-      console.error("Failed to fetch payment indents:", err);
+      // console.error("Failed to fetch payment indents:", err);
       setPaymentIndents([]);
     }
   };
@@ -88,7 +88,7 @@ const FinanceView = () => {
       });
       setApprovalIndents((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
-      console.error("Approval failed:", err);
+      // console.error("Approval failed:", err);
       alert("Failed to approve indent.");
     } finally {
       setApproveLoading((prev) => ({ ...prev, [id]: false }));
@@ -109,7 +109,7 @@ const FinanceView = () => {
       alert("Indent rejected.");
       setApprovalIndents((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
-      console.error("Rejection failed:", err);
+      // console.error("Rejection failed:", err);
       alert("Failed to reject indent.");
     } finally {
       setRejectLoading((prev) => ({ ...prev, [id]: false }));
@@ -128,7 +128,7 @@ const FinanceView = () => {
       setPaymentIndents((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
       alert("Error submitting payment");
-      console.error("Payment submission failed:", err);
+      // console.error("Payment submission failed:", err);
     } finally {
       setPaymentLoading((prev) => ({ ...prev, [id]: false }));
     }
@@ -146,7 +146,7 @@ const FinanceView = () => {
       alert("Payment rejected.");
       setPaymentIndents(prev => prev.filter(i => i.id !== id));
     } catch (err) {
-      console.error('Payment rejection failed:', err);
+      // console.error('Payment rejection failed:', err);
       alert('Failed to reject payment.');
     } finally {
       setPaymentRejectLoading((prev) => ({ ...prev, [id]: false }));

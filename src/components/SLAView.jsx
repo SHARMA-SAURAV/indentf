@@ -420,7 +420,7 @@ const SLAView = () => {
       });
       setIndents(res.data);
     } catch (err) {
-      console.error("Error fetching indents", err);
+      // console.error("Error fetching indents", err);
       setError("Failed to load pending indents. Please try again.");
     } finally {
       setLoading(false);
@@ -457,7 +457,7 @@ const SLAView = () => {
       alert("Indent approved and forwarded to Store");
       fetchIndents();
     } catch (err) {
-      console.error("Approval failed", err);
+      // console.error("Approval failed", err);
       alert("Something went wrong while approving.");
     } finally {
       setActionLoading(false);
@@ -487,7 +487,7 @@ const SLAView = () => {
       handleCloseReject();
       fetchIndents();
     } catch (err) {
-      console.error("Rejection failed", err);
+      // console.error("Rejection failed", err);
       alert("Failed to reject indent.");
     } finally {
       setActionLoading(false);

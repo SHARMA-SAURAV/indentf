@@ -238,7 +238,7 @@ const ProfilePage = () => {
         const response = await axios.get("/auth/profile");
         setUser(response.data);
       } catch (err) {
-        console.error("Failed to fetch user", err);
+        // console.error("Failed to fetch user", err);
       } finally {
         setLoading(false);
       }

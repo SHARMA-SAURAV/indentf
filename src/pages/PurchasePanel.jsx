@@ -53,7 +53,7 @@ const PurchasePanel = () => {
       const res = await axios.get("/indent/purchase/pending");
       setIndents(res.data);
     } catch (err) {
-      console.error("Failed to fetch purchase indents", err);
+      // console.error("Failed to fetch purchase indents", err);
     } finally {
       setLoadingIndents(false);
     }
@@ -65,7 +65,7 @@ const PurchasePanel = () => {
       const res = await axios.get("/indent/purchase/gfr/pending");
       setGfrIndents(res.data);
     } catch (err) {
-      console.error("Failed to fetch GFR indents", err);
+      // console.error("Failed to fetch GFR indents", err);
     } finally {
       setLoadingGfr(false);
     }
@@ -132,7 +132,7 @@ const PurchasePanel = () => {
       });
       setTimeout(() => setStatus(""), 4000);
     } catch (err) {
-      console.error("Failed to reject indent:", err);
+      // console.error("Failed to reject indent:", err);
       alert("Error rejecting indent.");
     } finally {
       setRejectLoading((prev) => ({ ...prev, [id]: false }));
@@ -165,7 +165,7 @@ const PurchasePanel = () => {
       });
       setTimeout(() => setStatus(""), 4000);
     } catch (err) {
-      console.error("GFR submission failed", err);
+      // console.error("GFR submission failed", err);
       setStatus("Error submitting GFR.");
       setTimeout(() => setStatus(""), 4000);
     } finally {

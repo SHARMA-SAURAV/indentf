@@ -30,6 +30,7 @@ import StoreView from "../components/StoreView";
 import FinanceView from "./FinanceView";
 import PurchasePanel from "./PurchasePanel";
 import AdminDashboard from "./AdminDashboard";
+import { redirect } from "react-router-dom";
 // Updated Constants - professional, muted colors
 const GRADIENT_BG = "linear-gradient(145deg, #f8f9fa, #e9ecef)";
 const CARD_BG = "#ffffff";
@@ -228,7 +229,8 @@ const Dashboard = () => {
         setUser(res.data);
         setCurrentRole(validRole);
       } catch (err) {
-        console.error("Error fetching user:", err);
+        redirect("/");
+        // console.error("Error fetching user:", err);
       }
     })();
   }, []);
