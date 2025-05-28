@@ -14,7 +14,18 @@ import {
   Box,
   useMediaQuery,
   useTheme,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Collapse,
+  IconButton,
+  CircularProgress
 } from "@mui/material";
+import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -31,6 +42,98 @@ const TEXT_COLOR = "#444950"; // deep soft gray — elegant and readable
 const ACCENT_COLOR = "#0d47a1"; // soothing lavender-blue, more inviting than navy
 const SUBTEXT_COLOR = "#8E99A3"; // polished light gray-blue for captions/notes
 
+const TrackingStepsTable = ({ steps }) => (
+  <Table size="small" sx={{ background: '#f8fafc', borderRadius: 2, mt: 1 }}>
+    <TableHead>
+      <TableRow>
+        <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Role</TableCell>
+        <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Remark</TableCell>
+        <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
+        <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Date</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {steps.map((step, idx) => (
+        <TableRow key={idx}>
+          <TableCell sx={{ fontWeight: 600 }}>{step.role}</TableCell>
+          <TableCell>{step.remark}</TableCell>
+          <TableCell sx={{ color: step.status.includes('Rejected') ? '#d32f2f' : '#388e3c', fontWeight: 600 }}>{step.status}</TableCell>
+          <TableCell sx={{ color: '#666' }}>{step.date ? new Date(step.date).toLocaleString() : ''}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+);
+
+const getTrackingSteps = (indent) => {
+  const trackingSteps = [];
+  if (indent.remarkByFla && (indent.flaApprovalDate || indent.status === "REJECTED_BY_FLA")) {
+    trackingSteps.push({
+      role: "FLA",
+      remark: indent.remarkByFla,
+      date: indent.flaApprovalDate || indent.updatedAt,
+      status: indent.status === "REJECTED_BY_FLA" ? "Rejected" : "Approved",
+    });
+  }
+  if (indent.remarkBySla && (indent.slaApprovalDate || indent.status === "REJECTED_BY_SLA")) {
+    trackingSteps.push({
+      role: "SLA",
+      remark: indent.remarkBySla,
+      date: indent.slaApprovalDate || indent.updatedAt,
+      status: indent.status === "REJECTED_BY_SLA" ? "Rejected" : "Approved",
+    });
+  }
+  if (indent.remarkByStore && (indent.storeApprovalDate || indent.status === "REJECTED_BY_STORE")) {
+    trackingSteps.push({
+      role: "Store",
+      remark: indent.remarkByStore,
+      date: indent.storeApprovalDate || indent.updatedAt,
+      status: indent.status === "REJECTED_BY_STORE" ? "Rejected" : "Approved",
+    });
+  }
+  if (indent.remarkByFinance && (indent.financeApprovalDate || indent.status === "REJECTED_BY_FINANCE")) {
+    trackingSteps.push({
+      role: "Finance",
+      remark: indent.remarkByFinance,
+      date: indent.financeApprovalDate || indent.updatedAt,
+      status: indent.status === "REJECTED_BY_FINANCE" ? "Rejected" : "Approved",
+    });
+  }
+  if (indent.remarkByPurchase && (indent.purchaseCompletionDate || indent.status === "REJECTED_BY_PURCHASE")) {
+    trackingSteps.push({
+      role: "Purchase",
+      remark: indent.remarkByPurchase,
+      date: indent.purchaseCompletionDate || indent.updatedAt,
+      status: indent.status === "REJECTED_BY_PURCHASE" ? "Rejected" : "Completed",
+    });
+  }
+  if (indent.remarkByUser && indent.userInspectionDate) {
+    trackingSteps.push({
+      role: "User",
+      remark: indent.remarkByUser,
+      date: indent.userInspectionDate,
+      status: "Inspection Done",
+    });
+  }
+  if (indent.gfrNote && indent.gfrCreatedAt) {
+    trackingSteps.push({
+      role: "Purchase",
+      remark: indent.gfrNote,
+      date: indent.gfrCreatedAt,
+      status: "GFR Submitted",
+    });
+  }
+  if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === "PAYMENT_REJECTED")) {
+    trackingSteps.push({
+      role: "Finance",
+      remark: indent.paymentNote,
+      date: indent.paymentCreatedAt,
+      status: indent.status === "PAYMENT_REJECTED" ? "Rejected" : "Payment Done",
+    });
+  }
+  return trackingSteps;
+};
+
 const FinanceView = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -44,6 +147,10 @@ const FinanceView = () => {
   const [paymentLoading, setPaymentLoading] = useState({});
   const [rejectLoading, setRejectLoading] = useState({});
   const [paymentRejectLoading, setPaymentRejectLoading] = useState({});
+  const [trackingIndents, setTrackingIndents] = useState([]);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+  const [trackingError, setTrackingError] = useState(null);
+  const [openTrackingIdx, setOpenTrackingIdx] = useState(null);
 
   useEffect(() => {
     fetchApprovalIndents();
@@ -69,6 +176,23 @@ const FinanceView = () => {
       setPaymentIndents([]);
     }
   };
+
+  const fetchTrackingIndents = async () => {
+    setTrackingLoading(true);
+    setTrackingError(null);
+    try {
+      const res = await axios.get("/track/finance/tracking");
+      setTrackingIndents(res.data);
+    } catch (err) {
+      setTrackingError("Failed to load tracked indents. Please try again.");
+    } finally {
+      setTrackingLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tabIndex === 2) fetchTrackingIndents();
+  }, [tabIndex]);
 
   const handleRemarkChange = (id, value) => {
     setRemarks((prev) => ({ ...prev, [id]: value }));
@@ -222,6 +346,10 @@ const FinanceView = () => {
           />
           <Tab
             label="Mark Payment Done"
+            sx={{ color: SUBTEXT_COLOR, fontWeight: 600, minHeight: 36 }}
+          />
+          <Tab
+            label="Track Indents"
             sx={{ color: SUBTEXT_COLOR, fontWeight: 600, minHeight: 36 }}
           />
         </Tabs>
@@ -483,6 +611,72 @@ const FinanceView = () => {
               ))}
             </Grid>
           )}
+        </TabPanel>
+        <TabPanel value={tabIndex} index={2}>
+          <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', background: '#fff', borderRadius: 3, boxShadow: '0 2px 16px #0d47a122', p: { xs: 1, md: 3 }, mt: 2 }}>
+            {trackingLoading ? (
+              <Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>
+            ) : trackingError ? (
+              <Typography variant="h6" align="center" mt={4} color="error" fontWeight={600}>{trackingError}</Typography>
+            ) : trackingIndents.length === 0 ? (
+              <Typography sx={{ color: SUBTEXT_COLOR, textAlign: 'center', fontWeight: 600, fontSize: 20, py: 4 }}>No indents found.</Typography>
+            ) : (
+              <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', background: 'transparent' }}>
+                <Table sx={{ minWidth: 900, background: 'transparent' }} aria-label="track indents table">
+                  <TableHead>
+                    <TableRow sx={{ background: 'linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%)' }}>
+                      <TableCell />
+                      <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Indent ID</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Project</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Item</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Department</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Quantity</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Total Cost</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {trackingIndents.map((indent, idx) => {
+                      const isOpen = openTrackingIdx === idx;
+                      const steps = getTrackingSteps(indent);
+                      return (
+                        <React.Fragment key={indent.id}>
+                          <TableRow hover sx={{ background: isOpen ? '#f3e5f5' : 'transparent', transition: 'background 0.2s' }}>
+                            <TableCell>
+                              <IconButton size="small" onClick={() => setOpenTrackingIdx(isOpen ? null : idx)}>
+                                {isOpen ? <KeyboardArrowUp sx={{ color: ACCENT_COLOR }} /> : <KeyboardArrowDown sx={{ color: ACCENT_COLOR }} />}
+                              </IconButton>
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>{indent.id}</TableCell>
+                            <TableCell>{indent.projectName}</TableCell>
+                            <TableCell>{indent.itemName}</TableCell>
+                            <TableCell>{indent.department}</TableCell>
+                            <TableCell>{indent.quantity}</TableCell>
+                            <TableCell>₹{indent.totalCost}</TableCell>
+                            <TableCell sx={{ color: indent.status.includes('REJECTED') ? '#d32f2f' : '#1976d2', fontWeight: 700 }}>{indent.status}</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell style={{ paddingBottom: 0, paddingTop: 0, background: '#f8fafc' }} colSpan={8}>
+                              <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                                <Box sx={{ pl: 1, pr: 1, pb: 2, pt: 2 }}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 1 }}>Tracking Steps</Typography>
+                                  {steps.length > 0 ? (
+                                    <TrackingStepsTable steps={steps} />
+                                  ) : (
+                                    <Typography sx={{ color: '#888', fontStyle: 'italic', py: 2 }}>No tracking steps available for this indent.</Typography>
+                                  )}
+                                </Box>
+                              </Collapse>
+                            </TableCell>
+                          </TableRow>
+                        </React.Fragment>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Box>
         </TabPanel>
       </Box>
     </Box>
