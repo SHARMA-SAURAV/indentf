@@ -111,7 +111,7 @@ const InspectionItem = ({ indent, onConfirm }) => {
       setOpenDialog(false);
     } catch (error) {
       // Error handling done in parent
-    }
+    }  
   };
 
   return (
