@@ -269,8 +269,8 @@ const Dashboard = () => {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", background: GRADIENT_BG, py: { xs: 4, md: 6 } }}>
-      <Container maxWidth="lg">
+    <Box sx={{ minHeight: "100vh", minWidth: "100vw", width: "100vw", height: "100vh", background: GRADIENT_BG, py: 0, px: 0, m: 0 }}>
+      <Box sx={{ width: "100vw", height: "100vh", p: 0, m: 0 }}>
         <Header user={user} currentRole={currentRole} onRoleChange={handleRoleChange} />
         <AnimatePresence mode="wait">
           <motion.div
@@ -279,24 +279,30 @@ const Dashboard = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
+            style={{ width: "100vw", minHeight: "calc(100vh - 180px)" }}
           >
             <Paper
               elevation={3}
               sx={{
                 mt: 5,
-                mx: "auto",
-                p: { xs: 3, md: 5 },
-                maxWidth: "900px",
-                borderRadius: 4,
+                mx: 0,
+                p: 0,
+                width: "100vw",
+                minHeight: "calc(100vh - 180px)",
+                borderRadius: 0,
                 background: CARD_BG,
                 boxShadow: "0 12px 24px rgba(0,0,0,0.08)",
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                justifyContent: 'stretch',
               }}
             >
               <RoleContent role={currentRole} />
             </Paper>
           </motion.div>
         </AnimatePresence>
-      </Container>
+      </Box>
     </Box>
   );
 };
