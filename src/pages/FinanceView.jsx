@@ -752,15 +752,18 @@ const FinanceView = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        width: "100%",
+        minWidth: "100vw",
+        width: "100vw",
+        height: "100vh",
+        background: GRADIENT_BG,
+        py: 0,
+        px: 0,
+        m: 0,
+        boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "flex-start",
-        background: GRADIENT_BG,
-        py: isMobile ? 2 : 6,
-        px: isMobile ? 1 : 0,
-        boxSizing: "border-box",
       }}
     >
       <Typography
@@ -787,20 +790,21 @@ const FinanceView = () => {
         <FontAwesomeIcon icon={faCoins} style={{ marginRight: 12, fontSize: 32, color: ACCENT_COLOR }} />
         Finance Dashboard
       </Typography>
-
       <Box
         sx={{
-          width: "100%",
-          maxWidth: 1200,
+          width: "100vw",
+          height: "100vh",
+          maxWidth: "100vw",
+          maxHeight: "100vh",
           bgcolor: CARD_BG,
           p: isMobile ? 1.2 : 3,
-          borderRadius: 3,
-          boxShadow: 4,
+          borderRadius: 0,
+          boxShadow: 0,
           overflowY: "auto",
           color: TEXT_COLOR,
           minHeight: 400,
-          mx: "auto",
-          mt: 1.5,
+          mx: 0,
+          mt: 0,
         }}
       >
         <Tabs
@@ -1509,15 +1513,18 @@ export default FinanceView;
 //     <Box
 //       sx={{
 //         minHeight: "100vh",
-//         width: "100%",
+//         minWidth: "100vw",
+//         width: "100vw",
+//         height: "100vh",
+//         background: GRADIENT_BG,
+//         py: 0,
+//         px: 0,
+//         m: 0,
+//         boxSizing: "border-box",
 //         display: "flex",
 //         flexDirection: "column",
 //         alignItems: "center",
 //         justifyContent: "flex-start",
-//         background: GRADIENT_BG,
-//         py: isMobile ? 2 : 6,
-//         px: isMobile ? 1 : 0,
-//         boxSizing: "border-box",
 //       }}
 //     >
 //       <Typography
@@ -1544,20 +1551,21 @@ export default FinanceView;
 //         <FontAwesomeIcon icon={faCoins} style={{ marginRight: 12, fontSize: 32, color: ACCENT_COLOR }} />
 //         Finance Dashboard
 //       </Typography>
-
 //       <Box
 //         sx={{
-//           width: "100%",
-//           maxWidth: 1200,
+//           width: "100vw",
+//           height: "100vh",
+//           maxWidth: "100vw",
+//           maxHeight: "100vh",
 //           bgcolor: CARD_BG,
 //           p: isMobile ? 1.2 : 3,
-//           borderRadius: 3,
-//           boxShadow: 4,
+//           borderRadius: 0,
+//           boxShadow: 0,
 //           overflowY: "auto",
 //           color: TEXT_COLOR,
 //           minHeight: 400,
-//           mx: "auto",
-//           mt: 1.5,
+//           mx: 0,
+//           mt: 0,
 //         }}
 //       >
 //         <Tabs

@@ -1108,19 +1108,6 @@
 
 // export default FLADashboard;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -1191,8 +1178,16 @@ const FLADashboard = () => {
   const [productRemarks, setProductRemarks] = useState({});
   const [expandedIndent, setExpandedIndent] = useState(null);
 
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
-  const [dialog, setDialog] = useState({ open: false, type: "", indentId: null });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+  const [dialog, setDialog] = useState({
+    open: false,
+    type: "",
+    indentId: null,
+  });
 
   useEffect(() => {
     fetchIndents();
@@ -1212,8 +1207,8 @@ const FLADashboard = () => {
       // Initialize product selection state
       const productSelection = {};
       const productRemarksInit = {};
-      res.data.forEach(indent => {
-        indent.items?.forEach(item => {
+      res.data.forEach((indent) => {
+        indent.items?.forEach((item) => {
           productSelection[item.id] = undefined; // <-- Fix: use undefined, not false
           productRemarksInit[item.id] = "";
         });
@@ -1265,17 +1260,17 @@ const FLADashboard = () => {
   };
 
   const handleProductSelection = (productId, checked) => {
-    setSelectedProducts(prev => ({
+    setSelectedProducts((prev) => ({
       ...prev,
-      [productId]: checked
+      [productId]: checked,
     }));
     // Do not clear or set remark here; user will write remark after selecting Approve/Reject
   };
 
   const handleProductRemarkChange = (productId, remark) => {
-    setProductRemarks(prev => ({
+    setProductRemarks((prev) => ({
       ...prev,
-      [productId]: remark
+      [productId]: remark,
     }));
   };
 
@@ -1285,7 +1280,7 @@ const FLADashboard = () => {
     const approved = [];
     const rejected = [];
 
-    indent.items.forEach(item => {
+    indent.items.forEach((item) => {
       if (selectedProducts[item.id]) {
         approved.push(item.id);
       } else if (productRemarks[item.id]?.trim()) {
@@ -1300,7 +1295,7 @@ const FLADashboard = () => {
     if (!indent.items) return {};
 
     const remarks = {};
-    indent.items.forEach(item => {
+    indent.items.forEach((item) => {
       if (productRemarks[item.id]?.trim()) {
         remarks[item.id.toString()] = productRemarks[item.id];
       }
@@ -1310,14 +1305,17 @@ const FLADashboard = () => {
   };
 
   const handleReviewProducts = async (indentId) => {
-    const indent = indents.find(i => i.id === indentId);
+    const indent = indents.find((i) => i.id === indentId);
     if (!indent) return;
 
     const { approved, rejected } = getSelectedProductsForIndent(indent);
     const remarks = getProductRemarksForIndent(indent);
 
     if (approved.length === 0 && rejected.length === 0) {
-      showSnackbar("Please select products to approve or add remarks to reject.", "error");
+      showSnackbar(
+        "Please select products to approve or add remarks to reject.",
+        "error"
+      );
       closeDialog();
       return;
     }
@@ -1346,7 +1344,10 @@ const FLADashboard = () => {
     } catch (err) {
       // Show backend error if available
       if (err.response && err.response.status === 401) {
-        showSnackbar("Unauthorized: Please log in again or check your permissions.", "error");
+        showSnackbar(
+          "Unauthorized: Please log in again or check your permissions.",
+          "error"
+        );
       } else {
         showSnackbar("Failed to review products.", "error");
       }
@@ -1359,22 +1360,27 @@ const FLADashboard = () => {
   const calculateIndentTotals = (indent) => {
     if (!indent.items) return { totalItems: 0, totalCost: 0 };
 
-    const totalItems = indent.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    const totalCost = indent.items.reduce((sum, item) => sum + ((item.perPieceCost || 0) * (item.quantity || 0)), 0);
+    const totalItems = indent.items.reduce(
+      (sum, item) => sum + (item.quantity || 0),
+      0
+    );
+    const totalCost = indent.items.reduce(
+      (sum, item) => sum + (item.perPieceCost || 0) * (item.quantity || 0),
+      0
+    );
 
     return { totalItems, totalCost };
   };
 
   const getStatusColor = (status) => {
     const statusColors = {
-      'PENDING': '#ff9800',
-      'APPROVED_BY_FLA': '#4caf50',
-      'REJECTED_BY_FLA': '#f44336',
-      'PENDING_SLA': '#2196f3',
+      PENDING: "#ff9800",
+      APPROVED_BY_FLA: "#4caf50",
+      REJECTED_BY_FLA: "#f44336",
+      PENDING_SLA: "#2196f3",
     };
-    return statusColors[status] || '#757575';
+    return statusColors[status] || "#757575";
   };
-
 
   // Replace TrackingSteps with a table-based, modern, clear UI
   const TrackingStepsTable = ({ indent }) => {
@@ -1630,9 +1636,6 @@ const FLADashboard = () => {
     );
   };
 
-
-
-
   // const TrackingSteps = ({ indent }) => {
   //   const [isExpanded, setIsExpanded] = useState(false);
   //   const trackingSteps = [];
@@ -1782,7 +1785,9 @@ const FLADashboard = () => {
   const downloadFile = async (fileName) => {
     const token = localStorage.getItem("token");
     if (!token || token === "undefined" || token.length < 10) {
-      alert("You are not logged in or your session has expired. Please log in again.");
+      alert(
+        "You are not logged in or your session has expired. Please log in again."
+      );
       return;
     }
     console.log("Token used:", token);
@@ -1790,8 +1795,8 @@ const FLADashboard = () => {
       const response = await fetch(`/indent/file/${fileName}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!response.ok) throw new Error("Failed to download file");
       const blob = await response.blob();
@@ -1810,12 +1815,12 @@ const FLADashboard = () => {
         minHeight: "100vh",
         p: isMobile ? 2 : 6,
         fontFamily: "'Roboto', sans-serif",
-        width: '100vw',
-        position: 'relative',
-        left: '50%',
-        right: '50%',
-        ml: '-50vw',
-        mr: '-50vw',
+        width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        ml: "-50vw",
+        mr: "-50vw",
       }}
     >
       <Typography
@@ -1830,7 +1835,7 @@ const FLADashboard = () => {
           alignItems: "center",
           justifyContent: "center",
           gap: 1,
-          textShadow: '0 2px 12px #e3eafc',
+          textShadow: "0 2px 12px #e3eafc",
         }}
       >
         <FontAwesomeIcon icon={faUser} /> FLA Dashboard
@@ -1843,7 +1848,13 @@ const FLADashboard = () => {
       )}
 
       <Box sx={{ mb: 4 }}>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} textColor="primary" indicatorColor="primary" sx={{ mb: 2 }}>
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          textColor="primary"
+          indicatorColor="primary"
+          sx={{ mb: 2 }}
+        >
           <Tab label="Review Indents" />
           <Tab label="Track Indents" />
         </Tabs>
@@ -1854,7 +1865,13 @@ const FLADashboard = () => {
           {!loading && indents.length === 0 && (
             <Typography
               variant="body1"
-              sx={{ color: COLORS.textSecondary, textAlign: "center", mt: 8, fontSize: 20, fontWeight: 500 }}
+              sx={{
+                color: COLORS.textSecondary,
+                textAlign: "center",
+                mt: 8,
+                fontSize: 20,
+                fontWeight: 500,
+              }}
             >
               No pending indents for review.
             </Typography>
@@ -1862,8 +1879,12 @@ const FLADashboard = () => {
 
           {indents.map((indent) => {
             const { totalItems, totalCost } = calculateIndentTotals(indent);
-            const hasSelectedItems = indent.items?.some(item => selectedProducts[item.id]);
-            const hasItemsWithRemarks = indent.items?.some(item => productRemarks[item.id]?.trim());
+            const hasSelectedItems = indent.items?.some(
+              (item) => selectedProducts[item.id]
+            );
+            const hasItemsWithRemarks = indent.items?.some((item) =>
+              productRemarks[item.id]?.trim()
+            );
 
             return (
               <Card
@@ -1873,43 +1894,64 @@ const FLADashboard = () => {
                   mb: 4,
                   backgroundColor: COLORS.cardBg,
                   borderRadius: 4,
-                  boxShadow: '0 3px 18px rgba(26, 35, 126, 0.13)',
-                  border: '1.5px solid #e3eafc',
-                  maxWidth: '100%',
-                  overflow: 'hidden'
+                  boxShadow: "0 3px 18px rgba(26, 35, 126, 0.13)",
+                  border: "1.5px solid #e3eafc",
+                  maxWidth: "100%",
+                  overflow: "hidden",
                 }}
               >
                 <CardContent sx={{ p: 3 }}>
                   {/* Header */}
-                  <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                  <Grid
+                    container
+                    spacing={2}
+                    alignItems="center"
+                    sx={{ mb: 3 }}
+                  >
                     <Grid item xs={12} md={8}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                        <Box sx={{
-                          bgcolor: COLORS.accent,
-                          color: 'white',
-                          width: 50,
-                          height: 50,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 700,
-                          fontSize: 20,
-                        }}>
-                          {indent.projectName?.[0]?.toUpperCase() || '?'}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          mb: 2,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            bgcolor: COLORS.accent,
+                            color: "white",
+                            width: 50,
+                            height: 50,
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 700,
+                            fontSize: 20,
+                          }}
+                        >
+                          {indent.projectName?.[0]?.toUpperCase() || "?"}
                         </Box>
                         <Box>
-                          <Typography variant="h6" sx={{ color: COLORS.accent, fontWeight: 700 }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ color: COLORS.accent, fontWeight: 700 }}
+                          >
                             {indent.projectName}
                           </Typography>
-                          <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
-                            Indent ID: {indent.id} | Department: {indent.department}
+                          <Typography
+                            variant="body2"
+                            sx={{ color: COLORS.textSecondary }}
+                          >
+                            Indent ID: {indent.id} | Department:{" "}
+                            {indent.department}
                           </Typography>
                         </Box>
                       </Box>
                     </Grid>
                     <Grid item xs={12} md={4}>
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                      <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
                         <Chip
                           label={`${totalItems} Items`}
                           color="primary"
@@ -1931,30 +1973,79 @@ const FLADashboard = () => {
                     <Box sx={{ mb: 2 }}>
                       <Button
                         onClick={() => downloadFile(indent.attachmentPath)}
-                        style={{ textDecoration: 'underline', color: '#007bff', fontWeight: 600 }}
+                        style={{
+                          textDecoration: "underline",
+                          color: "#007bff",
+                          fontWeight: 600,
+                        }}
                       >
                         {indent.attachmentName || "View File"}
                       </Button>
                       {indent.attachmentType && (
-                        <span style={{ marginLeft: 8, color: '#888', fontSize: 12 }}>
+                        <span
+                          style={{ marginLeft: 8, color: "#888", fontSize: 12 }}
+                        >
                           ({indent.attachmentType})
                         </span>
                       )}
                     </Box>
                   ) : (
-                    <Box sx={{ mb: 2, color: '#888' }}>No File Attached</Box>
+                    <Box sx={{ mb: 2, color: "#888" }}>No File Attached</Box>
+                  )}
+
+                  {/* Show attached file at indent level (above items table) */}
+                  {indent.attachmentPath ? (
+                    <Box sx={{ mb: 2 }}>
+                      <Button
+                        onClick={() =>
+                          handleFileDownload(
+                            "/api/indent/file/${encodeURIComponent(indent.attachmentPath)}",
+                            indent.attachmentName
+                          )
+                        }
+                        style={{
+                          textDecoration: "underline",
+                          color: "#007bff",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {indent.attachmentName || "View File"}
+                      </Button>
+                      {indent.attachmentType && (
+                        <span
+                          style={{ marginLeft: 8, color: "#888", fontSize: 12 }}
+                        >
+                          ({indent.attachmentType})
+                        </span>
+                      )}
+                    </Box>
+                  ) : (
+                    <Box sx={{ mb: 2, color: "#888" }}>No File Attached</Box>
                   )}
 
                   {/* Items Table with Approve/Reject in same row */}
-                  <TableContainer component={Paper} sx={{ mb: 3, borderRadius: 2 }}>
+                  <TableContainer
+                    component={Paper}
+                    sx={{ mb: 3, borderRadius: 2 }}
+                  >
                     <Table size="small">
                       <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                          <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Quantity</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Unit Cost</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
+                        <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Item Name
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Description
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Quantity
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Unit Cost
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Total Cost
+                          </TableCell>
                           <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                           <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
                           <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
@@ -1964,46 +2055,71 @@ const FLADashboard = () => {
                         {(indent.items || []).map((item) => (
                           <TableRow key={item.id} hover>
                             <TableCell>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600 }}
+                              >
                                 {item.itemName || item.name}
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <Typography variant="body2" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  maxWidth: 200,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
                                 {item.description}
                               </Typography>
                             </TableCell>
                             <TableCell>{item.quantity}</TableCell>
-                            <TableCell>₹{item.perPieceCost?.toLocaleString()}</TableCell>
+                            <TableCell>
+                              ₹{item.perPieceCost?.toLocaleString()}
+                            </TableCell>
                             <TableCell>
                               <Typography sx={{ fontWeight: 600 }}>
-                                ₹{((item.perPieceCost || 0) * (item.quantity || 0)).toLocaleString()}
+                                ₹
+                                {(
+                                  (item.perPieceCost || 0) *
+                                  (item.quantity || 0)
+                                ).toLocaleString()}
                               </Typography>
                             </TableCell>
                             <TableCell>
                               <Chip
                                 label={(() => {
                                   const statusMap = {
-                                    'PENDING': 'Pending at FLA',
-                                    'APPROVED_BY_FLA': 'Pending at SLA',
-                                    'REJECTED_BY_FLA': 'Rejected by FLA',
-                                    'APPROVED_BY_SLA': 'Pending at Store',
-                                    'REJECTED_BY_SLA': 'Rejected by SLA',
-                                    'APPROVED_BY_STORE': 'Pending at Finance',
-                                    'REJECTED_BY_STORE': 'Rejected by Store',
-                                    'APPROVED_BY_FINANCE': 'Pending at Purchase',
-                                    'REJECTED_BY_FINANCE': 'Rejected by Finance',
-                                    'COMPLETED': 'Completed',
-                                    'REJECTED_BY_PURCHASE': 'Rejected by Purchase',
-                                    'PAYMENT_REJECTED': 'Payment Rejected',
+                                    PENDING: "Pending at FLA",
+                                    APPROVED_BY_FLA: "Pending at SLA",
+                                    REJECTED_BY_FLA: "Rejected by FLA",
+                                    APPROVED_BY_SLA: "Pending at Store",
+                                    REJECTED_BY_SLA: "Rejected by SLA",
+                                    APPROVED_BY_STORE: "Pending at Finance",
+                                    REJECTED_BY_STORE: "Rejected by Store",
+                                    APPROVED_BY_FINANCE: "Pending at Purchase",
+                                    REJECTED_BY_FINANCE: "Rejected by Finance",
+                                    COMPLETED: "Completed",
+                                    REJECTED_BY_PURCHASE:
+                                      "Rejected by Purchase",
+                                    PAYMENT_REJECTED: "Payment Rejected",
                                   };
-                                  return statusMap[item.productStatus || 'PENDING'] || (item.productStatus || 'PENDING');
+                                  return (
+                                    statusMap[
+                                      item.productStatus || "PENDING"
+                                    ] ||
+                                    item.productStatus ||
+                                    "PENDING"
+                                  );
                                 })()}
                                 size="small"
                                 sx={{
-                                  backgroundColor: getStatusColor(item.productStatus || 'PENDING'),
-                                  color: 'white',
-                                  fontSize: '0.75rem'
+                                  backgroundColor: getStatusColor(
+                                    item.productStatus || "PENDING"
+                                  ),
+                                  color: "white",
+                                  fontSize: "0.75rem",
                                 }}
                               />
                             </TableCell>
@@ -2012,8 +2128,12 @@ const FLADashboard = () => {
                                 <FormControlLabel
                                   control={
                                     <Checkbox
-                                      checked={selectedProducts[item.id] === true}
-                                      onChange={() => handleProductSelection(item.id, true)}
+                                      checked={
+                                        selectedProducts[item.id] === true
+                                      }
+                                      onChange={() =>
+                                        handleProductSelection(item.id, true)
+                                      }
                                       color="primary"
                                       size="small"
                                     />
@@ -2023,8 +2143,12 @@ const FLADashboard = () => {
                                 <FormControlLabel
                                   control={
                                     <Checkbox
-                                      checked={selectedProducts[item.id] === false}
-                                      onChange={() => handleProductSelection(item.id, false)}
+                                      checked={
+                                        selectedProducts[item.id] === false
+                                      }
+                                      onChange={() =>
+                                        handleProductSelection(item.id, false)
+                                      }
                                       color="error"
                                       size="small"
                                     />
@@ -2036,14 +2160,28 @@ const FLADashboard = () => {
                             <TableCell>
                               <TextField
                                 size="small"
-                                placeholder={selectedProducts[item.id] === false ? "Enter rejection remark..." : "Add remark (optional)"}
+                                placeholder={
+                                  selectedProducts[item.id] === false
+                                    ? "Enter rejection remark..."
+                                    : "Add remark (optional)"
+                                }
                                 value={productRemarks[item.id] || ""}
-                                onChange={e => handleProductRemarkChange(item.id, e.target.value)}
+                                onChange={(e) =>
+                                  handleProductRemarkChange(
+                                    item.id,
+                                    e.target.value
+                                  )
+                                }
                                 multiline
                                 rows={2}
                                 sx={{ minWidth: 150 }}
                                 // Only disable if neither approve nor reject is selected
-                                disabled={selectedProducts[item.id] !== true && selectedProducts[item.id] !== false ? true : false}
+                                disabled={
+                                  selectedProducts[item.id] !== true &&
+                                  selectedProducts[item.id] !== false
+                                    ? true
+                                    : false
+                                }
                               />
                             </TableCell>
                           </TableRow>
@@ -2058,7 +2196,12 @@ const FLADashboard = () => {
                       select
                       label="Assign to SLA"
                       value={selectedSla[indent.id] || ""}
-                      onChange={(e) => setSelectedSla({ ...selectedSla, [indent.id]: e.target.value })}
+                      onChange={(e) =>
+                        setSelectedSla({
+                          ...selectedSla,
+                          [indent.id]: e.target.value,
+                        })
+                      }
                       sx={{ minWidth: 250 }}
                       size="small"
                     >
@@ -2072,11 +2215,15 @@ const FLADashboard = () => {
                   </Box>
 
                   {/* Action Buttons */}
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
+                  >
                     <Button
                       variant="contained"
                       color="primary"
-                      disabled={(!hasSelectedItems && !hasItemsWithRemarks) || loading}
+                      disabled={
+                        (!hasSelectedItems && !hasItemsWithRemarks) || loading
+                      }
                       onClick={() => openDialog("review", indent.id)}
                       sx={{ fontWeight: 600 }}
                     >
@@ -2090,61 +2237,113 @@ const FLADashboard = () => {
         </Box>
       )}
 
-       {tab === 1 && (
-        <Box sx={{ width: '100vw', position: 'relative', left: '50%', right: '50%', ml: '-50vw', mr: '-50vw', px: { xs: 0, md: 4 }, py: 2, background: 'linear-gradient(135deg, #e3f2fd 0%, #fce4ec 100%)' }}>
+      {tab === 1 && (
+        <Box
+          sx={{
+            width: "100vw",
+            position: "relative",
+            left: "50%",
+            right: "50%",
+            ml: "-50vw",
+            mr: "-50vw",
+            px: { xs: 0, md: 4 },
+            py: 2,
+            background: "linear-gradient(135deg, #e3f2fd 0%, #fce4ec 100%)",
+          }}
+        >
           {allIndents.length === 0 ? (
             <Typography>No indents found.</Typography>
           ) : (
-            <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 24px 0 rgba(25, 118, 210, 0.10)', maxWidth: '98vw', mx: 'auto', mt: 2 }}>
+            <TableContainer
+              component={Paper}
+              sx={{
+                borderRadius: 3,
+                boxShadow: "0 4px 24px 0 rgba(25, 118, 210, 0.10)",
+                maxWidth: "98vw",
+                mx: "auto",
+                mt: 2,
+              }}
+            >
               <Table sx={{ minWidth: 900 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project Name</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Department</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Items Count</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Total Cost</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+                      Project Name
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+                      Department
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+                      Items Count
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+                      Total Cost
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+                      Status
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+                      Created
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {allIndents.map((indent, idx) => {
-                    const { totalItems, totalCost } = calculateIndentTotals(indent);
+                    const { totalItems, totalCost } =
+                      calculateIndentTotals(indent);
                     // User-friendly status mapping
                     const statusMap = {
-                      'PENDING': 'Pending at FLA',
-                      'APPROVED_BY_FLA': 'Pending at SLA',
-                      'REJECTED_BY_FLA': 'Rejected by FLA',
-                      'APPROVED_BY_SLA': 'Pending at Store',
-                      'REJECTED_BY_SLA': 'Rejected by SLA',
-                      'APPROVED_BY_STORE': 'Pending at Finance',
-                      'REJECTED_BY_STORE': 'Rejected by Store',
-                      'APPROVED_BY_FINANCE': 'Pending at Purchase',
-                      'REJECTED_BY_FINANCE': 'Rejected by Finance',
-                      'COMPLETED': 'Completed',
-                      'REJECTED_BY_PURCHASE': 'Rejected by Purchase',
-                      'PAYMENT_REJECTED': 'Payment Rejected',
+                      PENDING: "Pending at FLA",
+                      APPROVED_BY_FLA: "Pending at SLA",
+                      REJECTED_BY_FLA: "Rejected by FLA",
+                      APPROVED_BY_SLA: "Pending at Store",
+                      REJECTED_BY_SLA: "Rejected by SLA",
+                      APPROVED_BY_STORE: "Pending at Finance",
+                      REJECTED_BY_STORE: "Rejected by Store",
+                      APPROVED_BY_FINANCE: "Pending at Purchase",
+                      REJECTED_BY_FINANCE: "Rejected by Finance",
+                      COMPLETED: "Completed",
+                      REJECTED_BY_PURCHASE: "Rejected by Purchase",
+                      PAYMENT_REJECTED: "Payment Rejected",
                     };
-                    const userStatus = statusMap[indent.status] || indent.status;
+                    const userStatus =
+                      statusMap[indent.status] || indent.status;
                     return (
                       <React.Fragment key={indent.id}>
                         <TableRow
                           hover
-                          sx={{ cursor: 'pointer', transition: 'background 0.2s', '&:hover': { background: '#e3f2fd' } }}
-                          onClick={() => setOpenTrackingIdx(idx === openTrackingIdx ? null : idx)}
+                          sx={{
+                            cursor: "pointer",
+                            transition: "background 0.2s",
+                            "&:hover": { background: "#e3f2fd" },
+                          }}
+                          onClick={() =>
+                            setOpenTrackingIdx(
+                              idx === openTrackingIdx ? null : idx
+                            )
+                          }
                         >
                           <TableCell>{indent.projectName}</TableCell>
                           <TableCell>{indent.department}</TableCell>
                           <TableCell>{totalItems}</TableCell>
                           <TableCell>₹{totalCost.toLocaleString()}</TableCell>
                           <TableCell>
-                            <span style={{ color: COLORS.accent, fontWeight: 600 }}>{userStatus}</span>
+                            <span
+                              style={{ color: COLORS.accent, fontWeight: 600 }}
+                            >
+                              {userStatus}
+                            </span>
                           </TableCell>
-                          <TableCell>{new Date(indent.createdAt).toLocaleString()}</TableCell>
+                          <TableCell>
+                            {new Date(indent.createdAt).toLocaleString()}
+                          </TableCell>
                         </TableRow>
                         {openTrackingIdx === idx && (
                           <TableRow>
-                            <TableCell colSpan={6} sx={{ background: '#f3e5f5', p: 2 }}>
+                            <TableCell
+                              colSpan={6}
+                              sx={{ background: "#f3e5f5", p: 2 }}
+                            >
                               <TrackingStepsTable indent={indent} />
                             </TableCell>
                           </TableRow>
@@ -2163,25 +2362,25 @@ const FLADashboard = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={closeSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert onClose={closeSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={closeSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
 
-      <Dialog
-        open={dialog.open}
-        onClose={closeDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          Review Products
-        </DialogTitle>
+      <Dialog open={dialog.open} onClose={closeDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Review Products</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Please confirm your review of the selected products. Approved items will be forwarded to the SLA, and rejected items will be marked accordingly. You may add remarks for any product to provide additional context for your decision.
+            Please confirm your review of the selected products. Approved items
+            will be forwarded to the SLA, and rejected items will be marked
+            accordingly. You may add remarks for any product to provide
+            additional context for your decision.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

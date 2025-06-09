@@ -237,8 +237,8 @@ const UserIndentRequest = () => {
       };
       const formData = new FormData();
       formData.append("indentData", JSON.stringify(indentData));
-      // Append the document file (if present)
-      if (file) {
+      // Only append file if present and not empty
+      if (file && file.name) {
         formData.append("file", file, file.name);
       }
       await axios.post("/indent/create", formData, {
