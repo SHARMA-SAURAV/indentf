@@ -33,6 +33,7 @@ import {
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp, ShoppingCart, Assignment } from "@mui/icons-material";
 import axios from "../api/api";
+import FileViewerButton from "./FileViewerButton";
 
 const GRADIENT_BG = "linear-gradient(135deg, #FAFAFA 0%, #EDEDED 100%)";
 const ACCENT_COLOR = "#0d47a1";
@@ -213,6 +214,9 @@ const IndentDetailsTable = ({
             size="small"
             sx={{ fontWeight: 600 }}
           />
+        </TableCell>
+        <TableCell>
+          <FileViewerButton indent={indent} />
         </TableCell>
       </TableRow>
       <TableRow>
@@ -527,6 +531,7 @@ const StoreView = () => {
                       <TableCell sx={{ fontWeight: 700 }} align="center">Items</TableCell>
                       <TableCell sx={{ fontWeight: 700 }} align="right">Total Cost</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Atachement</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -554,155 +559,162 @@ const StoreView = () => {
       )}
 
       {tab === 1 && (
-        <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2, color: ACCENT_COLOR }}>
+        <Card sx={{ boxShadow: 6, borderRadius: 3, background: 'rgba(255,255,255,0.98)', border: `1.5px solid ${ACCENT_COLOR}22` }}>
+          <CardContent sx={{ p: { xs: 1, md: 3 } }}>
+            <Typography variant="h5" sx={{ mb: 1, color: ACCENT_COLOR, fontWeight: 600, letterSpacing: 1, textAlign: 'center', textShadow: '0 2px 8px #0d47a122' }}>
+              <FontAwesomeIcon icon={faUser} style={{ marginRight: 10, color: ACCENT_COLOR }} />
               Tracking History
             </Typography>
             {trackLoading ? (
-              <Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>
+              <Box display="flex" justifyContent="center" mt={4}><CircularProgress sx={{ color: ACCENT_COLOR }} /></Box>
             ) : trackError ? (
               <Typography variant="h6" align="center" mt={4} color="error" fontWeight={600}>{trackError}</Typography>
             ) : trackIndents.length === 0 ? (
               <Typography sx={{ color: '#8E99A3', textAlign: 'center', fontWeight: 600, fontSize: 20, py: 4 }}>No indents found.</Typography>
             ) : (
-              <TableContainer component={Paper}>
-                <Table size="small">
+              <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 2, background: 'rgba(250,250,255,0.98)' }}>
+                <Table size="small" sx={{ minWidth: 1100 }}>
                   <TableHead>
-                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                      <TableCell sx={{ fontWeight: 700 }}>Indent No.</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Purpose</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Requested By</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Created</TableCell>
+                    <TableRow sx={{ background: `linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%)` }}>
+                      <TableCell />
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Indent No.</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Project</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Purpose</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Department</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Requested By</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Total Cost</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: ACCENT_COLOR, fontSize: 16 }}>Created</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {trackIndents.map((indent) => (
-                      <React.Fragment key={indent.id}>
-                        <TableRow>
-                          <TableCell>{indent.indentNumber || indent.id}</TableCell>
-                          <TableCell>{indent.projectName}</TableCell>
-                          <TableCell>{indent.purpose}</TableCell>
-                          <TableCell>{indent.department}</TableCell>
-                          <TableCell>{indent.requestedBy?.name || indent.requestedBy?.username}</TableCell>
-                          <TableCell>₹{indent.totalIndentCost?.toLocaleString() || indent.totalCost?.toLocaleString()}</TableCell>
-                          <TableCell>{indent.status?.replace(/_/g, ' ')}</TableCell>
-                          <TableCell>{indent.createdAt ? new Date(indent.createdAt).toLocaleString() : ''}</TableCell>
-                        </TableRow>
-                        {/* Tracking Steps Table */}
-                        <TableRow>
-                          <TableCell colSpan={8} sx={{ background: '#f8fafd', p: 0 }}>
-                            <Box sx={{ p: 2 }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 1 }}>
-                                Tracking Steps
-                              </Typography>
-                              <Table size="small">
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                                    <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {(() => {
-                                    const steps = [];
-                                    if (indent.remarkByFla && (indent.flaApprovalDate || indent.status === "REJECTED_BY_FLA")) {
-                                      steps.push({ role: "FLA", remark: indent.remarkByFla, date: indent.flaApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_FLA" ? "Rejected" : "Approved" });
-                                    }
-                                    if (indent.remarkBySla && (indent.slaApprovalDate || indent.status === "REJECTED_BY_SLA")) {
-                                      steps.push({ role: "SLA", remark: indent.remarkBySla, date: indent.slaApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_SLA" ? "Rejected" : "Approved" });
-                                    }
-                                    if (indent.remarkByStore && (indent.storeApprovalDate || indent.status === "REJECTED_BY_STORE")) {
-                                      steps.push({ role: "Store", remark: indent.remarkByStore, date: indent.storeApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_STORE" ? "Rejected" : "Approved" });
-                                    }
-                                    if (indent.remarkByFinance && (indent.financeApprovalDate || indent.status === "REJECTED_BY_FINANCE")) {
-                                      steps.push({ role: "Finance", remark: indent.remarkByFinance, date: indent.financeApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_FINANCE" ? "Rejected" : "Approved" });
-                                    }
-                                    if (indent.remarkByPurchase && (indent.purchaseCompletionDate || indent.status === "REJECTED_BY_PURCHASE")) {
-                                      steps.push({ role: "Purchase", remark: indent.remarkByPurchase, date: indent.purchaseCompletionDate || indent.updatedAt, status: indent.status === "REJECTED_BY_PURCHASE" ? "Rejected" : "Completed" });
-                                    }
-                                    if (indent.remarkByUser && indent.userInspectionDate) {
-                                      steps.push({ role: "User", remark: indent.remarkByUser, date: indent.userInspectionDate, status: "Inspection Done" });
-                                    }
-                                    if (indent.gfrNote && indent.gfrCreatedAt) {
-                                      steps.push({ role: "Purchase", remark: indent.gfrNote, date: indent.gfrCreatedAt, status: "GFR Submitted" });
-                                    }
-                                    if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === "PAYMENT_REJECTED")) {
-                                      steps.push({ role: "Finance", remark: indent.paymentNote, date: indent.paymentCreatedAt, status: indent.status === "PAYMENT_REJECTED" ? "Rejected" : "Payment Done" });
-                                    }
-                                    steps.sort((a, b) => new Date(a.date) - new Date(b.date));
-                                    return steps.length > 0 ? steps.map((step, sidx) => (
-                                      <TableRow key={sidx}>
-                                        <TableCell sx={{ fontWeight: 600 }}>{step.role}</TableCell>
-                                        <TableCell>{step.remark}</TableCell>
-                                        <TableCell sx={{ color: step.status === "Rejected" ? '#d32f2f' : '#388e3c', fontWeight: 600 }}>{step.status}</TableCell>
-                                        <TableCell sx={{ color: '#666' }}>{step.date ? new Date(step.date).toLocaleString() : ''}</TableCell>
-                                      </TableRow>
-                                    )) : (
-                                      <TableRow>
-                                        <TableCell colSpan={4} sx={{ textAlign: 'center', color: '#888' }}>No tracking steps available for this indent.</TableCell>
-                                      </TableRow>
-                                    );
-                                  })()}
-                                </TableBody>
-                              </Table>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                        {/* Expandable row for products/items */}
-                        {indent.products && indent.products.length > 0 && (
+                    {trackIndents.map((indent) => {
+                      const isExpanded = expandedRows.has(`track-${indent.id}`);
+                      return (
+                        <React.Fragment key={indent.id}>
+                          <TableRow hover sx={{ background: isExpanded ? '#e3f2fd44' : 'transparent', transition: 'background 0.2s' }}>
+                            <TableCell>
+                              <IconButton size="small" onClick={() => handleToggleExpand(`track-${indent.id}`)} sx={{ color: ACCENT_COLOR, border: `1.5px solid ${ACCENT_COLOR}22`, background: isExpanded ? '#e3f2fd' : '#fff', borderRadius: 1 }}>
+                                {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                              </IconButton>
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>{indent.indentNumber || indent.id}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>{indent.projectName}</TableCell>
+                            <TableCell>{indent.purpose}</TableCell>
+                            <TableCell>{indent.department}</TableCell>
+                            <TableCell>{indent.requestedBy?.name || indent.requestedBy?.username}</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: '#1976d2' }}>₹{indent.totalIndentCost?.toLocaleString() || indent.totalCost?.toLocaleString()}</TableCell>
+                            <TableCell sx={{ color: indent.status?.includes('REJECTED') ? '#d32f2f' : '#1976d2', fontWeight: 700 }}>{indent.status?.replace(/_/g, ' ')}</TableCell>
+                            <TableCell sx={{ color: '#888' }}>{indent.createdAt ? new Date(indent.createdAt).toLocaleString() : ''}</TableCell>
+                          </TableRow>
                           <TableRow>
-                            <TableCell colSpan={8} sx={{ background: '#f8fafd', p: 0 }}>
-                              <Box sx={{ p: 2 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 1 }}>
-                                  Products
-                                </Typography>
-                                <Table size="small">
-                                  <TableHead>
-                                    <TableRow>
-                                      <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Unit Price</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>FLA Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>SLA Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Store Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Finance Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Purchase Remarks</TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  <TableBody>
-                                    {indent.products.map((item) => (
-                                      <TableRow key={item.id}>
-                                        <TableCell>{item.itemName}</TableCell>
-                                        <TableCell>{item.category}</TableCell>
-                                        <TableCell>{item.quantity}</TableCell>
-                                        <TableCell>₹{item.perPieceCost?.toLocaleString()}</TableCell>
-                                        <TableCell>₹{item.totalCost?.toLocaleString()}</TableCell>
-                                        <TableCell>{item.productStatus?.replace(/_/g, ' ')}</TableCell>
-                                        <TableCell>{item.flaRemarks}</TableCell>
-                                        <TableCell>{item.slaRemarks}</TableCell>
-                                        <TableCell>{item.storeRemarks}</TableCell>
-                                        <TableCell>{item.financeRemarks}</TableCell>
-                                        <TableCell>{item.purchaseRemarks}</TableCell>
+                            <TableCell colSpan={9} sx={{ background: '#f8fafd', p: 0 }}>
+                              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                                <Box sx={{ p: { xs: 1, md: 3 }, background: '#f8fafd', borderRadius: 2, boxShadow: '0 2px 12px #0d47a111', mb: 2 }}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 2, letterSpacing: 0.5 }}>
+                                    Tracking Steps
+                                  </Typography>
+                                  <Table size="small" sx={{ mb: 2, background: '#fff', borderRadius: 2, boxShadow: '0 1px 6px #0d47a111' }}>
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
                                       </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
-                              </Box>
+                                    </TableHead>
+                                    <TableBody>
+                                      {(() => {
+                                        const steps = [];
+                                        if (indent.remarkByFla && (indent.flaApprovalDate || indent.status === "REJECTED_BY_FLA")) {
+                                          steps.push({ role: "FLA", remark: indent.remarkByFla, date: indent.flaApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_FLA" ? "Rejected" : "Approved" });
+                                        }
+                                        if (indent.remarkBySla && (indent.slaApprovalDate || indent.status === "REJECTED_BY_SLA")) {
+                                          steps.push({ role: "SLA", remark: indent.remarkBySla, date: indent.slaApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_SLA" ? "Rejected" : "Approved" });
+                                        }
+                                        if (indent.remarkByStore && (indent.storeApprovalDate || indent.status === "REJECTED_BY_STORE")) {
+                                          steps.push({ role: "Store", remark: indent.remarkByStore, date: indent.storeApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_STORE" ? "Rejected" : "Approved" });
+                                        }
+                                        if (indent.remarkByFinance && (indent.financeApprovalDate || indent.status === "REJECTED_BY_FINANCE")) {
+                                          steps.push({ role: "Finance", remark: indent.remarkByFinance, date: indent.financeApprovalDate || indent.updatedAt, status: indent.status === "REJECTED_BY_FINANCE" ? "Rejected" : "Approved" });
+                                        }
+                                        if (indent.remarkByPurchase && (indent.purchaseCompletionDate || indent.status === "REJECTED_BY_PURCHASE")) {
+                                          steps.push({ role: "Purchase", remark: indent.remarkByPurchase, date: indent.purchaseCompletionDate || indent.updatedAt, status: indent.status === "REJECTED_BY_PURCHASE" ? "Rejected" : "Completed" });
+                                        }
+                                        if (indent.remarkByUser && indent.userInspectionDate) {
+                                          steps.push({ role: "User", remark: indent.remarkByUser, date: indent.userInspectionDate, status: "Inspection Done" });
+                                        }
+                                        if (indent.gfrNote && indent.gfrCreatedAt) {
+                                          steps.push({ role: "Purchase", remark: indent.gfrNote, date: indent.gfrCreatedAt, status: "GFR Submitted" });
+                                        }
+                                        if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === "PAYMENT_REJECTED")) {
+                                          steps.push({ role: "Finance", remark: indent.paymentNote, date: indent.paymentCreatedAt, status: indent.status === "PAYMENT_REJECTED" ? "Rejected" : "Payment Done" });
+                                        }
+                                        steps.sort((a, b) => new Date(a.date) - new Date(b.date));
+                                        return steps.length > 0 ? steps.map((step, sidx) => (
+                                          <TableRow key={sidx}>
+                                            <TableCell sx={{ fontWeight: 600 }}>{step.role}</TableCell>
+                                            <TableCell>{step.remark}</TableCell>
+                                            <TableCell sx={{ color: step.status === "Rejected" ? '#d32f2f' : '#388e3c', fontWeight: 600 }}>{step.status}</TableCell>
+                                            <TableCell sx={{ color: '#666' }}>{step.date ? new Date(step.date).toLocaleString() : ''}</TableCell>
+                                          </TableRow>
+                                        )) : (
+                                          <TableRow>
+                                            <TableCell colSpan={4} sx={{ textAlign: 'center', color: '#888' }}>No tracking steps available for this indent.</TableCell>
+                                          </TableRow>
+                                        );
+                                      })()}
+                                    </TableBody>
+                                  </Table>
+                                  {/* Tracking of indent items */}
+                                  {indent.products && indent.products.length > 0 && (
+                                    <Box sx={{ mt: 3 }}>
+                                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 2, letterSpacing: 0.5 }}>
+                                        Products/Items
+                                      </Typography>
+                                      <Table size="small" sx={{ background: '#fff', borderRadius: 2, boxShadow: '0 1px 6px #0d47a111' }}>
+                                        <TableHead>
+                                          <TableRow>
+                                            <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Unit Price</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>FLA Remarks</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>SLA Remarks</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Store Remarks</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Finance Remarks</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Purchase Remarks</TableCell>
+                                          </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                          {indent.products.map((item) => (
+                                            <TableRow key={item.id} sx={{ background: item.productStatus?.includes('REJECTED') ? '#ffebee' : item.productStatus?.includes('APPROVED') ? '#e8f5e9' : 'inherit' }}>
+                                              <TableCell>{item.itemName}</TableCell>
+                                              <TableCell>{item.category}</TableCell>
+                                              <TableCell>{item.quantity}</TableCell>
+                                              <TableCell>₹{item.perPieceCost?.toLocaleString()}</TableCell>
+                                              <TableCell>₹{item.totalCost?.toLocaleString()}</TableCell>
+                                              <TableCell>{item.productStatus?.replace(/_/g, ' ')}</TableCell>
+                                              <TableCell>{item.flaRemarks}</TableCell>
+                                              <TableCell>{item.slaRemarks}</TableCell>
+                                              <TableCell>{item.storeRemarks}</TableCell>
+                                              <TableCell>{item.financeRemarks}</TableCell>
+                                              <TableCell>{item.purchaseRemarks}</TableCell>
+                                            </TableRow>
+                                          ))}
+                                        </TableBody>
+                                      </Table>
+                                    </Box>
+                                  )}
+                                </Box>
+                              </Collapse>
                             </TableCell>
                           </TableRow>
-                        )}
-                      </React.Fragment>
-                    ))}
+                        </React.Fragment>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>

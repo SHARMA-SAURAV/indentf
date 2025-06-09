@@ -32,6 +32,7 @@ import {
   DialogActions
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore, ExpandLess } from "@mui/icons-material";
+import FileViewerButton from "../components/FileViewerButton";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -638,6 +639,8 @@ const FinanceView = () => {
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Products</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+
           </TableRow>
         </TableHead>
         <TableBody>
@@ -699,6 +702,10 @@ const FinanceView = () => {
                         Complete Payment
                       </Button>
                     )}
+                  </TableCell>
+
+                  <TableCell>
+                    <FileViewerButton indent={indent} />
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -865,6 +872,7 @@ const FinanceView = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Department</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Total Cost</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -890,6 +898,10 @@ const FinanceView = () => {
                           <TableCell>
                             <ProductStatusChip status={indent.status} />
                           </TableCell>
+                          <TableCell>
+                            <FileViewerButton indent={indent} />
+                          </TableCell>
+
                         </TableRow>
                         <TableRow>
                           <TableCell colSpan={7} sx={{ p: 0 }}>

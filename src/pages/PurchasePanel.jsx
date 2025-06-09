@@ -39,6 +39,7 @@ import {
   IconButton
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import FileViewerButton from "../components/FileViewerButton";
 
 // Design Tokens
 const GRADIENT_BG = "linear-gradient(135deg, #FAFAFA 0%, #EDEDED 100%)";
@@ -541,27 +542,23 @@ const PurchasePanel = () => {
     <Box
       sx={{
         width: '100vw',
-        height: '100vh',
         minHeight: '100vh',
         minWidth: '100vw',
         background: GRADIENT_BG,
         p: { xs: 1, md: 3 },
         m: 0,
         borderRadius: 0,
-        overflowX: 'auto',
-        overflowY: 'auto',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 1,
+        // Remove fixed positioning and overflow here
       }}
     >
+        <Box sx={{ mb: 2 }}></Box>
       <Typography
         variant="h4"
         gutterBottom
         sx={{
           color: ACCENT_COLOR,
           fontWeight: "bold",
+          letterSpacing: 1,
         }}
       >
         <FontAwesomeIcon icon={faUser} style={{ marginRight: 8 }} />
@@ -616,6 +613,8 @@ const PurchasePanel = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Total Cost</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Items</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -649,6 +648,9 @@ const PurchasePanel = () => {
                             >
                               Review
                             </Button>
+                          </TableCell>
+                          <TableCell>
+                            <FileViewerButton indent={indent} />
                           </TableCell>
                         </TableRow>
                         <TableRow>
@@ -934,6 +936,7 @@ const PurchasePanel = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Items</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -974,6 +977,10 @@ const PurchasePanel = () => {
                               View Details
                             </Button>
                           </TableCell>
+
+                          <TableCell>
+                            <FileViewerButton indent={indent} />
+                          </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
@@ -991,6 +998,7 @@ const PurchasePanel = () => {
                                       <TableCell sx={{ fontWeight: 600 }}>Unit Cost</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Total Cost</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                                      
                                     </TableRow>
                                   </TableHead>
                                   <TableBody>
@@ -1097,6 +1105,7 @@ const PurchasePanel = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Quantity</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Total Cost</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -1118,6 +1127,9 @@ const PurchasePanel = () => {
                           <TableCell>{indent.quantity}</TableCell>
                           <TableCell>₹{indent.totalCost}</TableCell>
                           <TableCell sx={{ color: indent.status.includes('REJECTED') ? '#d32f2f' : '#1976d2', fontWeight: 700 }}>{indent.status}</TableCell>
+                          <TableCell>
+                            <FileViewerButton indent={indent} />
+                          </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell style={{ paddingBottom: 0, paddingTop: 0, background: '#f8fafc' }} colSpan={8}>

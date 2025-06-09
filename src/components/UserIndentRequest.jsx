@@ -890,17 +890,44 @@ const UserIndentRequest = () => {
                   {/* Single file upload for the whole indent */}
                   <Grid item xs={12} sm={8}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f3f6fa', borderRadius: 2, p: 2, mb: 2 }}>
-                      <Button
+                  <Button
                         variant="outlined"
                         component="label"
                         fullWidth
                         sx={{ fontWeight: 600, borderRadius: 2 }}
                       >
-                        {file ? `Change File (${file.name})` : "Upload Document (optional)"}
+                        {file ? 'Change File (${file.name})' : "Attach (optional)"}
                         <input
                           type="file"
                           hidden
-                          onChange={(e) => setFile(e.target.files[0])}
+                          onChange={async (e) => {
+                            const selectedFile = e.target.files[0];
+                            if (selectedFile && selectedFile.size === 0) {
+                              setSnackbar({
+                                open: true,
+                                message: "Selected file is corrupted or empty. Please choose a valid file.",
+                                severity: "error",
+                              });
+                              setFile(null);
+                              e.target.value = null;
+                              return;
+                            }
+                            // PDF magic number check
+                            if (selectedFile && selectedFile.type === "application/pdf") {
+                              const header = await selectedFile.slice(0, 5).text();
+                              if (header !== "%PDF-") {
+                                setSnackbar({
+                                  open: true,
+                                  message: "This PDF file appears to be corrupted and cannot be uploaded.",
+                                  severity: "error",
+                                });
+                                setFile(null);
+                                e.target.value = null;
+                                return;
+                              }
+                            }
+                            setFile(selectedFile);
+                          }}
                         />
                       </Button>
                       {file && (
