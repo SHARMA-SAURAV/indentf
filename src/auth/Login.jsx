@@ -245,7 +245,6 @@ import {
   Alert,
   LinearProgress,
 } from "@mui/material";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
@@ -304,7 +303,7 @@ const Login = () => {
       <CssBaseline />
 
       {/* Header */}
-      <Box
+      {/* <Box
         sx={{
           backgroundColor: "#1565c0",
           color: "white",
@@ -325,7 +324,7 @@ const Login = () => {
         >
           Indent Management System
         </Typography>
-      </Box>
+      </Box> */}
 
       {/* Main content */}
       <Container component="main" maxWidth="xs" sx={{ mt: 8, mb: 6, flexGrow: 1 }}>
@@ -340,12 +339,12 @@ const Login = () => {
             backgroundColor: "white",
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: "#1976d2" }}>
-            <LockOutlinedIcon />
-          </Avatar>
+         
+            <img src="/logo.jpeg" alt="logo" style={{ width: 60, height: 60 }} />
+          
 
           <Typography component="h1" variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-            Welcome Back
+            Login
           </Typography>
 
           {loading && <LinearProgress sx={{ width: "100%", mb: 2 }} />}
@@ -368,7 +367,7 @@ const Login = () => {
               margin="normal"
               sx={{ mb: 2 }}
             />
-
+            
             <TextField
               label="Password"
               name="password"
