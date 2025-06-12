@@ -70,7 +70,11 @@ const UserIndentRequest = () => {
   const [pendingInspections, setPendingInspections] = useState([]);
   const [allIndents, setAllIndents] = useState([]);
   const [flaList, setFlaList] = useState([]); // if not already present
-  const [file, setFile] = useState(null); // New state for indent document
+  // --- NEW STATE FOR PROJECTS AND HEADS ---
+  const [projects, setProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [projectHead, setProjectHead] = useState("");
+  const PROJECT_HEADS = ["CAPITAL", "CONSUMABLE", "CATEGORY", "OVERHEAD"];
 
   // New state to manage open/close of collapsible sections
   const [openSections, setOpenSections] = React.useState({});
@@ -203,9 +207,43 @@ const UserIndentRequest = () => {
       severity: "info",
     });
     try {
+      // Check for budget overrun
+      const selectedProject = projects.find((p) => p.id === selectedProjectId);
+      let overBudget = false;
+      let budgetType = projectHead;
+      let allocated = 0;
+      let balance = 0;
+      if (selectedProject && budgetType) {
+        // Map projectHead to project property
+        const budgetMap = {
+          CAPITAL: {
+            allocated: selectedProject.capitalAmount,
+            balance: selectedProject.capitalBalance,
+          },
+          CONSUMABLE: {
+            allocated: selectedProject.consumableAmount,
+            balance: selectedProject.consumableBalance,
+          },
+          CATEGORY: {
+            allocated: selectedProject.categoryAmount,
+            balance: selectedProject.categoryBalance,
+          },
+          OVERHEAD: {
+            allocated: selectedProject.overheadAmount,
+            balance: selectedProject.overheadBalance,
+          },
+        };
+        allocated = budgetMap[budgetType]?.allocated || 0;
+        balance = budgetMap[budgetType]?.balance || 0;
+        if (totalCost > allocated) {
+          overBudget = true;
+        }
+      }
       // Prepare indentData (excluding files) in the required structure
       const indentData = {
-        projectName,
+        projectId: selectedProjectId,
+        projectHead,
+        projectName: projects.find((p) => p.id === selectedProjectId)?.name || projectName,
         recipientType,
         recipientId: selectedRecipientId,
         purpose: items[0]?.purpose || "",
@@ -237,11 +275,16 @@ const UserIndentRequest = () => {
       };
       const formData = new FormData();
       formData.append("indentData", JSON.stringify(indentData));
-      // Only append file if present and not empty
-      if (file && file.name) {
-        formData.append("file", file, file.name);
-      }
-      await axios.post("/indent/create", formData, {
+      // Append all item files as files[]
+      items.forEach((item) => {
+        if (item.file && item.file.name) {
+          formData.append("files", item.file, item.file.name);
+        } else {
+          // Append empty Blob for missing files to preserve order
+          formData.append("files", new Blob([]), "");
+        }
+      });
+      const apiResponse = await axios.post("/indent/create", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           const percent = Math.round(
@@ -254,14 +297,27 @@ const UserIndentRequest = () => {
           });
         },
       });
-      setStatus({ type: "success", message: "Indent submitted successfully!" });
-      setSnackbar({
-        open: true,
-        message: "Indent submitted successfully!",
-        severity: "success",
-      });
+      // Check for overBudget in API response (backend now always returns this)
+      if (apiResponse.data && apiResponse.data.overBudget) {
+        alert(apiResponse.data.message || "Warning: Budget exceeded for selected head.");
+        setStatus({ type: "warning", message: apiResponse.data.message || "Warning: Budget exceeded for selected head." });
+        setSnackbar({
+          open: true,
+          message: apiResponse.data.message || "Warning: Budget exceeded for selected head.",
+          severity: "warning",
+        });
+      } else {
+        setStatus({ type: "success", message: apiResponse.data.message || "Indent created successfully." });
+        setSnackbar({
+          open: true,
+          message: apiResponse.data.message || "Indent created successfully.",
+          severity: "success",
+        });
+      }
       // Reset form
       setProjectName("");
+      setSelectedProjectId("");
+      setProjectHead("");
       setSelectedRecipientId("");
       setRecipientType("FLA");
       setItems([
@@ -277,7 +333,6 @@ const UserIndentRequest = () => {
           fileStatus: "",
         },
       ]);
-      setFile(null); // Reset file state
     } catch (err) {
       setStatus({ type: "error", message: "Failed to submit indent." });
       setSnackbar({
@@ -655,6 +710,19 @@ const UserIndentRequest = () => {
     }));
   };
 
+  // --- FETCH PROJECTS ON MOUNT ---
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await axios.get("/project/getAll");
+        setProjects(res.data);
+      } catch (err) {
+        setSnackbar({ open: true, message: "Failed to load projects", severity: "error" });
+      }
+    };
+    fetchProjects();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -767,6 +835,39 @@ const UserIndentRequest = () => {
                       </TextField>
                     </Box>
                   </Grid>
+                  {/* --- NEW PROJECT AND HEAD SELECTION FIELDS --- */}
+                  <Grid item xs={12}>
+                    <TextField
+                      select
+                      label="Select Project"
+                      value={selectedProjectId}
+                      onChange={e => setSelectedProjectId(e.target.value)}
+                      fullWidth
+                      margin="normal"
+                      required
+                      InputProps={{ sx: { borderRadius: 2, background: '#fff' } }}
+                    >
+                      {projects.map((project) => (
+                        <MenuItem key={project.id} value={project.id}>{project.projectName || project.name || project.id}</MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      select
+                      label="Project Head"
+                      value={projectHead}
+                      onChange={e => setProjectHead(e.target.value)}
+                      fullWidth
+                      margin="normal"
+                      required
+                      InputProps={{ sx: { borderRadius: 2, background: '#fff' } }}
+                    >
+                      {PROJECT_HEADS.map((head) => (
+                        <MenuItem key={head} value={head}>{head}</MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
                   {/* Multi-item section with stepper style */}
                   <Grid item xs={12}>
                     <Box sx={{ mb: 2 }}>
@@ -874,6 +975,54 @@ const UserIndentRequest = () => {
                               />
                             </Grid>
                           </Grid>
+                          {/* --- PER-ITEM FILE UPLOAD --- */}
+                          <Grid item xs={12} sm={6}>
+                            <Button
+                              variant="outlined"
+                              component="label"
+                              fullWidth
+                              sx={{ fontWeight: 600, borderRadius: 2 }}
+                            >
+                              {item.file ? `Change File (${item.file.name})` : "Attach (optional)"}
+                              <input
+                                type="file"
+                                hidden
+                                onChange={async (e) => {
+                                  const selectedFile = e.target.files[0];
+                                  if (selectedFile && selectedFile.size === 0) {
+                                    setSnackbar({
+                                      open: true,
+                                      message: "Selected file is corrupted or empty. Please choose a valid file.",
+                                      severity: "error",
+                                    });
+                                    handleFileChange(idx, null);
+                                    e.target.value = null;
+                                    return;
+                                  }
+                                  // PDF magic number check
+                                  if (selectedFile && selectedFile.type === "application/pdf") {
+                                    const header = await selectedFile.slice(0, 5).text();
+                                    if (header !== "%PDF-") {
+                                      setSnackbar({
+                                        open: true,
+                                        message: "This PDF file appears to be corrupted and cannot be uploaded.",
+                                        severity: "error",
+                                      });
+                                      handleFileChange(idx, null);
+                                      e.target.value = null;
+                                      return;
+                                    }
+                                  }
+                                  handleFileChange(idx, selectedFile);
+                                }}
+                              />
+                            </Button>
+                            {item.file && (
+                              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                Selected: {item.file.name}
+                              </Typography>
+                            )}
+                          </Grid>
                         </Card>
                       ))}
                       <Button
@@ -885,56 +1034,6 @@ const UserIndentRequest = () => {
                       >
                         Add Another Item
                       </Button>
-                    </Box>
-                  </Grid>
-                  {/* Single file upload for the whole indent */}
-                  <Grid item xs={12} sm={8}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, background: '#f3f6fa', borderRadius: 2, p: 2, mb: 2 }}>
-                  <Button
-                        variant="outlined"
-                        component="label"
-                        fullWidth
-                        sx={{ fontWeight: 600, borderRadius: 2 }}
-                      >
-                        {file ? 'Change File (${file.name})' : "Attach (optional)"}
-                        <input
-                          type="file"
-                          hidden
-                          onChange={async (e) => {
-                            const selectedFile = e.target.files[0];
-                            if (selectedFile && selectedFile.size === 0) {
-                              setSnackbar({
-                                open: true,
-                                message: "Selected file is corrupted or empty. Please choose a valid file.",
-                                severity: "error",
-                              });
-                              setFile(null);
-                              e.target.value = null;
-                              return;
-                            }
-                            // PDF magic number check
-                            if (selectedFile && selectedFile.type === "application/pdf") {
-                              const header = await selectedFile.slice(0, 5).text();
-                              if (header !== "%PDF-") {
-                                setSnackbar({
-                                  open: true,
-                                  message: "This PDF file appears to be corrupted and cannot be uploaded.",
-                                  severity: "error",
-                                });
-                                setFile(null);
-                                e.target.value = null;
-                                return;
-                              }
-                            }
-                            setFile(selectedFile);
-                          }}
-                        />
-                      </Button>
-                      {file && (
-                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                          Selected: {file.name}
-                        </Typography>
-                      )}
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>

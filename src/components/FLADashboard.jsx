@@ -278,7 +278,7 @@ const FLADashboard = () => {
     // Indent Info Table
     const infoRows = [
       { label: "Indent Number", value: indent.indentNumber },
-      { label: "Project Name", value: indent.projectName },
+      { label: "Project Name", value: indent.project.projectName },
       { label: "Department", value: indent.department },
       { label: "Purpose", value: indent.purpose },
       { label: "Description", value: indent.description },
@@ -439,18 +439,137 @@ const FLADashboard = () => {
                 <TableCell sx={{ fontWeight: 700 }}>Per Piece Cost</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {(indent.items || []).map((item, idx) => (
                 <TableRow key={item.id || idx}>
-                  <TableCell>{item.itemName}</TableCell>
-                  <TableCell>{item.description}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {item.itemName || item.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        maxWidth: 200,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {item.description}
+                    </Typography>
+                  </TableCell>
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell>₹{item.perPieceCost?.toLocaleString()}</TableCell>
-                  <TableCell>₹{item.totalCost?.toLocaleString()}</TableCell>
                   <TableCell>
-                    {item.productStatus?.replace(/_/g, " ")}
+                    <Typography sx={{ fontWeight: 600 }}>
+                      ₹
+                      {(
+                        (item.perPieceCost || 0) *
+                        (item.quantity || 0)
+                      ).toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={(() => {
+                        const statusMap = {
+                          PENDING: "Pending at FLA",
+                          APPROVED_BY_FLA: "Pending at SLA",
+                          REJECTED_BY_FLA: "Rejected by FLA",
+                          APPROVED_BY_SLA: "Pending at Store",
+                          REJECTED_BY_SLA: "Rejected by SLA",
+                          APPROVED_BY_STORE: "Pending at Finance",
+                          REJECTED_BY_STORE: "Rejected by Store",
+                          APPROVED_BY_FINANCE: "Pending at Purchase",
+                          REJECTED_BY_FINANCE: "Rejected by Finance",
+                          COMPLETED: "Completed",
+                          REJECTED_BY_PURCHASE: "Rejected by Purchase",
+                          PAYMENT_REJECTED: "Payment Rejected",
+                        };
+                        return (
+                          statusMap[
+                            item.productStatus || "PENDING"
+                          ] ||
+                          item.productStatus ||
+                          "PENDING"
+                        );
+                      })()}
+                      size="small"
+                      sx={{
+                        backgroundColor: getStatusColor(
+                          item.productStatus || "PENDING"
+                        ),
+                        color: "white",
+                        fontSize: "0.75rem",
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {/* Attachment column: show FileViewerButton if file exists, else 'No file' */}
+                    {item.attachmentPath || item.fileName ? (
+                      <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">No file</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={1}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={selectedProducts[item.id] === true}
+                            onChange={() => handleProductSelection(item.id, true)}
+                            color="primary"
+                            size="small"
+                          />
+                        }
+                        label="Approve"
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={selectedProducts[item.id] === false}
+                            onChange={() => handleProductSelection(item.id, false)}
+                            color="error"
+                            size="small"
+                          />
+                        }
+                        label="Reject"
+                      />
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      placeholder={
+                        selectedProducts[item.id] === false
+                          ? "Enter rejection remark..."
+                          : "Add remark (optional)"
+                      }
+                      value={productRemarks[item.id] || ""}
+                      onChange={(e) =>
+                        handleProductRemarkChange(
+                          item.id,
+                          e.target.value
+                        )
+                      }
+                      multiline
+                      rows={2}
+                      sx={{ minWidth: 150 }}
+                      // Only disable if neither approve nor reject is selected
+                      disabled={
+                        selectedProducts[item.id] !== true &&
+                        selectedProducts[item.id] !== false
+                          ? true
+                          : false
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))}
@@ -813,14 +932,16 @@ const FLADashboard = () => {
                             fontSize: 20,
                           }}
                         >
-                          {indent.projectName?.[0]?.toUpperCase() || "?"}
+                          {/* Use project.projectName if available, else fallback */}
+                          {indent.project?.projectName?.[0]?.toUpperCase() || indent.projectName?.[0]?.toUpperCase() || "?"}
                         </Box>
                         <Box>
                           <Typography
                             variant="h6"
                             sx={{ color: COLORS.accent, fontWeight: 700 }}
                           >
-                            {indent.projectName}
+                            {/* Show project.projectName and indent.projectName if both exist */}
+                            {indent.project?.projectName ? `${indent.project.projectName} (${indent.projectName})` : indent.projectName}
                           </Typography>
                           <Typography
                             variant="body2"
@@ -829,6 +950,12 @@ const FLADashboard = () => {
                             Indent ID: {indent.id} | Department:{" "}
                             {indent.department}
                           </Typography>
+                          {/* Show Project Head if available */}
+                          {indent.projectHead && (
+                            <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
+                              Project Head: {indent.projectHead}
+                            </Typography>
+                          )}
                         </Box>
                       </Box>
                     </Grid>
@@ -873,19 +1000,25 @@ const FLADashboard = () => {
                           <TableCell sx={{ fontWeight: 700 }}>
                             Total Cost
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Status
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Attachment
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Action
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>
+                            Remark
+                          </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {(indent.items || []).map((item) => (
                           <TableRow key={item.id} hover>
                             <TableCell>
-                              <Typography
-                                variant="body2"
-                                sx={{ fontWeight: 600 }}
-                              >
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 {item.itemName || item.name}
                               </Typography>
                             </TableCell>
@@ -902,9 +1035,7 @@ const FLADashboard = () => {
                               </Typography>
                             </TableCell>
                             <TableCell>{item.quantity}</TableCell>
-                            <TableCell>
-                              ₹{item.perPieceCost?.toLocaleString()}
-                            </TableCell>
+                            <TableCell>₹{item.perPieceCost?.toLocaleString()}</TableCell>
                             <TableCell>
                               <Typography sx={{ fontWeight: 600 }}>
                                 ₹
@@ -928,8 +1059,7 @@ const FLADashboard = () => {
                                     APPROVED_BY_FINANCE: "Pending at Purchase",
                                     REJECTED_BY_FINANCE: "Rejected by Finance",
                                     COMPLETED: "Completed",
-                                    REJECTED_BY_PURCHASE:
-                                      "Rejected by Purchase",
+                                    REJECTED_BY_PURCHASE: "Rejected by Purchase",
                                     PAYMENT_REJECTED: "Payment Rejected",
                                   };
                                   return (
@@ -949,6 +1079,14 @@ const FLADashboard = () => {
                                   fontSize: "0.75rem",
                                 }}
                               />
+                            </TableCell>
+                            <TableCell>
+                              {/* Attachment column: show FileViewerButton if file exists, else 'No file' */}
+                              {item.attachmentPath || item.fileName ? (
+                                <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
+                              ) : (
+                                <Typography variant="caption" color="text.secondary">No file</Typography>
+                              )}
                             </TableCell>
                             <TableCell>
                               <Stack direction="row" spacing={1}>
@@ -1057,25 +1195,6 @@ const FLADashboard = () => {
                       Review Products
                     </Button>
                   </Box>
-
-                  {/* Show attached file button if any file property exists
-                  {(() => {
-                    const fileProp = indent.fileName || indent.attachmentPath || indent.attachmentName || indent.file;
-                    if (!fileProp) return null;
-                    return (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{ mt: 1, color: COLORS.accent, borderColor: COLORS.accent, textTransform: "none" }}
-                        startIcon={<i className="fas fa-paperclip" />}
-                        onClick={() => downloadFile(fileProp)}
-                      >
-                        View Attached File
-                      </Button>
-                    );
-                  })()} */}
-
-                  <FileViewerButton indent={indent} />
                 </CardContent>
               </Card>
             );
@@ -1169,7 +1288,7 @@ const FLADashboard = () => {
                             )
                           }
                         >
-                          <TableCell>{indent.projectName}</TableCell>
+                          <TableCell>{indent.project.projectName}</TableCell>
                           <TableCell>{indent.department}</TableCell>
                           <TableCell>{totalItems}</TableCell>
                           <TableCell>₹{totalCost.toLocaleString()}</TableCell>

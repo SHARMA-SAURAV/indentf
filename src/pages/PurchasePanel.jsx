@@ -609,11 +609,12 @@ const PurchasePanel = () => {
                     <TableCell />
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Indent Number</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Project Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Project Head</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Department</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Total Cost</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Items</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+                    {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell> */}
 
                   </TableRow>
                 </TableHead>
@@ -633,6 +634,7 @@ const PurchasePanel = () => {
                           </TableCell>
                           <TableCell>{indent.indentNumber}</TableCell>
                           <TableCell>{indent.projectName}</TableCell>
+                          <TableCell>{indent.projectHead}</TableCell>
                           <TableCell>{indent.department}</TableCell>
                           <TableCell>₹{indent.totalIndentCost}</TableCell>
                           <TableCell>
@@ -649,9 +651,9 @@ const PurchasePanel = () => {
                               Review
                             </Button>
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <FileViewerButton indent={indent} />
-                          </TableCell>
+                          </TableCell> */}
                         </TableRow>
                         <TableRow>
                           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
@@ -672,6 +674,7 @@ const PurchasePanel = () => {
                                       <TableCell sx={{ fontWeight: 600 }}>Approve</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Reject</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Remarks</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Attachment</TableCell>
                                     </TableRow>
                                   </TableHead>
                                   <TableBody>
@@ -706,6 +709,10 @@ const PurchasePanel = () => {
                                             onChange={e => handleItemRemarkChange(indent.id, item.id, e.target.value)}
                                             disabled={item.productStatus !== 'APPROVED_BY_FINANCE'}
                                           />
+                                        </TableCell>
+
+                                        <TableCell>
+                                          <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
                                         </TableCell>
                                       </TableRow>
                                     ))}
@@ -936,7 +943,7 @@ const PurchasePanel = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Items</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+                    {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell> */}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -978,9 +985,9 @@ const PurchasePanel = () => {
                             </Button>
                           </TableCell>
 
-                          <TableCell>
+                          {/* <TableCell>
                             <FileViewerButton indent={indent} />
-                          </TableCell>
+                          </TableCell> */}
                         </TableRow>
                         <TableRow>
                           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
@@ -998,6 +1005,7 @@ const PurchasePanel = () => {
                                       <TableCell sx={{ fontWeight: 600 }}>Unit Cost</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Total Cost</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Attachment</TableCell>
                                       
                                     </TableRow>
                                   </TableHead>
@@ -1016,6 +1024,10 @@ const PurchasePanel = () => {
                                             color={item.productStatus === 'APPROVED_BY_PURCHASE' ? 'success' : 'default'}
                                             sx={{ fontSize: '0.7rem' }}
                                           />
+                                        </TableCell>
+                                        <TableCell>
+                                          <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} indent={indent} />
+
                                         </TableCell>
                                       </TableRow>
                                     ))}
@@ -1105,7 +1117,7 @@ const PurchasePanel = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Quantity</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Total Cost</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+                    {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell> */}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -1127,9 +1139,9 @@ const PurchasePanel = () => {
                           <TableCell>{indent.quantity}</TableCell>
                           <TableCell>₹{indent.totalCost}</TableCell>
                           <TableCell sx={{ color: indent.status.includes('REJECTED') ? '#d32f2f' : '#1976d2', fontWeight: 700 }}>{indent.status}</TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <FileViewerButton indent={indent} />
-                          </TableCell>
+                          </TableCell> */}
                         </TableRow>
                         <TableRow>
                           <TableCell style={{ paddingBottom: 0, paddingTop: 0, background: '#f8fafc' }} colSpan={8}>

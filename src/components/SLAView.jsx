@@ -41,7 +41,15 @@ import FileViewerButton from "./FileViewerButton";
 const CARD_BG = "rgba(255, 255, 255, 0.95)";
 const TEXT_COLOR = "#444950";
 const ACCENT_COLOR = "#0d47a1";
-
+const COLORS = {
+  background: "linear-gradient(135deg, #FAFAFA 0%, #EDEDED 100%)",
+  cardBg: "rgba(255, 255, 255, 0.95)",
+  textPrimary: "#444950",
+  textSecondary: "#8E99A3",
+  accent: "#0d47a1",
+  error: "#D32F2F",
+  success: "#2E7D32",
+};
 const ProductReviewTable = ({ indent, onReviewProducts, loading }) => {
   // Only allow review for items with productStatus === 'APPROVED_BY_FLA' or 'PENDING_SLA'
   const reviewableStatuses = ['APPROVED_BY_FLA', 'PENDING_SLA', 'PENDING'];
@@ -110,7 +118,7 @@ const ProductReviewTable = ({ indent, onReviewProducts, loading }) => {
   return (
     <Card sx={{ mt: 3, p: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       <Typography variant="h6" sx={{ mb: 3, color: ACCENT_COLOR, fontWeight: 700 }}>
-        Review Products for: {indent.projectName}
+        Review Products for: {indent.project.projectName}
       </Typography>
       <TableContainer component={Paper} sx={{ mb: 3 }}>
         <Table>
@@ -123,6 +131,7 @@ const ProductReviewTable = ({ indent, onReviewProducts, loading }) => {
               <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Remarks</TableCell>
             </TableRow>
           </TableHead>
@@ -154,6 +163,9 @@ const ProductReviewTable = ({ indent, onReviewProducts, loading }) => {
                     size="small"
                   />
                 </TableCell>
+
+                
+
                 <TableCell>
                   {/* Show approve/reject only if status is APPROVED_BY_FLA */}
                   {reviewableStatuses.includes(item.productStatus) ? (
@@ -184,6 +196,13 @@ const ProductReviewTable = ({ indent, onReviewProducts, loading }) => {
                       Not available for review
                     </Typography>
                   )}
+                </TableCell>
+
+                <TableCell>
+                    {/* <FileViewerButton
+                      fileName={item.attachmentName || item.fileName}/>*/}
+
+                       <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
                 </TableCell>
                 <TableCell>
                   {/* Show remark input only if status is APPROVED_BY_FLA */}
@@ -303,16 +322,21 @@ const IndentProjectCard = ({ indent, onReviewProducts, actionLoading }) => {
             fontSize: 20,
             mr: 3,
           }}>
-            {indent.projectName?.[0]?.toUpperCase() || '?'}
+            {indent.project.projectName?.[0]?.toUpperCase() || '?'}
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: ACCENT_COLOR }}>
-              {indent.projectName}
+              {indent.project.projectName}
             </Typography>
             <Typography variant="body2" color="textSecondary">
               Department: {indent.department} | Items: {indent.items?.length || 0} | 
               Status: {indent.status}
             </Typography>
+            {indent.projectHead && (
+                                        <Typography variant="body2" sx={{ color: COLORS.textSecondary }}>
+                                          Project Head: {indent.projectHead}
+                                        </Typography>
+                                      )}
           </Box>
           <Box sx={{ display: 'flex', gap: 2, mr: 2 }}>
             <Chip 
@@ -517,6 +541,7 @@ const SLAView = () => {
                     <TableHead>
                       <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project Name</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project Head</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Department</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Total Items</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Status</TableCell>
@@ -536,7 +561,8 @@ const SLAView = () => {
                             }}
                             onClick={() => setOpenTrackingIdx(idx === openTrackingIdx ? null : idx)}
                           >
-                            <TableCell sx={{ fontWeight: 600 }}>{indent.projectName}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>{indent.project.projectName}</TableCell>
+                            <TableCell>{indent.projectHead || 'N/A'}</TableCell>
                             <TableCell>{indent.department}</TableCell>
                             <TableCell>{indent.items?.length || 0}</TableCell>
                             <TableCell>
@@ -613,6 +639,7 @@ const TrackingDetailsSLA = ({ indent }) => {
                 <TableCell sx={{ fontWeight: 600 }}>Unit Cost</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Total</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Attachment</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>SLA Remark</TableCell>
               </TableRow>
             </TableHead>
@@ -633,6 +660,9 @@ const TrackingDetailsSLA = ({ indent }) => {
                         item.productStatus?.includes('REJECTED') ? 'error' : 'default'
                       }
                     />
+                  </TableCell>
+                  <TableCell>
+                    <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
                   </TableCell>
                   <TableCell>{item.slaRemarks || '-'}</TableCell>
                 </TableRow>

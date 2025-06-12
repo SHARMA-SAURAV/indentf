@@ -7,9 +7,10 @@ const COLORS = {
   accent: "#1976d2", // Replace with your theme color
 };
 
-const downloadFile = async (fileName) => {
+const downloadFile = async (fileNameOrPath) => {
   try {
-    const response = await axios.get(`/indent/file/${encodeURIComponent(fileName)}`, {
+    // Accept both fileName and attachmentPath
+    const response = await axios.get(`/indent/file/${encodeURIComponent(fileNameOrPath)}`, {
       responseType: 'blob',
     });
     const blob = response.data;
@@ -21,8 +22,9 @@ const downloadFile = async (fileName) => {
   }
 };
 
-const FileViewerButton = ({ indent }) => {
-  const fileProp = indent?.fileName || indent?.attachmentPath || indent?.attachmentName || indent?.file;
+const FileViewerButton = ({ fileName, attachmentPath, indent }) => {
+  // Prefer item-level props, fallback to indent-level
+  const fileProp = attachmentPath || fileName || indent?.attachmentPath || indent?.attachmentName || indent?.file;
   if (!fileProp) return null;
 
   return (

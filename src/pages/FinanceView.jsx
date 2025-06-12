@@ -632,6 +632,7 @@ const FinanceView = () => {
             <TableCell />
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Indent ID</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Project Name</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Project Head</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Department</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>
               {type === 'payment' ? 'Payment Amount' : 'Total Cost'}
@@ -639,7 +640,7 @@ const FinanceView = () => {
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Products</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
-            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+            {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell> */}
 
           </TableRow>
         </TableHead>
@@ -658,7 +659,8 @@ const FinanceView = () => {
                     </IconButton>
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{indent.indentNumber}</TableCell>
-                  <TableCell>{indent.projectName}</TableCell>
+                  <TableCell>{indent.project.projectName}</TableCell>
+                  <TableCell>{indent.projectHead || 'N/A'}</TableCell>
                   <TableCell>{indent.department || 'N/A'}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>
                     ₹{displayAmount?.toLocaleString()}
@@ -695,7 +697,9 @@ const FinanceView = () => {
                       <Button
                         variant="contained"
                         size="small"
-                        color="success"
+                       //change color to red
+                        sx={{ bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' } }}
+                        
                         onClick={() => setPaymentDialog({ open: true, indent })}
                         startIcon={<FontAwesomeIcon icon={faCreditCard} />}
                       >
@@ -725,6 +729,8 @@ const FinanceView = () => {
                               <TableCell sx={{ fontWeight: 600 }}>Per Piece Cost</TableCell>
                               <TableCell sx={{ fontWeight: 600 }}>Total Cost</TableCell>
                               <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>Attachment</TableCell>
+
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -738,6 +744,9 @@ const FinanceView = () => {
                                 <TableCell sx={{ fontWeight: 600 }}>₹{item.totalCost}</TableCell>
                                 <TableCell>
                                   <ProductStatusChip status={item.productStatus} />
+                                </TableCell>
+                                <TableCell>
+                                  <FileViewerButton indent={item} />
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -872,7 +881,7 @@ const FinanceView = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Department</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Total Cost</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+                    {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell> */}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -930,6 +939,7 @@ const FinanceView = () => {
                                       <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
                                       <TableCell sx={{ fontWeight: 700 }}>Unit Cost</TableCell>
                                       <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
+                                      <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
                                       <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                                       <TableCell sx={{ fontWeight: 700 }}>FLA Remarks</TableCell>
                                       <TableCell sx={{ fontWeight: 700 }}>SLA Remarks</TableCell>
@@ -947,6 +957,9 @@ const FinanceView = () => {
                                         <TableCell>{item.quantity}</TableCell>
                                         <TableCell>₹{item.perPieceCost}</TableCell>
                                         <TableCell>₹{item.totalCost}</TableCell>
+                                        <TableCell>
+                                          <FileViewerButton indent={item} />  
+                                        </TableCell>
                                         <TableCell>{item.productStatus?.replace(/_/g, ' ')}</TableCell>
                                         <TableCell>{item.flaRemarks}</TableCell>
                                         <TableCell>{item.slaRemarks}</TableCell>

@@ -67,7 +67,7 @@ const ProductRow = ({ product, indentId, onApprovalChange, onRemarkChange, appro
         <Typography variant="subtitle2" fontWeight={600}>{product.itemName}</Typography>
         <Typography variant="caption" color="text.secondary">{product.description}</Typography>
       </TableCell>
-      <TableCell>{product.category || 'N/A'}</TableCell>
+    
       <TableCell align="center" sx={{ fontWeight: 600 }}>{product.quantity}</TableCell>
       <TableCell align="right" sx={{ fontWeight: 600 }}>₹{product.perPieceCost?.toLocaleString()}</TableCell>
       <TableCell align="right" sx={{ fontWeight: 700, color: ACCENT_COLOR }}>₹{product.totalCost?.toLocaleString()}</TableCell>
@@ -86,6 +86,10 @@ const ProductRow = ({ product, indentId, onApprovalChange, onRemarkChange, appro
         <Typography variant="caption" color="text.secondary">
           SLA: {product.slaRemarks || 'No remarks'}
         </Typography>
+      </TableCell>
+      <TableCell sx={{ minWidth: 200 }}>
+          {/* <FileViewerButton fileName={product.attachmentPath}/> */}
+            <FileViewerButton fileName={product.fileName} attachmentPath={product.attachmentPath} />
       </TableCell>
       <TableCell sx={{ minWidth: 250 }}>
         {product.productStatus === 'APPROVED_BY_SLA' && (
@@ -177,12 +181,15 @@ const IndentDetailsTable = ({
         </TableCell>
         <TableCell>
           <Typography variant="subtitle2" fontWeight={600}>
-            {indent.projectName}
+            {indent.project.projectName}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          {/* <Typography variant="caption" color="text.secondary">
             {indent.purpose}
-          </Typography>
+          </Typography> */}
         </TableCell>
+        <TableCell>
+            {indent.projectHead}
+        </TableCell>  
         <TableCell>{indent.department || 'N/A'}</TableCell>
         <TableCell>
           <Box>
@@ -214,10 +221,9 @@ const IndentDetailsTable = ({
             size="small"
             sx={{ fontWeight: 600 }}
           />
+          {/* {console.log(indent.items.fileName, indent.items.attachmentPath)} */}
         </TableCell>
-        <TableCell>
-          <FileViewerButton indent={indent} />
-        </TableCell>
+        
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
@@ -251,12 +257,13 @@ const IndentDetailsTable = ({
                   <TableHead>
                     <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                       <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
+                      {/* <TableCell sx={{ fontWeight: 700 }}>Category</TableCell> */}
                       <TableCell sx={{ fontWeight: 700 }} align="center">Qty</TableCell>
                       <TableCell sx={{ fontWeight: 700 }} align="right">Unit Price</TableCell>
                       <TableCell sx={{ fontWeight: 700 }} align="right">Total Cost</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>SLA Status</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>SLA Remarks</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Store Action</TableCell>
                     </TableRow>
                   </TableHead>
@@ -525,13 +532,14 @@ const StoreView = () => {
                     <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                       <TableCell />
                       <TableCell sx={{ fontWeight: 700 }}>Indent No.</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Project Name</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Project Head</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Requested By</TableCell>
                       <TableCell sx={{ fontWeight: 700 }} align="center">Items</TableCell>
                       <TableCell sx={{ fontWeight: 700 }} align="right">Total Cost</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Atachement</TableCell>
+                      {/* <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell> */}
                     </TableRow>
                   </TableHead>
                   <TableBody>
