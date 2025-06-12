@@ -602,6 +602,7 @@ const FinanceView = () => {
       await axios.post("/indent/finance/payment/submit", {
         indentId,
         paymentNote
+        
       });
       alert("Payment marked as completed successfully");
       fetchPaymentIndents();
