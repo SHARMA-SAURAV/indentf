@@ -40,6 +40,7 @@ import {
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import FileViewerButton from "../components/FileViewerButton";
+import InspectionFileViewer from "../components/InspectionFileViewer"; // Adjust the import path as necessary
 
 // Design Tokens
 const GRADIENT_BG = "linear-gradient(135deg, #FAFAFA 0%, #EDEDED 100%)";
@@ -943,7 +944,8 @@ const PurchasePanel = () => {
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Items</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
-                    {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell> */}
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
+
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -985,9 +987,9 @@ const PurchasePanel = () => {
                             </Button>
                           </TableCell>
 
-                          {/* <TableCell>
-                            <FileViewerButton indent={indent} />
-                          </TableCell> */}
+                          <TableCell>
+                            <InspectionFileViewer fileName={indent.inspectionReportPath} />
+                          </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
