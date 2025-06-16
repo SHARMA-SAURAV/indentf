@@ -386,6 +386,13 @@ const SLAView = () => {
   const [tab, setTab] = useState(0);
   const [allIndents, setAllIndents] = useState([]);
   const [openTrackingIdx, setOpenTrackingIdx] = useState(null);
+  // New state for returned indents
+  const [returnedIndents, setReturnedIndents] = useState([]);
+  const [returnedLoading, setReturnedLoading] = useState(false);
+  const [returnedError, setReturnedError] = useState(null);
+  const [resubmitRemarks, setResubmitRemarks] = useState({});
+  const [resubmitLoading, setResubmitLoading] = useState({});
+  const [resubmitFiles, setResubmitFiles] = useState({});
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -421,13 +428,30 @@ const SLAView = () => {
     }
   }, []);
 
+  // Fetch returned indents for this role
+  const fetchReturnedIndents = useCallback(async () => {
+    setReturnedLoading(true);
+    setReturnedError(null);
+    try {
+      const res = await axios.get("/returned-to-role", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setReturnedIndents(res.data);
+    } catch (err) {
+      setReturnedError("Failed to load returned indents. Please try again.");
+    } finally {
+      setReturnedLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchIndents();
   }, [fetchIndents]);
 
   useEffect(() => {
     if (tab === 1) fetchAllIndents();
-  }, [tab, fetchAllIndents]);
+    if (tab === 2) fetchReturnedIndents();
+  }, [tab, fetchAllIndents, fetchReturnedIndents]);
 
   const handleReviewProducts = useCallback(async (reviewData) => {
     setActionLoading(true);
@@ -445,6 +469,31 @@ const SLAView = () => {
     }
   }, [fetchIndents]);
   
+  // Handler for resubmitting a returned indent
+  const handleResubmit = async (indentId) => {
+    setResubmitLoading((prev) => ({ ...prev, [indentId]: true }));
+    try {
+      const formData = new FormData();
+      formData.append('remarks', resubmitRemarks[indentId] || '');
+      if (resubmitFiles[indentId]) {
+        formData.append('attachment', resubmitFiles[indentId]);
+      }
+      await axios.put(`/resubmit/${indentId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      alert("Indent resubmitted to Finance successfully!");
+      fetchReturnedIndents();
+      setResubmitFiles((prev) => ({ ...prev, [indentId]: undefined }));
+      setResubmitRemarks((prev) => ({ ...prev, [indentId]: '' }));
+    } catch (err) {
+      alert("Failed to resubmit indent. Please try again.");
+    } finally {
+      setResubmitLoading((prev) => ({ ...prev, [indentId]: false }));
+    }
+  };
 
   return (
     <Box
@@ -480,127 +529,190 @@ const SLAView = () => {
         >
           <Tab label="Pending Reviews" />
           <Tab label="Track All Indents" />
+          <Tab label="Returned Indents" />
         </Tabs>
       </Box>
 
-      {loading ? (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Typography
-          variant="h6"
-          align="center"
-          mt={4}
-          color="error"
-          fontWeight={600}
-        >
-          {error}
-        </Typography>
-      ) : (
-        <>
-          {tab === 0 && (
-            <Box>
-              {indents.length === 0 ? (
-                <Typography variant="h6" align="center" mt={4} color="textSecondary">
-                  No pending indents for SLA review.
-                </Typography>
-              ) : (
-                <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-                  {indents.map((indent) => (
-                    <IndentProjectCard
-                      key={indent.id}
-                      indent={indent}
-                      onReviewProducts={handleReviewProducts}
-                      actionLoading={actionLoading}
-                    />
+      {tab === 2 && (
+        <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+          {returnedLoading ? (
+            <Box display="flex" justifyContent="center" mt={4}>
+              <CircularProgress />
+            </Box>
+          ) : returnedError ? (
+            <Typography variant="h6" align="center" mt={4} color="error" fontWeight={600}>
+              {returnedError}
+            </Typography>
+          ) : returnedIndents.length === 0 ? (
+            <Typography variant="h6" align="center" mt={4} color="textSecondary">
+              No returned indents found.
+            </Typography>
+          ) : (
+            <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 24px 0 rgba(25, 118, 210, 0.10)', mt: 2 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                    <TableCell sx={{ fontWeight: 700 }}>Project Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Finance Remark</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Your Remark/Info</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {returnedIndents.map((indent) => (
+                    <TableRow key={indent.id}>
+                      <TableCell>{indent.project?.projectName || '-'}</TableCell>
+                      <TableCell>{indent.department}</TableCell>
+                      <TableCell>
+                        <Chip label={indent.status} size="small" color={indent.status.includes('SENT_BACK') ? 'warning' : 'default'} />
+                      </TableCell>
+                      <TableCell>{indent.financeRemarks || '-'}</TableCell>
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          placeholder="Provide info/remark..."
+                          value={resubmitRemarks[indent.id] || ''}
+                          onChange={e => setResubmitRemarks(prev => ({ ...prev, [indent.id]: e.target.value }))}
+                          multiline
+                          rows={2}
+                          sx={{ minWidth: 200 }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <input
+                          type="file"
+                          accept="*"
+                          onChange={e => setResubmitFiles(prev => ({ ...prev, [indent.id]: e.target.files[0] }))}
+                        />
+                        {resubmitFiles[indent.id] && (
+                          <Typography variant="caption" color="textSecondary">
+                            {resubmitFiles[indent.id].name}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          disabled={resubmitLoading[indent.id] || !(resubmitRemarks[indent.id] && resubmitRemarks[indent.id].trim())}
+                          onClick={() => handleResubmit(indent.id)}
+                        >
+                          {resubmitLoading[indent.id] ? <CircularProgress size={18} color="inherit" /> : 'Resubmit to Finance'}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </Box>
-              )}
-            </Box>
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
+        </Box>
+      )}
 
-          {tab === 1 && (
-            <Box sx={{ maxWidth: '100%', mx: 'auto' }}>
-              {allIndents.length === 0 ? (
-                <Typography variant="h6" align="center" mt={4} color="textSecondary">
-                  No indents found.
-                </Typography>
-              ) : (
-                <TableContainer 
-                  component={Paper} 
-                  sx={{ 
-                    borderRadius: 3, 
-                    boxShadow: '0 4px 24px 0 rgba(25, 118, 210, 0.10)',
-                    maxWidth: '100%',
-                    mx: 'auto', 
-                    mt: 2 
-                  }}
-                >
-                  <Table sx={{ minWidth: 900 }}>
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project Name</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project Head</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Department</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Total Items</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Created</TableCell>
-                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Details</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {allIndents.map((indent, idx) => (
-                        <React.Fragment key={indent.id}>
-                          <TableRow
-                            hover
-                            sx={{ 
-                              cursor: 'pointer', 
-                              transition: 'background 0.2s', 
-                              '&:hover': { background: '#e3f2fd' } 
-                            }}
-                            onClick={() => setOpenTrackingIdx(idx === openTrackingIdx ? null : idx)}
-                          >
-                            <TableCell sx={{ fontWeight: 600 }}>{indent.project.projectName}</TableCell>
-                            <TableCell>{indent.projectHead || 'N/A'}</TableCell>
-                            <TableCell>{indent.department}</TableCell>
-                            <TableCell>{indent.items?.length || 0}</TableCell>
-                            <TableCell>
-                              <Chip
-                                label={indent.status}
-                                color={
-                                  indent.status.includes('APPROVED') ? 'success' :
-                                  indent.status.includes('REJECTED') ? 'error' :
-                                  indent.status.includes('PENDING') ? 'warning' : 'default'
-                                }
-                                size="small"
-                              />
-                            </TableCell>
-                            <TableCell>{new Date(indent.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>
-                              {openTrackingIdx === idx ? (
-                                <KeyboardArrowUp sx={{ color: ACCENT_COLOR, fontSize: 28 }} />
-                              ) : (
-                                <KeyboardArrowDown sx={{ color: ACCENT_COLOR, fontSize: 28 }} />
-                              )}
-                            </TableCell>
-                          </TableRow>
-                          {openTrackingIdx === idx && (
-                            <TableRow>
-                              <TableCell colSpan={6} sx={{ background: '#f8f9fa', p: 3 }}>
-                                <TrackingDetailsSLA indent={indent} />
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
+      {/* ...existing code for other tabs... */}
+      {tab === 0 && (
+        <Box>
+          {indents.length === 0 ? (
+            <Typography variant="h6" align="center" mt={4} color="textSecondary">
+              No pending indents for SLA review.
+            </Typography>
+          ) : (
+            <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+              {indents.map((indent) => (
+                <IndentProjectCard
+                  key={indent.id}
+                  indent={indent}
+                  onReviewProducts={handleReviewProducts}
+                  actionLoading={actionLoading}
+                />
+              ))}
             </Box>
           )}
-        </>
+        </Box>
+      )}
+
+      {tab === 1 && (
+        <Box sx={{ maxWidth: '100%', mx: 'auto' }}>
+          {allIndents.length === 0 ? (
+            <Typography variant="h6" align="center" mt={4} color="textSecondary">
+              No indents found.
+            </Typography>
+          ) : (
+            <TableContainer 
+              component={Paper} 
+              sx={{ 
+                borderRadius: 3, 
+                boxShadow: '0 4px 24px 0 rgba(25, 118, 210, 0.10)',
+                maxWidth: '100%',
+                mx: 'auto', 
+                mt: 2 
+              }}
+            >
+              <Table sx={{ minWidth: 900 }}>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project Head</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Department</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Total Items</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Created</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Details</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {allIndents.map((indent, idx) => (
+                    <React.Fragment key={indent.id}>
+                      <TableRow
+                        hover
+                        sx={{ 
+                          cursor: 'pointer', 
+                          transition: 'background 0.2s', 
+                          '&:hover': { background: '#e3f2fd' } 
+                        }}
+                        onClick={() => setOpenTrackingIdx(idx === openTrackingIdx ? null : idx)}
+                      >
+                        <TableCell sx={{ fontWeight: 600 }}>{indent.project.projectName}</TableCell>
+                        <TableCell>{indent.projectHead || 'N/A'}</TableCell>
+                        <TableCell>{indent.department}</TableCell>
+                        <TableCell>{indent.items?.length || 0}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={indent.status}
+                            color={
+                              indent.status.includes('APPROVED') ? 'success' :
+                              indent.status.includes('REJECTED') ? 'error' :
+                              indent.status.includes('PENDING') ? 'warning' : 'default'
+                            }
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>{new Date(indent.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          {openTrackingIdx === idx ? (
+                            <KeyboardArrowUp sx={{ color: ACCENT_COLOR, fontSize: 28 }} />
+                          ) : (
+                            <KeyboardArrowDown sx={{ color: ACCENT_COLOR, fontSize: 28 }} />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                      {openTrackingIdx === idx && (
+                        <TableRow>
+                          <TableCell colSpan={6} sx={{ background: '#f8f9fa', p: 3 }}>
+                            <TrackingDetailsSLA indent={indent} />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Box>
       )}
     </Box>
   );

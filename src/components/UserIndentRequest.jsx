@@ -723,6 +723,10 @@ const UserIndentRequest = () => {
     fetchProjects();
   }, []);
 
+  const [inspectionRemarks, setInspectionRemarks] = useState({});
+  const [inspectionFiles, setInspectionFiles] = useState({});
+  const [inspectionLoading, setInspectionLoading] = useState({});
+
   return (
     <Box
       sx={{
@@ -1157,6 +1161,16 @@ const UserIndentRequest = () => {
                         <TableCell
                           sx={{ fontWeight: 700, color: "primary.main" }}
                         >
+                          Remark
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontWeight: 700, color: "primary.main" }}
+                        >
+                          Inspection Report
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontWeight: 700, color: "primary.main" }}
+                        >
                           Action
                         </TableCell>
                       </TableRow>
@@ -1168,9 +1182,7 @@ const UserIndentRequest = () => {
                           hover
                           sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}
                         >
-                          <TableCell sx={{ fontWeight: 600 }}>
-                            {indent.indentNumber}
-                          </TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{indent.indentNumber}</TableCell>
                           <TableCell>{indent.projectName}</TableCell>
                           <TableCell>
                             <Box>
@@ -1201,45 +1213,74 @@ const UserIndentRequest = () => {
                             />
                           </TableCell>
                           <TableCell>
+                            <TextField
+                              size="small"
+                              placeholder="Enter remark"
+                              value={inspectionRemarks[indent.id] || ""}
+                              onChange={e => setInspectionRemarks(prev => ({ ...prev, [indent.id]: e.target.value }))}
+                              multiline
+                              rows={2}
+                              sx={{ minWidth: 160 }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outlined"
+                              component="label"
+                              size="small"
+                              sx={{ fontWeight: 600, borderRadius: 2 }}
+                            >
+                              {inspectionFiles[indent.id]?.name ? `Change File (${inspectionFiles[indent.id].name})` : "Upload File"}
+                              <input
+                                type="file"
+                                hidden
+                                onChange={e => {
+                                  const file = e.target.files[0];
+                                  setInspectionFiles(prev => ({ ...prev, [indent.id]: file }));
+                                }}
+                              />
+                            </Button>
+                            {inspectionFiles[indent.id]?.name && (
+                              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                {inspectionFiles[indent.id].name}
+                              </Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
                             <Button
                               variant="contained"
                               color="primary"
                               size="small"
+                              disabled={
+                                !inspectionRemarks[indent.id] ||
+                                !inspectionFiles[indent.id] ||
+                                inspectionLoading[indent.id]
+                              }
                               onClick={async () => {
+                                setInspectionLoading(prev => ({ ...prev, [indent.id]: true }));
                                 try {
+                                  const formData = new FormData();
+                                  formData.append("remark", inspectionRemarks[indent.id]);
+                                  formData.append("inspectionReport", inspectionFiles[indent.id]);
                                   await axios.post(
                                     `/indent/${indent.id}/confirm-inspection`,
-                                    {
-                                      remark:
-                                        "Product inspection completed successfully",
-                                    }
+                                    formData,
+                                    { headers: { "Content-Type": "multipart/form-data" } }
                                   );
-                                  setStatus({
-                                    type: "success",
-                                    message: "Product confirmed OK!",
-                                  });
-                                  setSnackbar({
-                                    open: true,
-                                    message: "Product confirmed OK!",
-                                    severity: "success",
-                                  });
-                                  setPendingInspections((prev) =>
-                                    prev.filter((i) => i.id !== indent.id)
-                                  );
+                                  setStatus({ type: "success", message: "Product confirmed OK!" });
+                                  setSnackbar({ open: true, message: "Product confirmed OK!", severity: "success" });
+                                  setPendingInspections(prev => prev.filter(i => i.id !== indent.id));
+                                  setInspectionRemarks(prev => { const copy = { ...prev }; delete copy[indent.id]; return copy; });
+                                  setInspectionFiles(prev => { const copy = { ...prev }; delete copy[indent.id]; return copy; });
                                 } catch (err) {
-                                  setStatus({
-                                    type: "error",
-                                    message: "Failed to confirm inspection",
-                                  });
-                                  setSnackbar({
-                                    open: true,
-                                    message: "Failed to confirm inspection",
-                                    severity: "error",
-                                  });
+                                  setStatus({ type: "error", message: "Failed to confirm inspection" });
+                                  setSnackbar({ open: true, message: "Failed to confirm inspection", severity: "error" });
+                                } finally {
+                                  setInspectionLoading(prev => ({ ...prev, [indent.id]: false }));
                                 }
                               }}
                             >
-                              Confirm OK
+                              {inspectionLoading[indent.id] ? <CircularProgress size={18} color="inherit" /> : "Confirm OK"}
                             </Button>
                           </TableCell>
                         </TableRow>

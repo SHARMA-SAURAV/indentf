@@ -518,6 +518,7 @@ const FLADashboard = () => {
                       <Typography variant="caption" color="text.secondary">No file</Typography>
                     )}
                   </TableCell>
+
                   <TableCell>
                     <Stack direction="row" spacing={1}>
                       <FormControlLabel
