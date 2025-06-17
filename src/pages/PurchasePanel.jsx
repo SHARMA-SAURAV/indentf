@@ -90,6 +90,14 @@ const PurchasePanel = () => {
   const [expandedReviews, setExpandedReviews] = useState({}); // { [indentId]: [reviews] }
   const [expandedReviewLoading, setExpandedReviewLoading] = useState({});
 
+  const [gfrFileMap, setGfrFileMap] = useState({}); // Store GFR file per indent
+
+  const [returnedIndents, setReturnedIndents] = useState([]);
+  const [returnedLoading, setReturnedLoading] = useState(false);
+  const [returnedFileMap, setReturnedFileMap] = useState({});
+  const [returnedRemarkMap, setReturnedRemarkMap] = useState({});
+  const [returnedResubmitLoading, setReturnedResubmitLoading] = useState({});
+
   const fetchPendingIndents = useCallback(async () => {
     try {
       setLoadingIndents(true);
@@ -145,6 +153,19 @@ const PurchasePanel = () => {
     }
   };
 
+  const fetchReturnedIndents = useCallback(async () => {
+    setReturnedLoading(true);
+    try {
+      const res = await axios.get('/returned-to-role');
+      console.log('DEBUG /returned-to-role response:', res.data);
+      setReturnedIndents(res.data);
+    } catch (err) {
+      setReturnedIndents([]);
+    } finally {
+      setReturnedLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchPendingIndents();
     fetchPendingGFRIndents();
@@ -152,6 +173,16 @@ const PurchasePanel = () => {
 
   useEffect(() => {
     if (tab === 2) fetchTrackingIndents();
+  }, [tab]);
+
+  useEffect(() => {
+    if (tab === 3) {
+      fetchReturnedIndents();
+      // Debug: log the returned indents after fetch
+      // setTimeout(() => {
+      //   console.log('DEBUG returnedIndents:', returnedIndents);
+      // }, 1000);
+    }
   }, [tab]);
 
   const handleTabChange = (_, newValue) => setTab(newValue);
@@ -310,37 +341,55 @@ const PurchasePanel = () => {
     setGfrNoteMap((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmitGFR = async (id) => {
-    setGfrLoading((prev) => ({ ...prev, [id]: true }));
-    setActionSnackbar({
-      open: true,
-      message: "Submitting GFR...",
-      severity: "info",
-    });
-    
-    try {
-      await axios.post("/indent/purchase/gfr/submit", {
-        indentId: id,
-        gfrNote: gfrNoteMap[id] || "",
-      });
-      
-      setStatus("GFR submitted successfully.");
-      fetchPendingGFRIndents();
-      setGfrNoteMap((prev) => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
-      setTimeout(() => setStatus(""), 4000);
-    } catch (err) {
-      console.error("GFR submission failed", err);
-      setStatus("Error submitting GFR.");
-      setTimeout(() => setStatus(""), 4000);
-    } finally {
-      setGfrLoading((prev) => ({ ...prev, [id]: false }));
-      setActionSnackbar({ open: false, message: "", severity: "info" });
-    }
+  const handleGfrFileChange = (id, file) => {
+    setGfrFileMap((prev) => ({ ...prev, [id]: file }));
   };
+
+const handleSubmitGFR = async (id) => {
+  const note = gfrNoteMap[id];
+  const file = gfrFileMap[id];
+  if (!note || !file) {
+    setStatus("Please provide both a GFR note and attach a GFR report file.");
+    setTimeout(() => setStatus(""), 4000);
+    return;
+  }
+  setGfrLoading((prev) => ({ ...prev, [id]: true }));
+  setActionSnackbar({
+    open: true,
+    message: "Submitting GFR...",
+    severity: "info",
+  });
+  try {
+    const formData = new FormData();
+    formData.append("indentId", id);
+    formData.append("gfrNote", note);
+    formData.append("gfrReport", file); // file must be a File object
+
+    // DO NOT set Content-Type header!
+    await axios.post("/indent/purchase/gfr/submit", formData);
+
+    setStatus("GFR submitted successfully.");
+    fetchPendingGFRIndents();
+    setGfrNoteMap((prev) => {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
+    setGfrFileMap((prev) => {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
+    setTimeout(() => setStatus(""), 4000);
+  } catch (err) {
+    console.error("GFR submission failed", err);
+    setStatus("Error submitting GFR.");
+    setTimeout(() => setStatus(""), 4000);
+  } finally {
+    setGfrLoading((prev) => ({ ...prev, [id]: false }));
+    setActionSnackbar({ open: false, message: "", severity: "info" });
+  }
+};
 
   const getTrackingSteps = (indent) => {
     const trackingSteps = [];
@@ -539,6 +588,14 @@ const PurchasePanel = () => {
     }
   };
 
+  const handleReturnedFileChange = (id, file) => {
+    setReturnedFileMap((prev) => ({ ...prev, [id]: file }));
+  };
+
+  const handleReturnedRemarkChange = (id, value) => {
+    setReturnedRemarkMap(prev => ({ ...prev, [id]: value }));
+  };
+
   return (
     <Box
       sx={{
@@ -581,6 +638,7 @@ const PurchasePanel = () => {
         <Tab label="Pending Indents" sx={{ color: ACCENT_COLOR }} />
         <Tab label="GFR Submission" sx={{ color: ACCENT_COLOR }} />
         <Tab label="Track Indents" sx={{ color: ACCENT_COLOR }} />
+        <Tab label="Returned Indents" sx={{ color: ACCENT_COLOR }} />
       </Tabs>
 
       {status && (
@@ -1041,6 +1099,30 @@ const PurchasePanel = () => {
                                   <Typography variant="subtitle1" sx={{ color: ACCENT_COLOR, fontWeight: 600, mb: 2 }}>
                                     GFR Submission
                                   </Typography>
+                                  <Box sx={{ mb: 2 }}>
+                                    <Button
+                                      variant="outlined"
+                                      component="label"
+                                      sx={{ mr: 2 }}
+                                    >
+                                      {gfrFileMap[indent.id] ? "File Selected: " + gfrFileMap[indent.id].name : "Attach GFR Report"}
+                                      <input
+                                        type="file"
+                                        accept="application/pdf,.doc,.docx,image/*"
+                                        hidden
+                                        onChange={e => handleGfrFileChange(indent.id, e.target.files[0])}
+                                      />
+                                    </Button>
+                                    {gfrFileMap[indent.id] && (
+                                      <Button
+                                        size="small"
+                                        color="error"
+                                        onClick={() => handleGfrFileChange(indent.id, null)}
+                                      >
+                                        Remove
+                                      </Button>
+                                    )}
+                                  </Box>
                                   <TextField
                                     fullWidth
                                     multiline
@@ -1048,10 +1130,7 @@ const PurchasePanel = () => {
                                     label="GFR Note"
                                     value={gfrNoteMap[indent.id] || ""}
                                     onChange={(e) => handleGfrNoteChange(indent.id, e.target.value)}
-                                    sx={{
-                                      mb: 2,
-                                      "& .MuiInputBase-root": { color: TEXT_COLOR },
-                                    }}
+                                    sx={{ mb: 2, "& .MuiInputBase-root": { color: TEXT_COLOR } }}
                                   />
                                   <Box display="flex" justifyContent="flex-end">
                                     <Button
@@ -1168,6 +1247,100 @@ const PurchasePanel = () => {
           )}
         </Box>
       )}
+
+      {/* Returned Indents Tab */}
+      {tab === 3 && (
+        <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', background: '#fff', borderRadius: 3, boxShadow: '0 2px 16px #0d47a122', p: { xs: 1, md: 3 }, mt: 2 }}>
+          {returnedLoading ? (
+            <Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>
+          ) : returnedIndents.length === 0 ? (
+            <Typography sx={{ color: SUBTEXT_COLOR, textAlign: 'center', fontWeight: 600, fontSize: 20, py: 4 }}>No returned indents.</Typography>
+          ) : (
+            <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', background: 'transparent' }}>
+              <Table sx={{ minWidth: 900, background: 'transparent' }} aria-label="returned indents table">
+                <TableHead>
+                  <TableRow sx={{ background: 'linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%)' }}>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Indent Number</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Project Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Department</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Finance Remarks</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Date Returned</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attach File</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Remark</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {returnedIndents.map(indent => (
+                    <TableRow key={indent.id}>
+                      <TableCell>{indent.indentNumber || '-'}</TableCell>
+                      <TableCell>{indent.projectName || (indent.project && indent.project.projectName) || '-'}</TableCell>
+                      <TableCell>{indent.department || '-'}</TableCell>
+                      <TableCell>{indent.financeRemarks || '-'}</TableCell>
+                      <TableCell>{indent.financeReamrksDate ? new Date(indent.financeReamrksDate).toLocaleString() : '-'}</TableCell>
+                      <TableCell>
+                        <Button variant="outlined" component="label">
+                          {returnedFileMap[indent.id] ? returnedFileMap[indent.id].name : 'Attach File'}
+                          <input type="file" hidden onChange={e => handleReturnedFileChange(indent.id, e.target.files[0])} />
+                        </Button>
+                        {returnedFileMap[indent.id] && (
+                          <Button size="small" color="error" onClick={() => handleReturnedFileChange(indent.id, null)}>Remove</Button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          value={returnedRemarkMap[indent.id] || ''}
+                          onChange={e => handleReturnedRemarkChange(indent.id, e.target.value)}
+                          placeholder="Enter remarks"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={async () => {
+                            const file = returnedFileMap[indent.id];
+                            const remark = returnedRemarkMap[indent.id];
+                            if (!remark) {
+                              setStatus('Please enter remarks.');
+                              setTimeout(() => setStatus(''), 3000);
+                              return;
+                            }
+                            setReturnedResubmitLoading(prev => ({ ...prev, [indent.id]: true }));
+                            try {
+                              const formData = new FormData();
+                              formData.append('remarks', remark);
+                              if (file) formData.append('attachment', file);
+                              await axios.put(`/resubmit/${indent.id}`, formData);
+                              setStatus('Indent resubmitted to Finance.');
+                              fetchReturnedIndents();
+                              setReturnedFileMap(prev => { const c = { ...prev }; delete c[indent.id]; return c; });
+                              setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indent.id]; return c; });
+                              setTimeout(() => setStatus(''), 3000);
+                            } catch (err) {
+                              setStatus('Failed to resubmit indent.');
+                              setTimeout(() => setStatus(''), 3000);
+                            } finally {
+                              setReturnedResubmitLoading(prev => ({ ...prev, [indent.id]: false }));
+                            }
+                          }}
+                          disabled={returnedResubmitLoading[indent.id]}
+                        >
+                          {returnedResubmitLoading[indent.id] ? <CircularProgress size={18} /> : 'Resubmit'}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Box>
+      )}
+          
+
+
       {/* Reviews Dialog */}
       <Dialog
         open={reviewDialogOpen}

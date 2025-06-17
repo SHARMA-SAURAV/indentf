@@ -36,6 +36,9 @@ import {
 import { KeyboardArrowDown, KeyboardArrowUp, ExpandMore, ExpandLess } from "@mui/icons-material";
 import FileViewerButton from "../components/FileViewerButton";
 import FileViewerButtonResubmit from "../components/FileViewerButtonResubmit";
+import InspectionFileViewer from "../components/InspectionFileViewer";
+import GfrFileViewer from "../components/GfrFileViewer";
+
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -752,7 +755,10 @@ const FinanceView = () => {
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Products</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
-            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachment</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>GFR Report</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Resubmit Attachment</TableCell>
+
           </TableRow>
         </TableHead>
         <TableBody>
@@ -827,6 +833,15 @@ const FinanceView = () => {
                       </>
                     )}
                   </TableCell>
+
+                  <TableCell>
+                    <InspectionFileViewer fileName={indent.inspectionReportPath} />
+                  </TableCell>
+
+                    <TableCell>
+                      <GfrFileViewer fileName={indent.gfrReportPath} />
+                    </TableCell>
+                 
                   <TableCell>
                    {console.log(indent.fileName, indent.fileUrl)}
 

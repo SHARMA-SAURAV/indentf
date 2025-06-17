@@ -36,7 +36,7 @@ const FileViewerButtonResubmit = ({ fileName }) => {
       startIcon={<i className="fas fa-paperclip" />}
       onClick={() => downloadFile(fileProp)}
     >
-      View Attached File
+      View
     </Button>
   );
 };

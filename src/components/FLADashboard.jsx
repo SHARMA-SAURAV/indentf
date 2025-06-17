@@ -80,6 +80,12 @@ const FLADashboard = () => {
     indentId: null,
   });
 
+  // New states for returned indents
+  const [returnedIndents, setReturnedIndents] = useState([]);
+  const [returnedFileMap, setReturnedFileMap] = useState({});
+  const [returnedRemarkMap, setReturnedRemarkMap] = useState({});
+  const [returnedLoading, setReturnedLoading] = useState({});
+
   useEffect(() => {
     fetchIndents();
     fetchSLAs();
@@ -87,6 +93,12 @@ const FLADashboard = () => {
 
   useEffect(() => {
     if (tab === 1) fetchAllIndents();
+  }, [tab]);
+
+  useEffect(() => {
+    if (tab === 2) {
+      axios.get("/returned-to-role").then((res) => setReturnedIndents(res.data));
+    }
   }, [tab]);
 
   const fetchIndents = async () => {
@@ -810,6 +822,36 @@ const FLADashboard = () => {
     }
   };
 
+  const handleReturnedFileChange = (id, file) => {
+    setReturnedFileMap((prev) => ({ ...prev, [id]: file }));
+  };
+  const handleReturnedRemarkChange = (id, value) => {
+    setReturnedRemarkMap((prev) => ({ ...prev, [id]: value }));
+  };
+  const handleResubmitToFinance = async (indentId) => {
+    const file = returnedFileMap[indentId];
+    const remark = returnedRemarkMap[indentId];
+    if (!remark) {
+      showSnackbar("Please enter a remark before resubmitting.", "error");
+      return;
+    }
+    setReturnedLoading((prev) => ({ ...prev, [indentId]: true }));
+    try {
+      const formData = new FormData();
+      formData.append("remarks", remark);
+      if (file) formData.append("attachment", file);
+      await axios.put(`/resubmit/${indentId}`, formData);
+      showSnackbar("Indent resubmitted to Finance successfully.", "success");
+      setReturnedIndents((prev) => prev.filter((i) => i.id !== indentId));
+      setReturnedFileMap((prev) => { const c = { ...prev }; delete c[indentId]; return c; });
+      setReturnedRemarkMap((prev) => { const c = { ...prev }; delete c[indentId]; return c; });
+    } catch (err) {
+      showSnackbar("Failed to resubmit indent.", "error");
+    } finally {
+      setReturnedLoading((prev) => ({ ...prev, [indentId]: false }));
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -859,6 +901,7 @@ const FLADashboard = () => {
         >
           <Tab label="Review Indents" />
           <Tab label="Track Indents" />
+          <Tab label="Returned Indents" />
         </Tabs>
       </Box>
 
@@ -1317,6 +1360,69 @@ const FLADashboard = () => {
                       </React.Fragment>
                     );
                   })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Box>
+      )}
+
+      {tab === 2 && (
+        <Box>
+          {returnedIndents.length === 0 ? (
+            <Typography sx={{ color: COLORS.textSecondary, textAlign: 'center', mt: 8, fontSize: 20, fontWeight: 500 }}>
+              No returned indents.
+            </Typography>
+          ) : (
+            <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2, mb: 3 }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                    <TableCell sx={{ fontWeight: 700 }}>Indent Number</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Project Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Finance Remarks</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Date Returned</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Attach File</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {returnedIndents.map(indent => (
+                    <TableRow key={indent.id}>
+                      <TableCell>{indent.indentNumber}</TableCell>
+                      <TableCell>{indent.projectName}</TableCell>
+                      <TableCell>{indent.financeRemarks}</TableCell>
+                      <TableCell>{indent.financeReamrksDate ? new Date(indent.financeReamrksDate).toLocaleString() : '-'}</TableCell>
+                      <TableCell>
+                        <Button variant="outlined" component="label">
+                          {returnedFileMap[indent.id] ? returnedFileMap[indent.id].name : "Attach File"}
+                          <input type="file" hidden onChange={e => handleReturnedFileChange(indent.id, e.target.files[0])} />
+                        </Button>
+                        {returnedFileMap[indent.id] && (
+                          <Button size="small" color="error" onClick={() => handleReturnedFileChange(indent.id, null)}>Remove</Button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          value={returnedRemarkMap[indent.id] || ''}
+                          onChange={e => handleReturnedRemarkChange(indent.id, e.target.value)}
+                          placeholder="Enter remark"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          disabled={returnedLoading[indent.id]}
+                          onClick={() => handleResubmitToFinance(indent.id)}
+                        >
+                          {returnedLoading[indent.id] ? <CircularProgress size={18} /> : 'Resubmit'}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
