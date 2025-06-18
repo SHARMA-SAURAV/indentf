@@ -3,7 +3,7 @@ import axios from "../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faPlus, faCheck, faTimes, faEye } from "@fortawesome/free-solid-svg-icons";
 import {
-  Container,Typography,Card,
+  Container, Typography, Card,
   CardContent,
   CardHeader,
   TextField,
@@ -97,20 +97,25 @@ const PurchasePanel = () => {
   const [returnedFileMap, setReturnedFileMap] = useState({});
   const [returnedRemarkMap, setReturnedRemarkMap] = useState({});
   const [returnedResubmitLoading, setReturnedResubmitLoading] = useState({});
+  const [inwardEntryStates, setInwardEntryStates] = useState({});
+  // const [inwardEntryMap, setInwardEntryMap] = useState({});
+const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
+// const [reviewSubmitLoading, setReviewSubmitLoading] = useState({});
+
 
   const fetchPendingIndents = useCallback(async () => {
     try {
       setLoadingIndents(true);
       const res = await axios.get("/indent/purchase/pending");
       setIndents(res.data);
-      
+
       // Initialize inward entry map with current database values
       const inwardMap = {};
       res.data.forEach(indent => {
         inwardMap[indent.id] = indent.inwardEntryGenerated || false;
       });
       setInwardEntryMap(inwardMap);
-      
+
     } catch (err) {
       console.error("Failed to fetch purchase indents", err);
     } finally {
@@ -202,16 +207,16 @@ const PurchasePanel = () => {
         indentId: id,
         inwardEntryGenerated: checked,
       });
-      
+
       // Update frontend state only if backend update succeeds
       setInwardEntryMap((prev) => ({ ...prev, [id]: checked }));
-      
-      setStatus(checked ? 
-        "Inward Entry marked as generated" : 
+
+      setStatus(checked ?
+        "Inward Entry marked as generated" :
         "Inward Entry marked as not generated"
       );
       setTimeout(() => setStatus(""), 3000);
-      
+
     } catch (err) {
       console.error("Failed to update inward entry status", err);
       alert("Error updating inward entry status");
@@ -231,16 +236,16 @@ const PurchasePanel = () => {
         indentId: indentId,
         comment: comment.trim(),
       });
-      
+
       setReviewCommentMap((prev) => {
         const copy = { ...prev };
         delete copy[indentId];
         return copy;
       });
-      
+
       setStatus("Review added successfully");
       setTimeout(() => setStatus(""), 3000);
-      
+
       // Refresh reviews if dialog is open for this indent
       if (selectedIndent?.id === indentId) {
         fetchReviews(indentId);
@@ -272,16 +277,16 @@ const PurchasePanel = () => {
       message: "Processing completion...",
       severity: "info",
     });
-    
+
     try {
       await axios.post("/indent/purchase/complete", {
         indentId: id,
         remark: remarkMap[id] || "",
       });
-      
+
       setStatus("Indent marked as WAITING_FOR_USER_CONFIRMATION and sent to user for inspection.");
       fetchPendingIndents();
-      
+
       // Clear form data
       setRemarkMap((prev) => {
         const copy = { ...prev };
@@ -293,7 +298,7 @@ const PurchasePanel = () => {
         delete copy[id];
         return copy;
       });
-      
+
       setTimeout(() => setStatus(""), 4000);
     } catch (err) {
       console.error("Error completing indent:", err);
@@ -306,20 +311,20 @@ const PurchasePanel = () => {
 
   const handleReject = async (id) => {
     if (!window.confirm("Are you sure you want to reject this indent?")) return;
-    
+
     setRejectLoading((prev) => ({ ...prev, [id]: true }));
     setActionSnackbar({
       open: true,
       message: "Processing rejection...",
       severity: "info",
     });
-    
+
     try {
       await axios.post("/indent/purchase/reject", {
         indentId: id,
         remark: remarkMap[id] || "",
       });
-      
+
       setStatus("Indent rejected by Purchase.");
       fetchPendingIndents();
       setRemarkMap((prev) => {
@@ -345,51 +350,51 @@ const PurchasePanel = () => {
     setGfrFileMap((prev) => ({ ...prev, [id]: file }));
   };
 
-const handleSubmitGFR = async (id) => {
-  const note = gfrNoteMap[id];
-  const file = gfrFileMap[id];
-  if (!note || !file) {
-    setStatus("Please provide both a GFR note and attach a GFR report file.");
-    setTimeout(() => setStatus(""), 4000);
-    return;
-  }
-  setGfrLoading((prev) => ({ ...prev, [id]: true }));
-  setActionSnackbar({
-    open: true,
-    message: "Submitting GFR...",
-    severity: "info",
-  });
-  try {
-    const formData = new FormData();
-    formData.append("indentId", id);
-    formData.append("gfrNote", note);
-    formData.append("gfrReport", file); // file must be a File object
-
-    // DO NOT set Content-Type header!
-    await axios.post("/indent/purchase/gfr/submit", formData);
-
-    setStatus("GFR submitted successfully.");
-    fetchPendingGFRIndents();
-    setGfrNoteMap((prev) => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
+  const handleSubmitGFR = async (id) => {
+    const note = gfrNoteMap[id];
+    const file = gfrFileMap[id];
+    if (!note || !file) {
+      setStatus("Please provide both a GFR note and attach a GFR report file.");
+      setTimeout(() => setStatus(""), 4000);
+      return;
+    }
+    setGfrLoading((prev) => ({ ...prev, [id]: true }));
+    setActionSnackbar({
+      open: true,
+      message: "Submitting GFR...",
+      severity: "info",
     });
-    setGfrFileMap((prev) => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
-    });
-    setTimeout(() => setStatus(""), 4000);
-  } catch (err) {
-    console.error("GFR submission failed", err);
-    setStatus("Error submitting GFR.");
-    setTimeout(() => setStatus(""), 4000);
-  } finally {
-    setGfrLoading((prev) => ({ ...prev, [id]: false }));
-    setActionSnackbar({ open: false, message: "", severity: "info" });
-  }
-};
+    try {
+      const formData = new FormData();
+      formData.append("indentId", id);
+      formData.append("gfrNote", note);
+      formData.append("gfrReport", file); // file must be a File object
+
+      // DO NOT set Content-Type header!
+      await axios.post("/indent/purchase/gfr/submit", formData);
+
+      setStatus("GFR submitted successfully.");
+      fetchPendingGFRIndents();
+      setGfrNoteMap((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      setGfrFileMap((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      setTimeout(() => setStatus(""), 4000);
+    } catch (err) {
+      console.error("GFR submission failed", err);
+      setStatus("Error submitting GFR.");
+      setTimeout(() => setStatus(""), 4000);
+    } finally {
+      setGfrLoading((prev) => ({ ...prev, [id]: false }));
+      setActionSnackbar({ open: false, message: "", severity: "info" });
+    }
+  };
 
   const getTrackingSteps = (indent) => {
     const trackingSteps = [];
@@ -507,20 +512,78 @@ const handleSubmitGFR = async (id) => {
     });
   };
 
+  // const handleSubmitReview = async (indent) => {
+  //   const state = itemReviewState[indent.id] || { approved: [], rejected: [], remarks: {} };
+  //   if (state.approved.length === 0 && state.rejected.length === 0) {
+  //     alert('Select at least one item to approve or reject.');
+  //     return;
+  //   }
+
+  //   setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: true }));
+  //   try {
+  //     await axios.post('/indent/purchase/review-products', {
+  //       indentId: indent.id,
+  //       approvedProductIds: state.approved,
+  //       rejectedProductIds: state.rejected,
+  //       remarks: state.remarks
+  //     });
+  //     setStatus('Review submitted successfully.');
+  //     fetchPendingIndents();
+  //     setItemReviewState(prev => {
+  //       const copy = { ...prev };
+  //       delete copy[indent.id];
+  //       return copy;
+  //     });
+  //     setExpandedIndentId(null);
+  //     setTimeout(() => setStatus(''), 3000);
+  //   } catch (err) {
+  //     alert('Failed to submit review.');
+  //   } finally {
+  //     setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: false }));
+  //   }
+  // };
+
+
+
+
   const handleSubmitReview = async (indent) => {
     const state = itemReviewState[indent.id] || { approved: [], rejected: [], remarks: {} };
+    const inwardEntry = inwardEntryStates[indent.id];
+
     if (state.approved.length === 0 && state.rejected.length === 0) {
       alert('Select at least one item to approve or reject.');
       return;
     }
+
+    if (inwardEntry?.generated && !inwardEntry.file) {
+      alert("Please upload the inward entry file.");
+      return;
+    }
+
     setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: true }));
+
     try {
-      await axios.post('/indent/purchase/review-products', {
+      const formData = new FormData();
+      const reviewPayload = {
         indentId: indent.id,
         approvedProductIds: state.approved,
         rejectedProductIds: state.rejected,
         remarks: state.remarks
+      };
+      formData.append("data", new Blob([JSON.stringify(reviewPayload)], { type: "application/json" }));
+      // formData.append("inwardEntryFile", selectedFile);
+      formData.append("inwardEntryFile", inwardEntryFileMap[indent.id]);
+
+      if (inwardEntry?.generated && inwardEntry.file) {
+        formData.append("inwardEntryFile", inwardEntry.file);
+      }
+
+      await axios.post('/indent/purchase/review-products', formData, {
+        // headers: {
+        //   "Content-Type": "multipart/form-data"
+        // }
       });
+
       setStatus('Review submitted successfully.');
       fetchPendingIndents();
       setItemReviewState(prev => {
@@ -528,14 +591,21 @@ const handleSubmitGFR = async (id) => {
         delete copy[indent.id];
         return copy;
       });
+      setInwardEntryStates(prev => {
+        const copy = { ...prev };
+        delete copy[indent.id];
+        return copy;
+      });
       setExpandedIndentId(null);
       setTimeout(() => setStatus(''), 3000);
     } catch (err) {
+      console.error(err);
       alert('Failed to submit review.');
     } finally {
       setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: false }));
     }
   };
+
 
   // Fetch reviews for an indent when expanded
   const fetchReviewsForExpanded = async (indentId) => {
@@ -609,7 +679,7 @@ const handleSubmitGFR = async (id) => {
         // Remove fixed positioning and overflow here
       }}
     >
-        <Box sx={{ mb: 2 }}></Box>
+      <Box sx={{ mb: 2 }}></Box>
       <Typography
         variant="h4"
         gutterBottom
@@ -828,6 +898,8 @@ const handleSubmitGFR = async (id) => {
                                   ))}
                                 </Box>
                                 {/* Inward entry checkbox and warning */}
+
+
                                 <Box display="flex" alignItems="center" sx={{ mb: 2 }}>
                                   <Checkbox
                                     checked={!!inwardEntry}
@@ -839,12 +911,32 @@ const handleSubmitGFR = async (id) => {
                                     Inward Entry Generated
                                   </Typography>
                                 </Box>
+
+
+
+                                {/* <Box display="flex" alignItems="center" sx={{ mb: 2 }}>
+                                  <Checkbox
+                                    checked={inwardEntryStates[indent.id]?.generated || false}
+                                    onChange={e => handleInwardEntryChange(indent.id, e.target.checked)}
+                                    color="primary"
+                                    sx={{ mr: 1 }}
+                                  />
+                                  <Typography sx={{ color: ACCENT_COLOR, fontWeight: 500 }}>
+                                    Inward Entry Generated
+                                  </Typography>
+                                </Box> */}
+
+
+
                                 {!inwardEntry && (
                                   <Alert severity="warning" sx={{ mb: 2 }}>
                                     Please confirm that Inward Entry has been generated before submitting item review.
                                   </Alert>
                                 )}
-                                <Box display="flex" justifyContent="flex-end" mt={2}>
+
+
+
+                                {/* <Box display="flex" justifyContent="flex-end" mt={2}>
                                   <Button
                                     variant="contained"
                                     onClick={() => handleSubmitReview(indent)}
@@ -852,6 +944,43 @@ const handleSubmitGFR = async (id) => {
                                     sx={{ bgcolor: ACCENT_COLOR }}
                                   >
                                     {reviewSubmitLoading[indent.id] ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'Submit Review'}
+                                  </Button>
+                                </Box> */}
+
+
+                                {/* File Upload input shown only if Inward Entry is checked */}
+                                {inwardEntryMap[indent.id] && (
+                                  <Box sx={{ mb: 2 }}>
+                                    <input
+                                      type="file"
+                                      accept="application/pdf,image/*"
+                                      onChange={(e) =>
+                                        setInwardEntryFileMap((prev) => ({
+                                          ...prev,
+                                          [indent.id]: e.target.files[0]
+                                        }))
+                                      }
+                                    />
+                                  </Box>
+                                )}
+
+
+                                {/* Submit Review Button */}
+                                <Box display="flex" justifyContent="flex-end" mt={2}>
+                                  <Button
+                                    variant="contained"
+                                    onClick={() => handleSubmitReview(indent)}
+                                    disabled={
+                                      reviewSubmitLoading[indent.id] ||
+                                      (inwardEntryMap[indent.id] && !inwardEntryFileMap[indent.id])
+                                    }
+                                    sx={{ bgcolor: ACCENT_COLOR }}
+                                  >
+                                    {reviewSubmitLoading[indent.id] ? (
+                                      <CircularProgress size={20} sx={{ color: '#fff' }} />
+                                    ) : (
+                                      'Submit Review'
+                                    )}
                                   </Button>
                                 </Box>
                               </Box>
@@ -867,116 +996,6 @@ const handleSubmitGFR = async (id) => {
           )}
         </>
       )}
-
-      {/* GFR Submission Tab */}
-      {/* {tab === 1 && (
-        <>
-          {loadingGfr ? (
-            <Box display="flex" justifyContent="center" my={4}>
-              <CircularProgress color="primary" />
-            </Box>
-          ) : gfrIndents.length === 0 ? (
-            <Typography sx={{ color: SUBTEXT_COLOR }}>
-              No indents awaiting GFR submission.
-            </Typography>
-          ) : (
-            gfrIndents.map((indent) => (
-              <Grow key={indent.id} in timeout={600}>
-                <Card sx={{ mb: 3, backgroundColor: CARD_BG, boxShadow: 3 }}>
-                  <CardContent sx={{ color: TEXT_COLOR }}>
-                    <Typography
-                      sx={{
-                        color: ACCENT_COLOR,
-                        fontWeight: 700,
-                        fontSize: 18,
-                      }}
-                    >
-                      Project Name: {indent.projectName}
-                    </Typography>
-                    <Typography
-                      sx={{ color: "black", fontSize: 14, fontWeight: 600 }}
-                    >
-                      Item Name: {indent.itemName}
-                    </Typography>
-                    <Grid container spacing={1}>
-                      <Grid item xs={6}>
-                        <Typography sx={{ fontSize: 13 }}>
-                          <strong>Indent Id:</strong> {indent.id}
-                        </Typography>
-                        <Typography sx={{ fontSize: 13 }}>
-                          <strong>Quantity:</strong> {indent.quantity}
-                        </Typography>
-                        <Typography sx={{ fontSize: 13 }}>
-                          <strong>Per Piece:</strong> ₹{indent.perPieceCost}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography sx={{ fontSize: 13 }}>
-                          <strong>Total:</strong> ₹{indent.totalCost}
-                        </Typography>
-                        <Typography sx={{ fontSize: 13 }}>
-                          <strong>Status:</strong> {indent.status}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      label="GFR Note"
-                      value={gfrNoteMap[indent.id] || ""}
-                      onChange={(e) =>
-                        handleGfrNoteChange(indent.id, e.target.value)
-                      }
-                      sx={{
-                        mt: 2,
-                        "& .MuiInputBase-root": { color: TEXT_COLOR },
-                      }}
-                    />
-
-                    <Box
-                      display="flex"
-                      justifyContent="flex-end"
-                      sx={{ mt: 2 }}
-                    >
-                      <Button
-                        variant="contained"
-                        onClick={() => handleSubmitGFR(indent.id)}
-                        sx={{
-                          backgroundColor: ACCENT_COLOR,
-                          minWidth: 140,
-                          position: "relative",
-                        }}
-                        disabled={gfrLoading[indent.id]}
-                      >
-                        {gfrLoading[indent.id] ? (
-                          <CircularProgress
-                            size={22}
-                            sx={{
-                              color: "#fff",
-                              position: "absolute",
-                              left: "50%",
-                              top: "50%",
-                              marginTop: "-11px",
-                              marginLeft: "-11px",
-                            }}
-                          />
-                        ) : (
-                          "Submit GFR"
-                        )}
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grow>
-            ))
-          )}
-        </>
-      )} */}
-
-
-
-
 
       {/* GFR Submission Tab */}
       {tab === 1 && (
@@ -1026,9 +1045,9 @@ const handleSubmitGFR = async (id) => {
                             <Chip label={`${items.length} items`} size="small" color="primary" />
                           </TableCell>
                           <TableCell>
-                            <Chip 
-                              label={indent.status} 
-                              size="small" 
+                            <Chip
+                              label={indent.status}
+                              size="small"
                               color="warning"
                               sx={{ fontWeight: 600 }}
                             />
@@ -1066,7 +1085,7 @@ const handleSubmitGFR = async (id) => {
                                       <TableCell sx={{ fontWeight: 600 }}>Total Cost</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                                       <TableCell sx={{ fontWeight: 600 }}>Attachment</TableCell>
-                                      
+
                                     </TableRow>
                                   </TableHead>
                                   <TableBody>
@@ -1078,9 +1097,9 @@ const handleSubmitGFR = async (id) => {
                                         <TableCell>₹{item.perPieceCost}</TableCell>
                                         <TableCell>₹{item.totalCost}</TableCell>
                                         <TableCell>
-                                          <Chip 
-                                            label={item.productStatus} 
-                                            size="small" 
+                                          <Chip
+                                            label={item.productStatus}
+                                            size="small"
                                             color={item.productStatus === 'APPROVED_BY_PURCHASE' ? 'success' : 'default'}
                                             sx={{ fontSize: '0.7rem' }}
                                           />
@@ -1093,7 +1112,7 @@ const handleSubmitGFR = async (id) => {
                                     ))}
                                   </TableBody>
                                 </Table>
-                                
+
                                 {/* GFR Note Section */}
                                 <Box sx={{ mt: 3 }}>
                                   <Typography variant="subtitle1" sx={{ color: ACCENT_COLOR, fontWeight: 600, mb: 2 }}>
@@ -1338,7 +1357,7 @@ const handleSubmitGFR = async (id) => {
           )}
         </Box>
       )}
-          
+
 
 
       {/* Reviews Dialog */}
@@ -1386,7 +1405,7 @@ const handleSubmitGFR = async (id) => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button 
+          <Button
             onClick={() => setReviewDialogOpen(false)}
             sx={{ color: ACCENT_COLOR }}
           >

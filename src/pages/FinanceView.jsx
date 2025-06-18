@@ -122,7 +122,7 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={2}>
           <FontAwesomeIcon icon={faCreditCard} style={{ color: ACCENT_COLOR }} />
-          Complete Payment - {indent?.projectName}
+          Complete Payment - {indent?.project.projectName}
         </Box>
       </DialogTitle>
       <DialogContent>
@@ -133,6 +133,7 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={4}>
               <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#e8f5e8' }}>
+
                 <Typography variant="subtitle2" color="textSecondary">
                   Approved Amount
                 </Typography>
@@ -293,7 +294,7 @@ const ProductReviewDialog = ({ open, onClose, indent, onSubmit }) => {
   const handleProductSelection = (productId, type) => {
     setSelectedProducts(prev => {
       const newState = { ...prev };
-      
+
       if (type === 'approved') {
         if (newState.approved.includes(productId)) {
           newState.approved = newState.approved.filter(id => id !== productId);
@@ -309,7 +310,7 @@ const ProductReviewDialog = ({ open, onClose, indent, onSubmit }) => {
           newState.approved = newState.approved.filter(id => id !== productId);
         }
       }
-      
+
       return newState;
     });
   };
@@ -342,7 +343,7 @@ const ProductReviewDialog = ({ open, onClose, indent, onSubmit }) => {
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={2}>
           <FontAwesomeIcon icon={faCoins} style={{ color: ACCENT_COLOR }} />
-          Review Products - {indent?.projectName}
+          Review Products - {indent?.project.projectName}
         </Box>
       </DialogTitle>
       <DialogContent>
@@ -755,9 +756,18 @@ const FinanceView = () => {
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Products</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
-            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
+
+            {type === 'payment' && (
+              <>
+                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>GFR Report</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Resubmit Attachment</TableCell>
+
+              </>
+            )}
+            {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
             <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>GFR Report</TableCell>
-            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Resubmit Attachment</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Resubmit Attachment</TableCell> */}
 
           </TableRow>
         </TableHead>
@@ -838,18 +848,18 @@ const FinanceView = () => {
                     <InspectionFileViewer fileName={indent.inspectionReportPath} />
                   </TableCell>
 
-                    <TableCell>
-                      <GfrFileViewer fileName={indent.gfrReportPath} />
-                    </TableCell>
-                 
                   <TableCell>
-                   {console.log(indent.fileName, indent.fileUrl)}
+                    <GfrFileViewer fileName={indent.gfrReportPath} />
+                  </TableCell>
+
+                  <TableCell>
+                    {console.log(indent.fileName, indent.fileUrl)}
 
                     {/* Show attachment only if status is RESUBMITTED_TO_FINANCE and fileName/fileUrl exists */}
                     {indent.status === 'RESUBMITTED_TO_FINANCE' && (indent.fileName || indent.fileUrl) ? (
 
-                      
-                      <FileViewerButtonResubmit fileName={indent.fileName}  />
+
+                      <FileViewerButtonResubmit fileName={indent.fileName} />
                     ) : (
                       <Typography variant="caption" color="textSecondary">-</Typography>
                     )}
@@ -1042,7 +1052,7 @@ const FinanceView = () => {
                             </IconButton>
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>{indent.indentNumber}</TableCell>
-                          <TableCell>{indent.projectName}</TableCell>
+                          <TableCell>{indent.project.projectName}</TableCell>
                           <TableCell>{indent.purpose}</TableCell>
                           <TableCell>{indent.department}</TableCell>
                           <TableCell>₹{indent.totalIndentCost}</TableCell>
@@ -1096,7 +1106,7 @@ const FinanceView = () => {
                                         <TableCell>₹{item.perPieceCost}</TableCell>
                                         <TableCell>₹{item.totalCost}</TableCell>
                                         <TableCell>
-                                          <FileViewerButton indent={item} />  
+                                          <FileViewerButton indent={item} />
                                         </TableCell>
                                         <TableCell>{item.productStatus?.replace(/_/g, ' ')}</TableCell>
                                         <TableCell>{item.flaRemarks}</TableCell>

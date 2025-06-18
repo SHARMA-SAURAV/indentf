@@ -22,7 +22,7 @@ const downloadFile = async (fileNameOrPath) => {
   }
 };
 
-const FileViewerButtonResubmit = ({ fileName }) => {
+const InspectionFileViewer = ({ fileName }) => {
   // Prefer item-level props, fallback to indent-level
   const fileProp = fileName ;
 //   console.log("File Prop:", fileProp); // Debugging line to check the fileProp value
@@ -41,4 +41,4 @@ const FileViewerButtonResubmit = ({ fileName }) => {
   );
 };
 
-export default FileViewerButtonResubmit;
+export default InspectionFileViewer;

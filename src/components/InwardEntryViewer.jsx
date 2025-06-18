@@ -10,9 +10,10 @@ const COLORS = {
 const downloadFile = async (fileNameOrPath) => {
   try {
     // Accept both fileName and attachmentPath
-    const response = await axios.get(`/indent/gfrViewer/${encodeURIComponent(fileNameOrPath)}`, {
+    const response = await axios.get(`/indent/inwardentryviewer/${encodeURIComponent(fileNameOrPath)}`, {
       responseType: 'blob',
     });
+    console.log("Response:", fileNameOrPath); // Debugging line to check the response
     const blob = response.data;
     const fileURL = window.URL.createObjectURL(blob);
     window.open(fileURL);
@@ -22,7 +23,7 @@ const downloadFile = async (fileNameOrPath) => {
   }
 };
 
-const GfrFileViewer = ({ fileName }) => {
+const InwardEntryViewer = ({ fileName }) => {
   // Prefer item-level props, fallback to indent-level
   const fileProp = fileName ;
 //   console.log("File Prop:", fileProp); // Debugging line to check the fileProp value
@@ -41,4 +42,4 @@ const GfrFileViewer = ({ fileName }) => {
   );
 };
 
-export default GfrFileViewer;
+export default InwardEntryViewer;
