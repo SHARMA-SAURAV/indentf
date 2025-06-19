@@ -504,7 +504,7 @@ const TrackingSteps = ({ indent }) => {
       role: "Purchase",
       remark: indent.gfrNote,
       date: indent.gfrCreatedAt,
-      status: "GFR Submitted",
+      status: "GRC Submitted",
     });
   }
   if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === "PAYMENT_REJECTED")) {

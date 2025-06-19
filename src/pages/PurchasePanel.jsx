@@ -129,7 +129,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       const res = await axios.get("/indent/purchase/gfr/pending");
       setGfrIndents(res.data);
     } catch (err) {
-      console.error("Failed to fetch GFR indents", err);
+      console.error("Failed to fetch GRC indents", err);
     } finally {
       setLoadingGfr(false);
     }
@@ -354,14 +354,14 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
     const note = gfrNoteMap[id];
     const file = gfrFileMap[id];
     if (!note || !file) {
-      setStatus("Please provide both a GFR note and attach a GFR report file.");
+      setStatus("Please provide both a GRC note and attach a GRC report file.");
       setTimeout(() => setStatus(""), 4000);
       return;
     }
     setGfrLoading((prev) => ({ ...prev, [id]: true }));
     setActionSnackbar({
       open: true,
-      message: "Submitting GFR...",
+      message: "Submitting GRC...",
       severity: "info",
     });
     try {
@@ -373,7 +373,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       // DO NOT set Content-Type header!
       await axios.post("/indent/purchase/gfr/submit", formData);
 
-      setStatus("GFR submitted successfully.");
+      setStatus("GRC submitted successfully.");
       fetchPendingGFRIndents();
       setGfrNoteMap((prev) => {
         const copy = { ...prev };
@@ -387,8 +387,8 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       });
       setTimeout(() => setStatus(""), 4000);
     } catch (err) {
-      console.error("GFR submission failed", err);
-      setStatus("Error submitting GFR.");
+      console.error("GRC submission failed", err);
+      setStatus("Error submitting GRC.");
       setTimeout(() => setStatus(""), 4000);
     } finally {
       setGfrLoading((prev) => ({ ...prev, [id]: false }));
@@ -451,7 +451,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
         role: "Purchase",
         remark: indent.gfrNote,
         date: indent.gfrCreatedAt,
-        status: "GFR Submitted",
+        status: "GRC Submitted",
       });
     }
     if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === "PAYMENT_REJECTED")) {
@@ -511,41 +511,6 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       return { ...prev, [indentId]: state };
     });
   };
-
-  // const handleSubmitReview = async (indent) => {
-  //   const state = itemReviewState[indent.id] || { approved: [], rejected: [], remarks: {} };
-  //   if (state.approved.length === 0 && state.rejected.length === 0) {
-  //     alert('Select at least one item to approve or reject.');
-  //     return;
-  //   }
-
-  //   setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: true }));
-  //   try {
-  //     await axios.post('/indent/purchase/review-products', {
-  //       indentId: indent.id,
-  //       approvedProductIds: state.approved,
-  //       rejectedProductIds: state.rejected,
-  //       remarks: state.remarks
-  //     });
-  //     setStatus('Review submitted successfully.');
-  //     fetchPendingIndents();
-  //     setItemReviewState(prev => {
-  //       const copy = { ...prev };
-  //       delete copy[indent.id];
-  //       return copy;
-  //     });
-  //     setExpandedIndentId(null);
-  //     setTimeout(() => setStatus(''), 3000);
-  //   } catch (err) {
-  //     alert('Failed to submit review.');
-  //   } finally {
-  //     setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: false }));
-  //   }
-  // };
-
-
-
-
   const handleSubmitReview = async (indent) => {
     const state = itemReviewState[indent.id] || { approved: [], rejected: [], remarks: {} };
     const inwardEntry = inwardEntryStates[indent.id];
@@ -706,7 +671,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
         indicatorColor="primary"
       >
         <Tab label="Pending Indents" sx={{ color: ACCENT_COLOR }} />
-        <Tab label="GFR Submission" sx={{ color: ACCENT_COLOR }} />
+        <Tab label="GRC Submission" sx={{ color: ACCENT_COLOR }} />
         <Tab label="Track Indents" sx={{ color: ACCENT_COLOR }} />
         <Tab label="Returned Indents" sx={{ color: ACCENT_COLOR }} />
       </Tabs>
@@ -1006,7 +971,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
             </Box>
           ) : gfrIndents.length === 0 ? (
             <Typography sx={{ color: SUBTEXT_COLOR }}>
-              No indents awaiting GFR submission.
+              No indents awaiting GRC submission.
             </Typography>
           ) : (
             <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2, mb: 3 }}>
@@ -1022,7 +987,6 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Actions</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
-
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -1116,7 +1080,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                 {/* GFR Note Section */}
                                 <Box sx={{ mt: 3 }}>
                                   <Typography variant="subtitle1" sx={{ color: ACCENT_COLOR, fontWeight: 600, mb: 2 }}>
-                                    GFR Submission
+                                    GRC Submission
                                   </Typography>
                                   <Box sx={{ mb: 2 }}>
                                     <Button
@@ -1124,7 +1088,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                       component="label"
                                       sx={{ mr: 2 }}
                                     >
-                                      {gfrFileMap[indent.id] ? "File Selected: " + gfrFileMap[indent.id].name : "Attach GFR Report"}
+                                      {gfrFileMap[indent.id] ? "File Selected: " + gfrFileMap[indent.id].name : "Attach GRC Report"}
                                       <input
                                         type="file"
                                         accept="application/pdf,.doc,.docx,image/*"
@@ -1146,7 +1110,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                     fullWidth
                                     multiline
                                     rows={3}
-                                    label="GFR Note"
+                                    label="GRC Note"
                                     value={gfrNoteMap[indent.id] || ""}
                                     onChange={(e) => handleGfrNoteChange(indent.id, e.target.value)}
                                     sx={{ mb: 2, "& .MuiInputBase-root": { color: TEXT_COLOR } }}
@@ -1176,7 +1140,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                           }}
                                         />
                                       ) : (
-                                        "Submit GFR"
+                                        "Submit GRC"
                                       )}
                                     </Button>
                                   </Box>

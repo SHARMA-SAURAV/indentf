@@ -387,7 +387,7 @@ const FLADashboard = () => {
         role: "Purchase",
         remark: indent.gfrNote,
         date: indent.gfrCreatedAt,
-        status: "GFR Submitted",
+        status: "GRC Submitted",
       });
     }
     if (
@@ -659,150 +659,7 @@ const FLADashboard = () => {
     );
   };
 
-  // const TrackingSteps = ({ indent }) => {
-  //   const [isExpanded, setIsExpanded] = useState(false);
-  //   const trackingSteps = [];
 
-  //   if (indent.remarkByFla && (indent.flaApprovalDate || indent.status === "REJECTED_BY_FLA")) {
-  //     trackingSteps.push({
-  //       role: "FLA",
-  //       remark: indent.remarkByFla,
-  //       date: indent.flaApprovalDate || indent.updatedAt,
-  //       status: indent.status === "REJECTED_BY_FLA" ? "Rejected" : "Approved",
-  //     });
-  //   }
-  //   if (indent.remarkBySla && (indent.slaApprovalDate || indent.status === "REJECTED_BY_SLA")) {
-  //     trackingSteps.push({
-  //       role: "SLA",
-  //       remark: indent.remarkBySla,
-  //       date: indent.slaApprovalDate || indent.updatedAt,
-  //       status: indent.status === "REJECTED_BY_SLA" ? "Rejected" : "Approved",
-  //     });
-  //   }
-  //   if (indent.remarkByStore && (indent.storeApprovalDate || indent.status === "REJECTED_BY_STORE")) {
-  //     trackingSteps.push({
-  //       role: "Store",
-  //       remark: indent.remarkByStore,
-  //       date: indent.storeApprovalDate || indent.updatedAt,
-  //       status: indent.status === "REJECTED_BY_STORE" ? "Rejected" : "Approved",
-  //     });
-  //   }
-  //   if (indent.remarkByFinance && (indent.financeApprovalDate || indent.status === "REJECTED_BY_FINANCE")) {
-  //     trackingSteps.push({
-  //       role: "Finance",
-  //       remark: indent.remarkByFinance,
-  //       date: indent.financeApprovalDate || indent.updatedAt,
-  //       status: indent.status === "REJECTED_BY_FINANCE" ? "Rejected" : "Approved",
-  //     });
-  //   }
-  //   if (indent.remarkByPurchase && (indent.purchaseCompletionDate || indent.status === "REJECTED_BY_PURCHASE")) {
-  //     trackingSteps.push({
-  //       role: "Purchase",
-  //       remark: indent.remarkByPurchase,
-  //       date: indent.purchaseCompletionDate || indent.updatedAt,
-  //       status: indent.status === "REJECTED_BY_PURCHASE" ? "Rejected" : "Completed",
-  //     });
-  //   }
-  //   if (indent.remarkByUser && indent.userInspectionDate) {
-  //     trackingSteps.push({
-  //       role: "User",
-  //       remark: indent.remarkByUser,
-  //       date: indent.userInspectionDate,
-  //       status: "Inspection Done",
-  //     });
-  //   }
-  //   if (indent.gfrNote && indent.gfrCreatedAt) {
-  //     trackingSteps.push({
-  //       role: "Purchase",
-  //       remark: indent.gfrNote,
-  //       date: indent.gfrCreatedAt,
-  //       status: "GFR Submitted",
-  //     });
-  //   }
-  //   if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === "PAYMENT_REJECTED")) {
-  //     trackingSteps.push({
-  //       role: "Finance",
-  //       remark: indent.paymentNote,
-  //       date: indent.paymentCreatedAt,
-  //       status: indent.status === "PAYMENT_REJECTED" ? "Rejected" : "Payment Done",
-  //     });
-  //   }
-
-  //   const hasTrackingSteps = trackingSteps.length > 0;
-  //   return (
-  //     <Box sx={{ border: '1px solid #ddd', borderRadius: 1, p: 1 }}>
-  //       <Box
-  //         onClick={() => setIsExpanded(!isExpanded)}
-  //         sx={{
-  //           display: 'flex',
-  //           alignItems: 'center',
-  //           gap: 1,
-  //           cursor: 'pointer',
-  //           '&:hover': { backgroundColor: '#f5f5f5' },
-  //           p: 1,
-  //           borderRadius: 1,
-  //         }}
-  //       >
-  //         <Typography variant="subtitle1">
-  //           Tracking Steps ({trackingSteps.length})
-  //         </Typography>
-  //         <Icon sx={{ fontSize: 16 }}>{isExpanded ? 'expand_less' : 'expand_more'}</Icon>
-  //       </Box>
-  //       {isExpanded && (
-  //         <Box sx={{ mt: 1 }}>
-  //           {hasTrackingSteps ? (
-  //             trackingSteps
-  //               .sort((a, b) => new Date(a.date) - new Date(b.date))
-  //               .map((step, index) => (
-  //                 <Box
-  //                   key={index}
-  //                   sx={{
-  //                     ml: 2,
-  //                     my: 1,
-  //                     borderLeft: "3px solid #1976d2",
-  //                     pl: 2,
-  //                     position: "relative",
-  //                   }}
-  //                 >
-  //                   <Box
-  //                     sx={{
-  //                       position: "absolute",
-  //                       left: "-7px",
-  //                       top: "5px",
-  //                       width: "10px",
-  //                       height: "10px",
-  //                       borderRadius: "50%",
-  //                       backgroundColor:
-  //                         step.status === "Rejected" ? "red" : "#1976d2",
-  //                     }}
-  //                   />
-  //                   <Typography>
-  //                     <strong>{step.role}</strong>{" "}
-  //                     <span
-  //                       style={{
-  //                         fontStyle: "italic",
-  //                         color: step.status === "Rejected" ? "red" : "inherit",
-  //                       }}
-  //                     >
-  //                       ({step.status})
-  //                     </span>
-  //                   </Typography>
-  //                   <Typography sx={{ mb: 0.5 }}>{step.remark}</Typography>
-  //                   <Typography variant="caption" color="text.secondary">
-  //                     {new Date(step.date).toLocaleString()}
-  //                   </Typography>
-  //                 </Box>
-  //               ))
-  //           ) : (
-  //             <Typography sx={{ p: 1 }}>
-  //               No tracking info available yet.
-  //             </Typography>
-  //           )}
-  //         </Box>
-  //       )}
-  //     </Box>
-  //   );
-  // };
 
   // Helper to download file with auth token
   const downloadFile = async (fileName) => {

@@ -702,7 +702,7 @@ const StoreView = () => {
                                           steps.push({ role: "User", remark: indent.remarkByUser, date: indent.userInspectionDate, status: "Inspection Done" });
                                         }
                                         if (indent.gfrNote && indent.gfrCreatedAt) {
-                                          steps.push({ role: "Purchase", remark: indent.gfrNote, date: indent.gfrCreatedAt, status: "GFR Submitted" });
+                                          steps.push({ role: "Purchase", remark: indent.gfrNote, date: indent.gfrCreatedAt, status: "GRC Submitted" });
                                         }
                                         if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === "PAYMENT_REJECTED")) {
                                           steps.push({ role: "Finance", remark: indent.paymentNote, date: indent.paymentCreatedAt, status: indent.status === "PAYMENT_REJECTED" ? "Rejected" : "Payment Done" });

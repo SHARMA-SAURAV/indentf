@@ -581,10 +581,10 @@ const getTrackingSteps = (indent) => {
   }
   if (indent.gfrNote && indent.gfrCreatedAt) {
     trackingSteps.push({
-      role: "GFR Note",
+      role: "GRC Note",
       remark: indent.gfrNote,
       date: indent.gfrCreatedAt,
-      status: "GFR Submitted",
+      status: "GRC Submitted",
     });
   }
   if (indent.paymentNote && indent.paymentCreatedAt) {
@@ -760,7 +760,7 @@ const FinanceView = () => {
             {type === 'payment' && (
               <>
                 <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>GFR Report</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>GRC Report</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Resubmit Attachment</TableCell>
 
               </>
