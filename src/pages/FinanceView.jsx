@@ -759,9 +759,9 @@ const FinanceView = () => {
 
             {type === 'payment' && (
               <>
-                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Inspection Report</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>GRC Report</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Resubmit Attachment</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Attachments</TableCell>
+                {/* <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>GRC Report</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Resubmit Attachment</TableCell> */}
 
               </>
             )}
@@ -843,27 +843,16 @@ const FinanceView = () => {
                       </>
                     )}
                   </TableCell>
-
+                    
+                  {console.log("adjfadsjieenenklesjlk"+indent.combinedPdfPath)}
+                  {/* Attachments column for payment type */}
                   <TableCell>
-                    <InspectionFileViewer fileName={indent.inspectionReportPath} />
-                  </TableCell>
-
-                  <TableCell>
-                    <GfrFileViewer fileName={indent.gfrReportPath} />
-                  </TableCell>
-
-                  <TableCell>
-                    {console.log(indent.fileName, indent.fileUrl)}
-
-                    {/* Show attachment only if status is RESUBMITTED_TO_FINANCE and fileName/fileUrl exists */}
-                    {indent.status === 'RESUBMITTED_TO_FINANCE' && (indent.fileName || indent.fileUrl) ? (
-
-
-                      <FileViewerButtonResubmit fileName={indent.fileName} />
+                    {indent.combinedPdfPath ? (
+                      <FileViewerButtonResubmit fileName={indent.combinedPdfPath.substring(17)} />
                     ) : (
-                      <Typography variant="caption" color="textSecondary">-</Typography>
+                      <Typography variant="caption" color="textSecondary">No Attachment</Typography>
                     )}
-                  </TableCell>
+                  </TableCell>   
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={8} sx={{ p: 0 }}>

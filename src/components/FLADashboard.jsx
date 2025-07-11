@@ -685,30 +685,75 @@ const FLADashboard = () => {
   const handleReturnedRemarkChange = (id, value) => {
     setReturnedRemarkMap((prev) => ({ ...prev, [id]: value }));
   };
-  const handleResubmitToFinance = async (indentId) => {
-    const file = returnedFileMap[indentId];
-    const remark = returnedRemarkMap[indentId];
-    if (!remark) {
-      showSnackbar("Please enter a remark before resubmitting.", "error");
-      return;
-    }
-    setReturnedLoading((prev) => ({ ...prev, [indentId]: true }));
-    try {
-      const formData = new FormData();
-      formData.append("remarks", remark);
-      if (file) formData.append("attachment", file);
-      await axios.put(`/resubmit/${indentId}`, formData);
-      showSnackbar("Indent resubmitted to Finance successfully.", "success");
-      setReturnedIndents((prev) => prev.filter((i) => i.id !== indentId));
-      setReturnedFileMap((prev) => { const c = { ...prev }; delete c[indentId]; return c; });
-      setReturnedRemarkMap((prev) => { const c = { ...prev }; delete c[indentId]; return c; });
-    } catch (err) {
-      showSnackbar("Failed to resubmit indent.", "error");
-    } finally {
-      setReturnedLoading((prev) => ({ ...prev, [indentId]: false }));
-    }
-  };
+  // const handleResubmitToFinance = async (indentId) => {
+  //   const file = returnedFileMap[indentId];
+  //   const remark = returnedRemarkMap[indentId];
+  //   if (!remark) {
+  //     showSnackbar("Please enter a remark before resubmitting.", "error");
+  //     return;
+  //   }
+  //   setReturnedLoading((prev) => ({ ...prev, [indentId]: true }));
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("remarks", remark);
+  //     if (file) formData.append("attachment", file);
+  //     await axios.put(`/resubmit/${indentId}`, formData);
+  //     showSnackbar("Indent resubmitted to Finance successfully.", "success");
+  //     setReturnedIndents((prev) => prev.filter((i) => i.id !== indentId));
+  //     setReturnedFileMap((prev) => { const c = { ...prev }; delete c[indentId]; return c; });
+  //     setReturnedRemarkMap((prev) => { const c = { ...prev }; delete c[indentId]; return c; });
+  //   } catch (err) {
+  //     showSnackbar("Failed to resubmit indent.", "error");
+  //   } finally {
+  //     setReturnedLoading((prev) => ({ ...prev, [indentId]: false }));
+  //   }
+  // };
 
+
+const handleResubmitToFinance = async (indentId) => {
+  const file = returnedFileMap[indentId];
+  const remark = returnedRemarkMap[indentId];
+  if (!remark) {
+    alert("Please enter a remark before resubmitting.");
+    return;
+  }
+  setReturnedLoading(prev => ({ ...prev, [indentId]: true }));
+
+  try {
+    // 1. Upload the file first if present
+    if (file) {
+      const uploadForm = new FormData();
+      uploadForm.append("file", file);
+      uploadForm.append("role", "STORE"); // or "FLA"/"SLA"/appropriate role
+      await axios.post(`/upload/${indentId}/upload`, uploadForm, {
+        // headers: { "Content-Type": "multipart/form-data" }
+      });
+    }
+
+    // 2. Send remarks through PUT
+    await axios.put(`/resubmit/${indentId}`, null, {
+      params: { remarks: remark }
+    });
+
+    alert("Indent resubmitted to Finance successfully.");
+    setReturnedIndents(prev => prev.filter(i => i.id !== indentId));
+    setReturnedFileMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+    setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+  } catch (err) {
+    console.error(err);
+    alert("Failed to resubmit indent.");
+  } finally {
+    setReturnedLoading(prev => ({ ...prev, [indentId]: false }));
+  }
+};
+
+
+
+
+
+
+
+  
   return (
     <Box
       sx={{
@@ -1248,7 +1293,7 @@ const FLADashboard = () => {
                   {returnedIndents.map(indent => (
                     <TableRow key={indent.id}>
                       <TableCell>{indent.indentNumber}</TableCell>
-                      <TableCell>{indent.projectName}</TableCell>
+                      <TableCell>{indent.project.projectName}</TableCell>
                       <TableCell>{indent.financeRemarks}</TableCell>
                       <TableCell>{indent.financeReamrksDate ? new Date(indent.financeReamrksDate).toLocaleString() : '-'}</TableCell>
                       <TableCell>

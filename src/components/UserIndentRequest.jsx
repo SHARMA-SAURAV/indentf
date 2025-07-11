@@ -36,6 +36,7 @@ import {
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import axios from "../api/api";
+import FileViewerButtonResubmit from "./FileViewerButtonResubmit";
 // import InspectionItem from "./InspectionItem";
 
 const UserIndentRequest = () => {
@@ -642,7 +643,7 @@ const UserIndentRequest = () => {
                 </Box>
               ))
             )}
-            
+
           </Box>
         </Collapse>
       </Box>
@@ -666,7 +667,7 @@ const UserIndentRequest = () => {
           <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
             Date
           </TableCell>
-          
+
         </TableRow>
       </TableHead>
       <TableBody>
@@ -680,8 +681,8 @@ const UserIndentRequest = () => {
                   step.status === "Rejected"
                     ? "#d32f2f"
                     : step.status === "Review Added"
-                    ? "#1976d2"
-                    : "#388e3c",
+                      ? "#1976d2"
+                      : "#388e3c",
                 fontWeight: 600,
               }}
             >
@@ -690,7 +691,7 @@ const UserIndentRequest = () => {
             <TableCell sx={{ color: "#666" }}>
               {step.date ? new Date(step.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ""}
             </TableCell>
-            
+
           </TableRow>
         ))}
       </TableBody>
@@ -758,10 +759,10 @@ const UserIndentRequest = () => {
           justifyContent: 'stretch',
           background: "rgba(255,255,255,0.98)",
         }}
-        
+
       >
         <CardContent sx={{ p: 0, m: 0, width: "100%", height: "100%" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent : "center", marginTop:"20px", mb: 2, fontSize: "2.5rem" }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "20px", mb: 2, fontSize: "2.5rem" }}>
             <Avatar sx={{ bgcolor: "primary.main", mr: 2 }}>
               <FontAwesomeIcon icon={faUser} />
             </Avatar>
@@ -798,7 +799,7 @@ const UserIndentRequest = () => {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
-                    
+
                   </Grid>
                   <Grid item xs={12}>
                     <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -830,55 +831,55 @@ const UserIndentRequest = () => {
                     </Box>
                   </Grid>
                   {/* --- NEW PROJECT AND HEAD SELECTION FIELDS --- */}
-<Grid container spacing={2} alignItems="center" justifyContent="flex-start">
-  <Grid item xs={12} sm={3}>
-    <TextField
-      select
-      label="Select Project"
-      value={selectedProjectId}
-      onChange={e => setSelectedProjectId(e.target.value)}
-      fullWidth
-      required
-      sx={{
-        '& .MuiInputBase-root': {
-          backgroundColor: '#fff',
-          borderRadius: 2,
-          padding: '0 12px',
-        },
-      }}
-    >
-      {projects.map((project) => (
-        <MenuItem key={project.id} value={project.id}>
-          {project.projectName || project.name || project.id}
-        </MenuItem>
-      ))}
-    </TextField>
-  </Grid>
+                  <Grid container spacing={2} alignItems="center" justifyContent="flex-start">
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        select
+                        label="Select Project"
+                        value={selectedProjectId}
+                        onChange={e => setSelectedProjectId(e.target.value)}
+                        fullWidth
+                        required
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            backgroundColor: '#fff',
+                            borderRadius: 2,
+                            padding: '0 12px',
+                          },
+                        }}
+                      >
+                        {projects.map((project) => (
+                          <MenuItem key={project.id} value={project.id}>
+                            {project.projectName || project.name || project.id}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
 
-  <Grid item xs={12} sm={3}>
-    <TextField
-      select
-      label="Project Head"
-      value={projectHead}
-      onChange={e => setProjectHead(e.target.value)}
-      fullWidth
-      required
-      sx={{
-        '& .MuiInputBase-root': {
-          backgroundColor: '#fff',
-          borderRadius: 2,
-          padding: '0 12px',
-        },
-      }}
-    >
-      {PROJECT_HEADS.map((head) => (
-        <MenuItem key={head} value={head}>
-          {head}
-        </MenuItem>
-      ))}
-    </TextField>
-  </Grid>
-</Grid>
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        select
+                        label="Project Head"
+                        value={projectHead}
+                        onChange={e => setProjectHead(e.target.value)}
+                        fullWidth
+                        required
+                        sx={{
+                          '& .MuiInputBase-root': {
+                            backgroundColor: '#fff',
+                            borderRadius: 2,
+                            padding: '0 12px',
+                          },
+                        }}
+                      >
+                        {PROJECT_HEADS.map((head) => (
+                          <MenuItem key={head} value={head}>
+                            {head}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+                  </Grid>
 
 
                   {/* Multi-item section with stepper style */}
@@ -1142,7 +1143,13 @@ const UserIndentRequest = () => {
                         >
                           Indent ID
                         </TableCell>
-                        
+
+                        <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+
+                          Project Name
+
+                        </TableCell>
+
                         <TableCell
                           sx={{ fontWeight: 700, color: "primary.main" }}
                         >
@@ -1163,6 +1170,10 @@ const UserIndentRequest = () => {
                         >
                           Status
                         </TableCell>
+
+                        <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
+                          Attachment
+                        </TableCell>
                         <TableCell
                           sx={{ fontWeight: 700, color: "primary.main" }}
                         >
@@ -1173,6 +1184,7 @@ const UserIndentRequest = () => {
                         >
                           Inspection Report
                         </TableCell>
+
                         <TableCell
                           sx={{ fontWeight: 700, color: "primary.main" }}
                         >
@@ -1188,7 +1200,7 @@ const UserIndentRequest = () => {
                           sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}
                         >
                           <TableCell sx={{ fontWeight: 600 }}>{indent.indentNumber}</TableCell>
-                          <TableCell>{indent.projectName}</TableCell>
+                          <TableCell>{indent.project.projectName}</TableCell>
                           <TableCell>
                             <Box>
                               {indent.items?.map((item, idx) => (
@@ -1217,6 +1229,9 @@ const UserIndentRequest = () => {
                               size="small"
                             />
                           </TableCell>
+                          {console.log("indent.combinedPdfPath", indent.combinedPdfPath.substring(17))}
+                          <FileViewerButtonResubmit fileName={indent.combinedPdfPath.substring(17)} />
+                         
                           <TableCell>
                             <TextField
                               size="small"
@@ -1239,9 +1254,30 @@ const UserIndentRequest = () => {
                               <input
                                 type="file"
                                 hidden
-                                onChange={e => {
+                                onChange={async e => {
                                   const file = e.target.files[0];
-                                  setInspectionFiles(prev => ({ ...prev, [indent.id]: file }));
+                                  if (!file) return;
+                                  setInspectionLoading(prev => ({ ...prev, [indent.id]: true }));
+                                  try {
+                                    // Upload file to /api/upload/{indentId}/upload
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+                                    formData.append("role", "USER");
+                                    const res = await axios.post(`/upload/${indent.id}/upload`, formData, {
+                                      headers: {
+                                        "Content-Type": "multipart/form-data",
+                                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                                      }
+                                    });
+                                    setInspectionFiles(prev => ({ ...prev, [indent.id]: file }));
+                                    // Save combinedPdfPath for later use/display
+                                    setPendingInspections(prev => prev.map(i => i.id === indent.id ? { ...i, combinedPdfPath: res.data.combinedPdf } : i));
+                                    setSnackbar({ open: true, message: "File uploaded successfully!", severity: "success" });
+                                  } catch (err) {
+                                    setSnackbar({ open: true, message: "Failed to upload file.", severity: "error" });
+                                  } finally {
+                                    setInspectionLoading(prev => ({ ...prev, [indent.id]: false }));
+                                  }
                                 }}
                               />
                             </Button>
@@ -1268,8 +1304,7 @@ const UserIndentRequest = () => {
                                   formData.append("remark", inspectionRemarks[indent.id]);
                                   formData.append("inspectionReport", inspectionFiles[indent.id]);
                                   await axios.post(
-                                    `/indent/${indent.id}/confirm-inspection`,
-                                    formData,
+                                    `/indent/${indent.id}/confirm-inspection`, formData,
                                     { headers: { "Content-Type": "multipart/form-data" } }
                                   );
                                   setStatus({ type: "success", message: "Product confirmed OK!" });
@@ -1297,275 +1332,275 @@ const UserIndentRequest = () => {
             </Box>
           )}
           {tab === 2 && (
-  <TableContainer
-    component={Paper}
-    sx={{
-      borderRadius: 4,
-      boxShadow: 6,
-      background: 'linear-gradient(135deg, #f8fafc 60%, #e3eafc 100%)',
-      mt: 4,
-      p: { xs: 2, md: 4 },
-      maxWidth: 1400,
-      mx: 'auto',
-      border: '1.5px solid #e3e6ef',
-    }}
-  >
-    <Table sx={{ minWidth: 1100, background: 'transparent' }} aria-label="track indents table">
-      <TableHead>
-        <TableRow sx={{ background: 'linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%)' }}>
-          <TableCell />
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Indent ID</TableCell>
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project</TableCell>
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Department</TableCell>
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Total Items</TableCell>
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Original Total Cost</TableCell>
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Effective Total Cost</TableCell>
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Status</TableCell>
-          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Created At</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {allIndents.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={9} align="center">
-              <Typography>No indents found.</Typography>
-            </TableCell>
-          </TableRow>
-        ) : (
-          allIndents.map((indent, idx) => {
-            const isOpen = openTrackingIdx === idx;
-            const effectiveTotalCost = (indent.items || [])
-              .filter(item => !item.productStatus?.toLowerCase().includes('rejected'))
-              .reduce((sum, item) => sum + (Number(item.totalCost) || 0), 0);
-            const hasRejected = (indent.items || []).some(item => item.productStatus?.toLowerCase().includes('rejected'));
-            const openTracking = !!openSections[indent.id]?.tracking;
-            const openItems = !!openSections[indent.id]?.items;
-            return (
-              <React.Fragment key={indent.id}>
-                <TableRow
-                  hover
-                  sx={{ background: isOpen ? '#f3e5f5' : 'transparent', transition: 'background 0.2s', cursor: 'pointer' }}
-                  onClick={() => setOpenTrackingIdx(isOpen ? null : idx)}
-                >
-                  <TableCell>
-                    <IconButton size="small">
-                      {isOpen ? <KeyboardArrowUp sx={{ color: 'primary.main' }} /> : <KeyboardArrowDown sx={{ color: 'primary.main' }} />}
-                    </IconButton>
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>#{indent.id}</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>{indent.projectName}</TableCell>
-                  <TableCell>{indent.department}</TableCell>
-                  <TableCell>
-                    <Chip label={`${indent.items?.length || 0} items`} size="small" color="primary" variant="outlined" />
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: 'green' }}>₹{indent.totalCost?.toFixed(2)}</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: hasRejected ? '#d32f2f' : 'green' }}>
-                    ₹{effectiveTotalCost.toFixed(2)}
-                    {hasRejected && (
-                      <span style={{ color: '#d32f2f', fontWeight: 500, marginLeft: 4, fontSize: 12 }}>
-                        (Excludes rejected items)
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={indent.status?.replace(/_/g, ' ')}
-                      size="small"
-                      sx={{
-                        backgroundColor: indent.status?.toLowerCase().includes('rejected') ? '#f44336' : indent.status === 'PAYMENT_COMPLETED' ? '#4caf50' : '#ff9800',
-                        color: 'white',
-                        fontWeight: 500
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ color: '#666' }}>{new Date(indent.createdAt).toLocaleDateString()}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell style={{ paddingBottom: 0, paddingTop: 0, background: '#f8fafc' }} colSpan={9}>
-                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                      <Box sx={{ p: 3 }}>
-                        {/* Collapsible Tracking Steps */}
-                        <Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                            <IconButton size="small" onClick={e => { e.stopPropagation(); handleToggleSection(indent.id, 'tracking'); }}>
-                              {openTracking ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                            </IconButton>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', ml: 1 }}>
-                              Complete Tracking History
-                            </Typography>
-                          </Box>
-                          <Collapse in={openTracking} timeout="auto" unmountOnExit>
-                            <Table size="small" sx={{ mb: 2, background: '#f8fafd', borderRadius: 1 }}>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                                  
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {(() => {
-                                  const steps = [];
-                                  if (indent.remarkByFla && (indent.flaApprovalDate || indent.status === 'REJECTED_BY_FLA')) {
-                                    steps.push({ role: 'FLA', remark: indent.remarkByFla, date: indent.flaApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_FLA' ? 'Rejected' : 'Approved' });
-                                  }
-                                  if (indent.remarkBySla && (indent.slaApprovalDate || indent.status === 'REJECTED_BY_SLA')) {
-                                    steps.push({ role: 'SLA', remark: indent.remarkBySla, date: indent.slaApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_SLA' ? 'Rejected' : 'Approved' });
-                                  }
-                                  if (indent.remarkByStore && (indent.storeApprovalDate || indent.status === 'REJECTED_BY_STORE')) {
-                                    steps.push({ role: 'Store', remark: indent.remarkByStore, date: indent.storeApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_STORE' ? 'Rejected' : 'Approved' });
-                                  }
-                                  if (indent.remarkByFinance && (indent.financeApprovalDate || indent.status === 'REJECTED_BY_FINANCE')) {
-                                    steps.push({ role: 'Finance', remark: indent.remarkByFinance, date: indent.financeApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_FINANCE' ? 'Rejected' : 'Approved' });
-                                  }
-                                  if (indent.purchaseReviews && indent.purchaseReviews.length > 0) {
-                                    const sortedReviews = [...indent.purchaseReviews].sort((a, b) => new Date(b.reviewDate) - new Date(a.reviewDate));
-                                    sortedReviews.forEach((review) => {
-                                      steps.push({ role: 'Purchase', remark: review.comment, date: review.reviewDate, status: 'Review Added', reviewer: review.reviewer });
-                                    });
-                                  }
-                                  if (indent.remarkByPurchase && (indent.purchaseCompletionDate || indent.status === 'PURCHASE_REJECTED')) {
-                                    steps.push({ role: 'Purchase', remark: indent.remarkByPurchase, date: indent.purchaseCompletionDate || indent.updatedAt, status: indent.status === 'PURCHASE_REJECTED' ? 'Rejected' : 'Completed' });
-                                  }
-                                  if (indent.remarkByUser && indent.userInspectionDate) {
-                                    steps.push({ role: 'User', remark: indent.remarkByUser, date: indent.userInspectionDate, status: 'Inspection Done' });
-                                  }
-                                  if (indent.gfrNote && indent.gfrCreatedAt) {
-                                    steps.push({ role: 'Purchase', remark: indent.gfrNote, date: indent.gfrCreatedAt, status: 'GRC Submitted' });
-                                  }
-                                  if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === 'PAYMENT_REJECTED')) {
-                                    steps.push({ role: 'Finance', remark: indent.paymentNote, date: indent.paymentCreatedAt, status: indent.status === 'PAYMENT_REJECTED' ? 'Rejected' : 'Payment Done' });
-                                  }
-                                  steps.sort((a, b) => new Date(a.date) - new Date(b.date));
-                                  return steps.length > 0 ? (
-                                    steps.map((step, idx) => (
-                                      <TableRow key={idx}>
-                                        <TableCell>{step.role}</TableCell>
-                                        <TableCell>{step.remark}</TableCell>
-                                        <TableCell sx={{ color: step.status === 'Rejected' ? '#d32f2f' : step.status === 'Review Added' ? '#1976d2' : '#388e3c', fontWeight: 600 }}>{step.status}</TableCell>
-                                        <TableCell>{step.date ? new Date(step.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</TableCell>
-                                        
-                                      </TableRow>
-                                    ))
-                                  ) : (
-                                    <TableRow>
-                                      <TableCell colSpan={5} sx={{ textAlign: 'center', color: 'text.secondary' }}>
-                                        No tracking steps available for this indent.
-                                      </TableCell>
-                                    </TableRow>
-                                  );
-                                })()}
-                              </TableBody>
-                            </Table>
-                          </Collapse>
-                        </Box>
-                        {/* Collapsible Items Details */}
-                        <Box sx={{ mt: 3 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                            <IconButton size="small" onClick={e => { e.stopPropagation(); handleToggleSection(indent.id, 'items'); }}>
-                              {openItems ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                            </IconButton>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', ml: 1 }}>
-                              Items & Individual Remarks
-                            </Typography>
-                          </Box>
-                          <Collapse in={openItems} timeout="auto" unmountOnExit>
-                            <Box sx={{ mb: 2 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                Original Total Cost: <span style={{ color: 'green' }}>₹{indent.totalCost?.toFixed(2)}</span>
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: hasRejected ? '#d32f2f' : 'green' }}>
-                                Effective Total Cost: ₹{effectiveTotalCost.toFixed(2)}
-                                {hasRejected && (
-                                  <span style={{ color: '#d32f2f', fontWeight: 500, marginLeft: 4 }}>
-                                    (Rejected items excluded)
-                                  </span>
-                                )}
-                              </Typography>
-                            </Box>
-                            <Table size="small" sx={{ mb: 2, background: '#fff' }}>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Per Piece Cost</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                                  <TableCell sx={{ fontWeight: 700 }}>Remarks by Role</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {indent.items?.map((item) => (
-                                  <TableRow key={item.id}>
-                                    <TableCell>{item.itemName}</TableCell>
-                                    <TableCell>{item.quantity}</TableCell>
-                                    <TableCell>₹{item.perPieceCost}</TableCell>
-                                    <TableCell>₹{item.totalCost}</TableCell>
-                                    <TableCell>
-                                      <Chip
-                                        label={item.productStatus?.replace(/_/g, ' ')}
-                                        size="small"
-                                        sx={{
-                                          backgroundColor: item.productStatus?.includes('APPROVED')
-                                            ? '#4caf50'
-                                            : item.productStatus?.includes('REJECTED')
-                                            ? '#f44336'
-                                            : '#ff9800',
-                                          color: 'white',
-                                          fontWeight: 500,
-                                        }}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Table size="small" sx={{ background: '#f9f9fb' }}>
+            <TableContainer
+              component={Paper}
+              sx={{
+                borderRadius: 4,
+                boxShadow: 6,
+                background: 'linear-gradient(135deg, #f8fafc 60%, #e3eafc 100%)',
+                mt: 4,
+                p: { xs: 2, md: 4 },
+                maxWidth: 1400,
+                mx: 'auto',
+                border: '1.5px solid #e3e6ef',
+              }}
+            >
+              <Table sx={{ minWidth: 1100, background: 'transparent' }} aria-label="track indents table">
+                <TableHead>
+                  <TableRow sx={{ background: 'linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%)' }}>
+                    <TableCell />
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Indent ID</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Project</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Department</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Total Items</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Original Total Cost</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Effective Total Cost</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>Created At</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {allIndents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} align="center">
+                        <Typography>No indents found.</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    allIndents.map((indent, idx) => {
+                      const isOpen = openTrackingIdx === idx;
+                      const effectiveTotalCost = (indent.items || [])
+                        .filter(item => !item.productStatus?.toLowerCase().includes('rejected'))
+                        .reduce((sum, item) => sum + (Number(item.totalCost) || 0), 0);
+                      const hasRejected = (indent.items || []).some(item => item.productStatus?.toLowerCase().includes('rejected'));
+                      const openTracking = !!openSections[indent.id]?.tracking;
+                      const openItems = !!openSections[indent.id]?.items;
+                      return (
+                        <React.Fragment key={indent.id}>
+                          <TableRow
+                            hover
+                            sx={{ background: isOpen ? '#f3e5f5' : 'transparent', transition: 'background 0.2s', cursor: 'pointer' }}
+                            onClick={() => setOpenTrackingIdx(isOpen ? null : idx)}
+                          >
+                            <TableCell>
+                              <IconButton size="small">
+                                {isOpen ? <KeyboardArrowUp sx={{ color: 'primary.main' }} /> : <KeyboardArrowDown sx={{ color: 'primary.main' }} />}
+                              </IconButton>
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>#{indent.id}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>{indent.projectName}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>{indent.department}</TableCell>
+                            <TableCell>
+                              <Chip label={`${indent.items?.length || 0} items`} size="small" color="primary" variant="outlined" />
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 600, color: 'green' }}>₹{indent.totalCost?.toFixed(2)}</TableCell>
+                            <TableCell sx={{ fontWeight: 600, color: hasRejected ? '#d32f2f' : 'green' }}>
+                              ₹{effectiveTotalCost.toFixed(2)}
+                              {hasRejected && (
+                                <span style={{ color: '#d32f2f', fontWeight: 500, marginLeft: 4, fontSize: 12 }}>
+                                  (Excludes rejected items)
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={indent.status?.replace(/_/g, ' ')}
+                                size="small"
+                                sx={{
+                                  backgroundColor: indent.status?.toLowerCase().includes('rejected') ? '#f44336' : indent.status === 'PAYMENT_COMPLETED' ? '#4caf50' : '#ff9800',
+                                  color: 'white',
+                                  fontWeight: 500
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell sx={{ color: '#666' }}>{new Date(indent.createdAt).toLocaleDateString()}</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell style={{ paddingBottom: 0, paddingTop: 0, background: '#f8fafc' }} colSpan={9}>
+                              <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                                <Box sx={{ p: 3 }}>
+                                  {/* Collapsible Tracking Steps */}
+                                  <Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                      <IconButton size="small" onClick={e => { e.stopPropagation(); handleToggleSection(indent.id, 'tracking'); }}>
+                                        {openTracking ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                                      </IconButton>
+                                      <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', ml: 1 }}>
+                                        Complete Tracking History
+                                      </Typography>
+                                    </Box>
+                                    <Collapse in={openTracking} timeout="auto" unmountOnExit>
+                                      <Table size="small" sx={{ mb: 2, background: '#f8fafd', borderRadius: 1 }}>
                                         <TableHead>
                                           <TableRow>
-                                            <TableCell sx={{ fontWeight: 600 }}>Role</TableCell>
-                                            <TableCell sx={{ fontWeight: 600 }}>Remark</TableCell>
-                                            <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+
                                           </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                          {[
-                                            { role: 'FLA', remark: item.flaRemarks, date: item.flaRemarksDate },
-                                            { role: 'SLA', remark: item.slaRemarks, date: item.slaRemarksDate },
-                                            { role: 'Store', remark: item.storeRemarks, date: item.storeRemarksDate },
-                                            { role: 'Finance', remark: item.financeRemarks, date: item.financeReamrksDate },
-                                            { role: 'Purchase', remark: item.purchaseRemarks, date: item.purchaseRemarkDate }
-                                          ]
-                                            .filter(r => r.remark)
-                                            .map((r, i) => (
-                                              <TableRow key={r.role + i}>
-                                                <TableCell>{r.role}</TableCell>
-                                                <TableCell>{r.remark}</TableCell>
+                                          {(() => {
+                                            const steps = [];
+                                            if (indent.remarkByFla && (indent.flaApprovalDate || indent.status === 'REJECTED_BY_FLA')) {
+                                              steps.push({ role: 'FLA', remark: indent.remarkByFla, date: indent.flaApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_FLA' ? 'Rejected' : 'Approved' });
+                                            }
+                                            if (indent.remarkBySla && (indent.slaApprovalDate || indent.status === 'REJECTED_BY_SLA')) {
+                                              steps.push({ role: 'SLA', remark: indent.remarkBySla, date: indent.slaApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_SLA' ? 'Rejected' : 'Approved' });
+                                            }
+                                            if (indent.remarkByStore && (indent.storeApprovalDate || indent.status === 'REJECTED_BY_STORE')) {
+                                              steps.push({ role: 'Store', remark: indent.remarkByStore, date: indent.storeApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_STORE' ? 'Rejected' : 'Approved' });
+                                            }
+                                            if (indent.remarkByFinance && (indent.financeApprovalDate || indent.status === 'REJECTED_BY_FINANCE')) {
+                                              steps.push({ role: 'Finance', remark: indent.remarkByFinance, date: indent.financeApprovalDate || indent.updatedAt, status: indent.status === 'REJECTED_BY_FINANCE' ? 'Rejected' : 'Approved' });
+                                            }
+                                            if (indent.purchaseReviews && indent.purchaseReviews.length > 0) {
+                                              const sortedReviews = [...indent.purchaseReviews].sort((a, b) => new Date(b.reviewDate) - new Date(a.reviewDate));
+                                              sortedReviews.forEach((review) => {
+                                                steps.push({ role: 'Purchase', remark: review.comment, date: review.reviewDate, status: 'Review Added', reviewer: review.reviewer });
+                                              });
+                                            }
+                                            if (indent.remarkByPurchase && (indent.purchaseCompletionDate || indent.status === 'PURCHASE_REJECTED')) {
+                                              steps.push({ role: 'Purchase', remark: indent.remarkByPurchase, date: indent.purchaseCompletionDate || indent.updatedAt, status: indent.status === 'PURCHASE_REJECTED' ? 'Rejected' : 'Completed' });
+                                            }
+                                            if (indent.remarkByUser && indent.userInspectionDate) {
+                                              steps.push({ role: 'User', remark: indent.remarkByUser, date: indent.userInspectionDate, status: 'Inspection Done' });
+                                            }
+                                            if (indent.gfrNote && indent.gfrCreatedAt) {
+                                              steps.push({ role: 'Purchase', remark: indent.gfrNote, date: indent.gfrCreatedAt, status: 'GRC Submitted' });
+                                            }
+                                            if (indent.paymentNote && (indent.paymentCreatedAt || indent.status === 'PAYMENT_REJECTED')) {
+                                              steps.push({ role: 'Finance', remark: indent.paymentNote, date: indent.paymentCreatedAt, status: indent.status === 'PAYMENT_REJECTED' ? 'Rejected' : 'Payment Done' });
+                                            }
+                                            steps.sort((a, b) => new Date(a.date) - new Date(b.date));
+                                            return steps.length > 0 ? (
+                                              steps.map((step, idx) => (
+                                                <TableRow key={idx}>
+                                                  <TableCell>{step.role}</TableCell>
+                                                  <TableCell>{step.remark}</TableCell>
+                                                  <TableCell sx={{ color: step.status === 'Rejected' ? '#d32f2f' : step.status === 'Review Added' ? '#1976d2' : '#388e3c', fontWeight: 600 }}>{step.status}</TableCell>
+                                                  <TableCell>{step.date ? new Date(step.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</TableCell>
 
-                                                {console.log("date",r.date)}
-                                                <TableCell>{r.date && !isNaN(new Date(r.date)) ? new Date(r.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</TableCell>
+                                                </TableRow>
+                                              ))
+                                            ) : (
+                                              <TableRow>
+                                                <TableCell colSpan={5} sx={{ textAlign: 'center', color: 'text.secondary' }}>
+                                                  No tracking steps available for this indent.
+                                                </TableCell>
                                               </TableRow>
-                                            ))}
+                                            );
+                                          })()}
                                         </TableBody>
                                       </Table>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </Collapse>
-                        </Box>
-                      </Box>
-                    </Collapse>
-                  </TableCell>
-                </TableRow>
-              </React.Fragment>
-            );
-          })
-        )}
-      </TableBody>
-    </Table>
-  </TableContainer>
-)}
+                                    </Collapse>
+                                  </Box>
+                                  {/* Collapsible Items Details */}
+                                  <Box sx={{ mt: 3 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                      <IconButton size="small" onClick={e => { e.stopPropagation(); handleToggleSection(indent.id, 'items'); }}>
+                                        {openItems ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                                      </IconButton>
+                                      <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', ml: 1 }}>
+                                        Items & Individual Remarks
+                                      </Typography>
+                                    </Box>
+                                    <Collapse in={openItems} timeout="auto" unmountOnExit>
+                                      <Box sx={{ mb: 2 }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                          Original Total Cost: <span style={{ color: 'green' }}>₹{indent.totalCost?.toFixed(2)}</span>
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: hasRejected ? '#d32f2f' : 'green' }}>
+                                          Effective Total Cost: ₹{effectiveTotalCost.toFixed(2)}
+                                          {hasRejected && (
+                                            <span style={{ color: '#d32f2f', fontWeight: 500, marginLeft: 4 }}>
+                                              (Rejected items excluded)
+                                            </span>
+                                          )}
+                                        </Typography>
+                                      </Box>
+                                      <Table size="small" sx={{ mb: 2, background: '#fff' }}>
+                                        <TableHead>
+                                          <TableRow>
+                                            <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Per Piece Cost</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Remarks by Role</TableCell>
+                                          </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                          {indent.items?.map((item) => (
+                                            <TableRow key={item.id}>
+                                              <TableCell>{item.itemName}</TableCell>
+                                              <TableCell>{item.quantity}</TableCell>
+                                              <TableCell>₹{item.perPieceCost}</TableCell>
+                                              <TableCell>₹{item.totalCost}</TableCell>
+                                              <TableCell>
+                                                <Chip
+                                                  label={item.productStatus?.replace(/_/g, ' ')}
+                                                  size="small"
+                                                  sx={{
+                                                    backgroundColor: item.productStatus?.includes('APPROVED')
+                                                      ? '#4caf50'
+                                                      : item.productStatus?.includes('REJECTED')
+                                                        ? '#f44336'
+                                                        : '#ff9800',
+                                                    color: 'white',
+                                                    fontWeight: 500,
+                                                  }}
+                                                />
+                                              </TableCell>
+                                              <TableCell>
+                                                <Table size="small" sx={{ background: '#f9f9fb' }}>
+                                                  <TableHead>
+                                                    <TableRow>
+                                                      <TableCell sx={{ fontWeight: 600 }}>Role</TableCell>
+                                                      <TableCell sx={{ fontWeight: 600 }}>Remark</TableCell>
+                                                      <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                                                    </TableRow>
+                                                  </TableHead>
+                                                  <TableBody>
+                                                    {[
+                                                      { role: 'FLA', remark: item.flaRemarks, date: item.flaRemarksDate },
+                                                      { role: 'SLA', remark: item.slaRemarks, date: item.slaRemarksDate },
+                                                      { role: 'Store', remark: item.storeRemarks, date: item.storeRemarksDate },
+                                                      { role: 'Finance', remark: item.financeRemarks, date: item.financeReamrksDate },
+                                                      { role: 'Purchase', remark: item.purchaseRemarks, date: item.purchaseRemarkDate }
+                                                    ]
+                                                      .filter(r => r.remark)
+                                                      .map((r, i) => (
+                                                        <TableRow key={r.role + i}>
+                                                          <TableCell>{r.role}</TableCell>
+                                                          <TableCell>{r.remark}</TableCell>
+
+                                                          {console.log("date", r.date)}
+                                                          <TableCell>{r.date && !isNaN(new Date(r.date)) ? new Date(r.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</TableCell>
+                                                        </TableRow>
+                                                      ))}
+                                                  </TableBody>
+                                                </Table>
+                                              </TableCell>
+                                            </TableRow>
+                                          ))}
+                                        </TableBody>
+                                      </Table>
+                                    </Collapse>
+                                  </Box>
+                                </Box>
+                              </Collapse>
+                            </TableCell>
+                          </TableRow>
+                        </React.Fragment>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
           <Snackbar
             open={snackbar.open}
             autoHideDuration={4000}

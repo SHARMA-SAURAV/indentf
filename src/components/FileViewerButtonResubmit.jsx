@@ -22,10 +22,10 @@ const downloadFile = async (fileNameOrPath) => {
   }
 };
 
-const FileViewerButtonResubmit = ({ fileName }) => {
-  // Prefer item-level props, fallback to indent-level
-  const fileProp = fileName || indent?.attachmentPath || indent?.attachmentName || indent?.file;
-  console.log("File Prop:", fileProp); // Debugging line to check the fileProp value
+const InspectionFileViewer = ({ fileName }) => {
+    // Prefer item-level props, fallback to indent-level
+  const fileProp = fileName ;
+    //   console.log("File Prop:", fileProp); // Debugging line to check the fileProp value
   if (!fileProp) return null;
 
   return (
@@ -36,9 +36,9 @@ const FileViewerButtonResubmit = ({ fileName }) => {
       startIcon={<i className="fas fa-paperclip" />}
       onClick={() => downloadFile(fileProp)}
     >
-      View 
+      View
     </Button>
   );
 };
 
-export default FileViewerButtonResubmit;
+export default InspectionFileViewer;

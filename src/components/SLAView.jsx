@@ -470,30 +470,74 @@ const SLAView = () => {
   }, [fetchIndents]);
   
   // Handler for resubmitting a returned indent
-  const handleResubmit = async (indentId) => {
-    setResubmitLoading((prev) => ({ ...prev, [indentId]: true }));
-    try {
-      const formData = new FormData();
-      formData.append('remarks', resubmitRemarks[indentId] || '');
-      if (resubmitFiles[indentId]) {
-        formData.append('attachment', resubmitFiles[indentId]);
-      }
-      await axios.put(`/resubmit/${indentId}`, formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'multipart/form-data',
-        },
+  // const handleResubmit = async (indentId) => {
+  //   setResubmitLoading((prev) => ({ ...prev, [indentId]: true }));
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('remarks', resubmitRemarks[indentId] || '');
+  //     if (resubmitFiles[indentId]) {
+  //       formData.append('attachment', resubmitFiles[indentId]);
+  //     }
+  //     await axios.put(`/resubmit/${indentId}`, formData, {
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem('token')}`,
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //     });
+  //     alert("Indent resubmitted to Finance successfully!");
+  //     fetchReturnedIndents();
+  //     setResubmitFiles((prev) => ({ ...prev, [indentId]: undefined }));
+  //     setResubmitRemarks((prev) => ({ ...prev, [indentId]: '' }));
+  //   } catch (err) {
+  //     alert("Failed to resubmit indent. Please try again.");
+  //   } finally {
+  //     setResubmitLoading((prev) => ({ ...prev, [indentId]: false }));
+  //   }
+  // };
+
+
+const handleResubmit = async (indentId) => {
+  const file = returnedFileMap[indentId];
+  const remark = returnedRemarkMap[indentId];
+  if (!remark) {
+    alert("Please enter a remark before resubmitting.");
+    return;
+  }
+  setReturnedLoading(prev => ({ ...prev, [indentId]: true }));
+
+  try {
+    // 1. Upload the file first if present
+    if (file) {
+      const uploadForm = new FormData();
+      uploadForm.append("file", file);
+      uploadForm.append("role", "STORE"); // or "FLA"/"SLA"/appropriate role
+      await axios.post(`/upload/${indentId}/upload`, uploadForm, {
+        // headers: { "Content-Type": "multipart/form-data" }
       });
-      alert("Indent resubmitted to Finance successfully!");
-      fetchReturnedIndents();
-      setResubmitFiles((prev) => ({ ...prev, [indentId]: undefined }));
-      setResubmitRemarks((prev) => ({ ...prev, [indentId]: '' }));
-    } catch (err) {
-      alert("Failed to resubmit indent. Please try again.");
-    } finally {
-      setResubmitLoading((prev) => ({ ...prev, [indentId]: false }));
     }
-  };
+
+    // 2. Send remarks through PUT
+    await axios.put(`/resubmit/${indentId}`, null, {
+      params: { remarks: remark }
+    });
+
+    alert("Indent resubmitted to Finance successfully.");
+    setReturnedIndents(prev => prev.filter(i => i.id !== indentId));
+    setReturnedFileMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+    setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+  } catch (err) {
+    console.error(err);
+    alert("Failed to resubmit indent.");
+  } finally {
+    setReturnedLoading(prev => ({ ...prev, [indentId]: false }));
+  }
+};
+
+
+
+
+
+
 
   return (
     <Box
@@ -593,6 +637,9 @@ const SLAView = () => {
                           </Typography>
                         )}
                       </TableCell>
+
+
+
                       <TableCell>
                         <Button
                           variant="contained"
@@ -602,6 +649,7 @@ const SLAView = () => {
                         >
                           {resubmitLoading[indent.id] ? <CircularProgress size={18} color="inherit" /> : 'Resubmit to Finance'}
                         </Button>
+                        
                       </TableCell>
                     </TableRow>
                   ))}

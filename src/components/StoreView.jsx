@@ -9,11 +9,6 @@ import {
   Button,
   TextField,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Fade,
   Tabs,
   Tab,
   Table,
@@ -27,9 +22,8 @@ import {
   IconButton,
   Chip,
   Checkbox,
-  FormControlLabel,
-  Grid,
-  Divider
+  FormControlLabel
+  
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp, ShoppingCart, Assignment } from "@mui/icons-material";
 import axios from "../api/api";
@@ -487,29 +481,41 @@ const StoreView = () => {
     setReturnedRemarkMap(prev => ({ ...prev, [id]: value }));
   };
   const handleResubmitToFinance = async (indentId) => {
-    const file = returnedFileMap[indentId];
-    const remark = returnedRemarkMap[indentId];
-    if (!remark) {
-      alert("Please enter a remark before resubmitting.");
-      return;
-    }
-    setReturnedLoading(prev => ({ ...prev, [indentId]: true }));
-    try {
-      const formData = new FormData();
-      formData.append("remarks", remark);
-      if (file) formData.append("attachment", file);
-      await axios.put(`/resubmit/${indentId}`, formData);
-      alert("Indent resubmitted to Finance successfully.");
-      setReturnedIndents(prev => prev.filter(i => i.id !== indentId));
-      setReturnedFileMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
-      setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
-    } catch (err) {
-      alert("Failed to resubmit indent.");
-    } finally {
-      setReturnedLoading(prev => ({ ...prev, [indentId]: false }));
-    }
-  };
+  const file = returnedFileMap[indentId];
+  const remark = returnedRemarkMap[indentId];
+  if (!remark) {
+    alert("Please enter a remark before resubmitting.");
+    return;
+  }
+  setReturnedLoading(prev => ({ ...prev, [indentId]: true }));
 
+  try {
+    // 1. Upload the file first if present
+    if (file) {
+      const uploadForm = new FormData();
+      uploadForm.append("file", file);
+      uploadForm.append("role", "STORE"); // or "FLA"/"SLA"/appropriate role
+      await axios.post(`/upload/${indentId}/upload`, uploadForm, {
+        // headers: { "Content-Type": "multipart/form-data" }
+      });
+    }
+
+    // 2. Send remarks through PUT
+    await axios.put(`/resubmit/${indentId}`, null, {
+      params: { remarks: remark }
+    });
+
+    alert("Indent resubmitted to Finance successfully.");
+    setReturnedIndents(prev => prev.filter(i => i.id !== indentId));
+    setReturnedFileMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+    setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+  } catch (err) {
+    console.error(err);
+    alert("Failed to resubmit indent.");
+  } finally {
+    setReturnedLoading(prev => ({ ...prev, [indentId]: false }));
+  }
+};
   if (loading) {
     return (
       <Box

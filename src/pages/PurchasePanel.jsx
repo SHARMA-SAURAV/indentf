@@ -40,6 +40,7 @@ import {
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import FileViewerButton from "../components/FileViewerButton";
+import FileViewerButtonResubmit from "../components/FileViewerButtonResubmit"; // Adjust the import path as necessary
 import InspectionFileViewer from "../components/InspectionFileViewer"; // Adjust the import path as necessary
 
 // Design Tokens
@@ -72,6 +73,11 @@ const PurchasePanel = () => {
     message: "",
     severity: "info",
   });
+
+
+
+  const [resubmitRemarks, setResubmitRemarks] = useState({});
+  const [resubmitLoading, setResubmitLoading] = useState({});
   const [trackTab, setTrackTab] = useState(0); // for new tab index
   const [trackingIndents, setTrackingIndents] = useState([]);
   const [trackingLoading, setTrackingLoading] = useState(false);
@@ -99,8 +105,8 @@ const PurchasePanel = () => {
   const [returnedResubmitLoading, setReturnedResubmitLoading] = useState({});
   const [inwardEntryStates, setInwardEntryStates] = useState({});
   // const [inwardEntryMap, setInwardEntryMap] = useState({});
-const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
-// const [reviewSubmitLoading, setReviewSubmitLoading] = useState({});
+  const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
+  // const [reviewSubmitLoading, setReviewSubmitLoading] = useState({});
 
 
   const fetchPendingIndents = useCallback(async () => {
@@ -209,12 +215,18 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       });
 
       // Update frontend state only if backend update succeeds
-      setInwardEntryMap((prev) => ({ ...prev, [id]: checked }));
-
-      setStatus(checked ?
-        "Inward Entry marked as generated" :
-        "Inward Entry marked as not generated"
-      );
+      // setInwardEntryMap((prev) => ({ ...prev, [id]: checked }));
+      setInwardEntryStates(prev => ({
+        ...prev,
+        [id]: {
+          ...(prev[id] || {}),
+          generated: checked
+        }
+      }));
+      // setStatus(checked ?
+      //   "Inward Entry marked as generated" :
+      //   "Inward Entry marked as not generated"
+      // );
       setTimeout(() => setStatus(""), 3000);
 
     } catch (err) {
@@ -346,9 +358,39 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
     setGfrNoteMap((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleGfrFileChange = (id, file) => {
-    setGfrFileMap((prev) => ({ ...prev, [id]: file }));
+  // const handleGfrFileChange = (id, file) => {
+  //   setGfrFileMap((prev) => ({ ...prev, [id]: file }));
+  // };
+
+
+  const handleGfrFileChange = async (indentId, selectedFile) => {
+    if (!selectedFile) return;
+
+    setGfrFileMap(prev => ({ ...prev, [indentId]: selectedFile }));
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("role", "PURCHASE"); // or dynamic based on user role
+
+    try {
+      await axios.post(`/upload/${indentId}/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setSnackbar({
+        open: true,
+        message: "GRC report uploaded successfully.",
+        severity: "success",
+      });
+    } catch (err) {
+      console.error("Upload failed:", err);
+      setSnackbar({
+        open: true,
+        message: "Failed to upload GRC report.",
+        severity: "error",
+      });
+    }
   };
+
 
   const handleSubmitGFR = async (id) => {
     const note = gfrNoteMap[id];
@@ -358,6 +400,8 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       setTimeout(() => setStatus(""), 4000);
       return;
     }
+
+
     setGfrLoading((prev) => ({ ...prev, [id]: true }));
     setActionSnackbar({
       open: true,
@@ -368,11 +412,12 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       const formData = new FormData();
       formData.append("indentId", id);
       formData.append("gfrNote", note);
-      formData.append("gfrReport", file); // file must be a File object
+      // formData.append("gfrReport", file); // file must be a File object
+
+
 
       // DO NOT set Content-Type header!
       await axios.post("/indent/purchase/gfr/submit", formData);
-
       setStatus("GRC submitted successfully.");
       fetchPendingGFRIndents();
       setGfrNoteMap((prev) => {
@@ -380,11 +425,13 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
         delete copy[id];
         return copy;
       });
+
       setGfrFileMap((prev) => {
         const copy = { ...prev };
         delete copy[id];
         return copy;
       });
+
       setTimeout(() => setStatus(""), 4000);
     } catch (err) {
       console.error("GRC submission failed", err);
@@ -406,6 +453,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
         status: indent.status === "REJECTED_BY_FLA" ? "Rejected" : "Approved",
       });
     }
+
     if (indent.remarkBySla && (indent.slaApprovalDate || indent.status === "REJECTED_BY_SLA")) {
       trackingSteps.push({
         role: "SLA",
@@ -511,6 +559,67 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       return { ...prev, [indentId]: state };
     });
   };
+  // const handleSubmitReview = async (indent) => {
+  //   const state = itemReviewState[indent.id] || { approved: [], rejected: [], remarks: {} };
+  //   const inwardEntry = inwardEntryStates[indent.id];
+
+  //   if (state.approved.length === 0 && state.rejected.length === 0) {
+  //     alert('Select at least one item to approve or reject.');
+  //     return;
+  //   }
+
+  //   if (inwardEntry?.generated && !inwardEntry.file) {
+  //     alert("Please upload the inward entry file.");
+  //     return;
+  //   }
+
+  //   setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: true }));
+
+  //   try {
+  //     const formData = new FormData();
+  //     const reviewPayload = {
+  //       indentId: indent.id,
+  //       approvedProductIds: state.approved,
+  //       rejectedProductIds: state.rejected,
+  //       remarks: state.remarks
+  //     };
+  //     formData.append("data", new Blob([JSON.stringify(reviewPayload)], { type: "application/json" }));
+  //     // formData.append("inwardEntryFile", selectedFile);
+  //     formData.append("inwardEntryFile", inwardEntryFileMap[indent.id]);
+
+  //     if (inwardEntry?.generated && inwardEntry.file) {
+  //       formData.append("inwardEntryFile", inwardEntry.file);
+  //     }
+
+  //     await axios.post('/indent/purchase/review-products', formData, {
+
+  //     });
+
+  //     setStatus('Review submitted successfully.');
+  //     fetchPendingIndents();
+  //     setItemReviewState(prev => {
+  //       const copy = { ...prev };
+  //       delete copy[indent.id];
+  //       return copy;
+  //     });
+  //     setInwardEntryStates(prev => {
+  //       const copy = { ...prev };
+  //       delete copy[indent.id];
+  //       return copy;
+  //     });
+  //     setExpandedIndentId(null);
+  //     setTimeout(() => setStatus(''), 3000);
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert('Failed to submit review.');
+  //   } finally {
+  //     setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: false }));
+  //   }
+  // };
+
+
+  // Fetch reviews for an indent when expanded
+
   const handleSubmitReview = async (indent) => {
     const state = itemReviewState[indent.id] || { approved: [], rejected: [], remarks: {} };
     const inwardEntry = inwardEntryStates[indent.id];
@@ -520,10 +629,21 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       return;
     }
 
-    if (inwardEntry?.generated && !inwardEntry.file) {
+    // if (inwardEntry?.generated && !inwardEntry.file) {
+    //   alert("Please upload the inward entry file.");
+    //   return;
+    // }
+
+
+
+    if (inwardEntry?.generated && !inwardEntryStates[indent.id]?.fileName) {
       alert("Please upload the inward entry file.");
       return;
     }
+
+    console.log("inwardEntry", inwardEntry);
+
+
 
     setReviewSubmitLoading(prev => ({ ...prev, [indent.id]: true }));
 
@@ -544,9 +664,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
       }
 
       await axios.post('/indent/purchase/review-products', formData, {
-        // headers: {
-        //   "Content-Type": "multipart/form-data"
-        // }
+
       });
 
       setStatus('Review submitted successfully.');
@@ -572,7 +690,6 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
   };
 
 
-  // Fetch reviews for an indent when expanded
   const fetchReviewsForExpanded = async (indentId) => {
     setExpandedReviewLoading(prev => ({ ...prev, [indentId]: true }));
     try {
@@ -629,6 +746,46 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
 
   const handleReturnedRemarkChange = (id, value) => {
     setReturnedRemarkMap(prev => ({ ...prev, [id]: value }));
+  };
+
+
+
+
+  const handleResubmit = async (indentId) => {
+    const file = returnedFileMap[indentId];
+    const remark = returnedRemarkMap[indentId];
+    if (!remark) {
+      alert("Please enter a remark before resubmitting.");
+      return;
+    }
+    setReturnedLoading(prev => ({ ...prev, [indentId]: true }));
+
+    try {
+      // 1. Upload the file first if present
+      if (file) {
+        const uploadForm = new FormData();
+        uploadForm.append("file", file);
+        uploadForm.append("role", "STORE"); // or "FLA"/"SLA"/appropriate role
+        await axios.post(`/upload/${indentId}/upload`, uploadForm, {
+          // headers: { "Content-Type": "multipart/form-data" }
+        });
+      }
+
+      // 2. Send remarks through PUT
+      await axios.put(`/resubmit/${indentId}`, null, {
+        params: { remarks: remark }
+      });
+
+      alert("Indent resubmitted to Finance successfully.");
+      setReturnedIndents(prev => prev.filter(i => i.id !== indentId));
+      setReturnedFileMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+      setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to resubmit indent.");
+    } finally {
+      setReturnedLoading(prev => ({ ...prev, [indentId]: false }));
+    }
   };
 
   return (
@@ -727,7 +884,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                             </IconButton>
                           </TableCell>
                           <TableCell>{indent.indentNumber}</TableCell>
-                          <TableCell>{indent.projectName}</TableCell>
+                          <TableCell>{indent.project.projectName}</TableCell>
                           <TableCell>{indent.projectHead}</TableCell>
                           <TableCell>{indent.department}</TableCell>
                           <TableCell>₹{indent.totalIndentCost}</TableCell>
@@ -862,24 +1019,17 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                     <Typography sx={{ color: SUBTEXT_COLOR, fontStyle: 'italic' }}>No reviews yet.</Typography>
                                   ))}
                                 </Box>
+
+
                                 {/* Inward entry checkbox and warning */}
-
-
                                 <Box display="flex" alignItems="center" sx={{ mb: 2 }}>
-                                  <Checkbox
+                                  {/* <Checkbox
                                     checked={!!inwardEntry}
                                     onChange={e => handleInwardEntryChange(indent.id, e.target.checked)}
                                     color="primary"
                                     sx={{ mr: 1 }}
-                                  />
-                                  <Typography sx={{ color: ACCENT_COLOR, fontWeight: 500 }}>
-                                    Inward Entry Generated
-                                  </Typography>
-                                </Box>
+                                  /> */}
 
-
-
-                                {/* <Box display="flex" alignItems="center" sx={{ mb: 2 }}>
                                   <Checkbox
                                     checked={inwardEntryStates[indent.id]?.generated || false}
                                     onChange={e => handleInwardEntryChange(indent.id, e.target.checked)}
@@ -889,10 +1039,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                   <Typography sx={{ color: ACCENT_COLOR, fontWeight: 500 }}>
                                     Inward Entry Generated
                                   </Typography>
-                                </Box> */}
-
-
-
+                                </Box>
                                 {!inwardEntry && (
                                   <Alert severity="warning" sx={{ mb: 2 }}>
                                     Please confirm that Inward Entry has been generated before submitting item review.
@@ -900,31 +1047,69 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                 )}
 
 
+                                {/* <input
+                                  type="file"
+                                  accept="application/pdf,image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files[0];
+                                    if (!file) return;
 
-                                {/* <Box display="flex" justifyContent="flex-end" mt={2}>
-                                  <Button
-                                    variant="contained"
-                                    onClick={() => handleSubmitReview(indent)}
-                                    disabled={reviewSubmitLoading[indent.id] || !inwardEntry}
-                                    sx={{ bgcolor: ACCENT_COLOR }}
-                                  >
-                                    {reviewSubmitLoading[indent.id] ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'Submit Review'}
-                                  </Button>
-                                </Box> */}
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+
+                                    try {
+                                      const res = await axios.post(`/api/upload/${indent.id}/upload`, formData);
+                                      const uploadedFileName = res.data.attachmentFileName || res.data.fileName || file.name;
+
+                                      setInwardEntryStates((prev) => ({
+                                        ...prev,
+                                        [indent.id]: {
+                                          generated: true,
+                                          fileName: uploadedFileName,
+                                          originalFile: file
+                                        }
+                                      }));
+                                    } catch (err) {
+                                      console.error("Upload failed", err);
+                                      alert("Failed to upload file. Please try again.");
+                                    }
+                                  }}
+                                /> */}
 
 
-                                {/* File Upload input shown only if Inward Entry is checked */}
-                                {inwardEntryMap[indent.id] && (
+
+
+
+                                {inwardEntryStates[indent.id]?.generated && (
                                   <Box sx={{ mb: 2 }}>
                                     <input
                                       type="file"
                                       accept="application/pdf,image/*"
-                                      onChange={(e) =>
-                                        setInwardEntryFileMap((prev) => ({
-                                          ...prev,
-                                          [indent.id]: e.target.files[0]
-                                        }))
-                                      }
+                                      onChange={async (e) => {
+                                        const file = e.target.files[0];
+                                        if (!file) return;
+
+                                        const formData = new FormData();
+                                        formData.append("file", file);
+
+                                        try {
+                                          const res = await axios.post(`/upload/${indent.id}/upload?role=PURCHASE`, formData);
+                                          const uploadedFileName = res.data.attachmentFileName || res.data.fileName || file.name;
+
+                                          setInwardEntryStates((prev) => ({
+                                            ...prev,
+                                            [indent.id]: {
+                                              ...prev[indent.id],
+                                              fileName: uploadedFileName,
+                                              originalFile: file,
+                                              uploaded: true
+                                            }
+                                          }));
+                                        } catch (err) {
+                                          console.error("Upload failed", err);
+                                          alert("Failed to upload file. Please try again.");
+                                        }
+                                      }}
                                     />
                                   </Box>
                                 )}
@@ -935,10 +1120,14 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                   <Button
                                     variant="contained"
                                     onClick={() => handleSubmitReview(indent)}
-                                    disabled={
-                                      reviewSubmitLoading[indent.id] ||
-                                      (inwardEntryMap[indent.id] && !inwardEntryFileMap[indent.id])
-                                    }
+                                    // disabled={
+                                    //   reviewSubmitLoading[indent.id] ||
+                                    //   (inwardEntryMap[indent.id] && !inwardEntryFileMap[indent.id])
+                                    // }
+
+                                    disabled={reviewSubmitLoading[indent.id]}
+
+
                                     sx={{ bgcolor: ACCENT_COLOR }}
                                   >
                                     {reviewSubmitLoading[indent.id] ? (
@@ -1002,7 +1191,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                             </IconButton>
                           </TableCell>
                           <TableCell>{indent.indentNumber}</TableCell>
-                          <TableCell>{indent.projectName}</TableCell>
+                          <TableCell>{indent.project.projectName}</TableCell>
                           <TableCell>{indent.department}</TableCell>
                           <TableCell>₹{indent.totalIndentCost || indent.displayTotalCost}</TableCell>
                           <TableCell>
@@ -1029,7 +1218,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                           </TableCell>
 
                           <TableCell>
-                            <InspectionFileViewer fileName={indent.inspectionReportPath} />
+                            <FileViewerButtonResubmit fileName={indent.combinedPdfPath.substring(17)} />
                           </TableCell>
                         </TableRow>
                         <TableRow>
@@ -1083,7 +1272,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                     GRC Submission
                                   </Typography>
                                   <Box sx={{ mb: 2 }}>
-                                    <Button
+                                    {/* <Button
                                       variant="outlined"
                                       component="label"
                                       sx={{ mr: 2 }}
@@ -1104,7 +1293,26 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                                       >
                                         Remove
                                       </Button>
-                                    )}
+                                    )} */}
+
+                                    <Button
+                                      variant="outlined"
+                                      component="label"
+                                      sx={{ mr: 2 }}
+                                    >
+                                      {gfrFileMap[indent.id]
+                                        ? "File Selected: " + gfrFileMap[indent.id].name
+                                        : "Attach GRC Report"}
+                                      <input
+                                        type="file"
+                                        accept="application/pdf,.doc,.docx,image/*"
+                                        hidden
+                                        onChange={(e) =>
+                                          handleGfrFileChange(indent.id, e.target.files[0])
+                                        }
+                                      />
+                                    </Button>
+
                                   </Box>
                                   <TextField
                                     fullWidth
@@ -1197,7 +1405,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                             </IconButton>
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>{indent.id}</TableCell>
-                          <TableCell>{indent.projectName}</TableCell>
+                          <TableCell>{indent.project.projectName}</TableCell>
                           <TableCell>{indent.itemName}</TableCell>
                           <TableCell>{indent.requestedBy?.department || 'N/A'}</TableCell>
                           <TableCell>{indent.quantity}</TableCell>
@@ -1279,7 +1487,7 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                         />
                       </TableCell>
                       <TableCell>
-                        <Button
+                        {/* <Button
                           variant="contained"
                           color="primary"
                           onClick={async () => {
@@ -1311,6 +1519,19 @@ const [inwardEntryFileMap, setInwardEntryFileMap] = useState({});
                           disabled={returnedResubmitLoading[indent.id]}
                         >
                           {returnedResubmitLoading[indent.id] ? <CircularProgress size={18} /> : 'Resubmit'}
+                        </Button> */}
+
+
+
+
+
+                        <Button
+                          variant="contained"
+                          size="small"
+                          disabled={returnedResubmitLoading[indent.id] || !(resubmitRemarks[indent.id] && resubmitRemarks[indent.id].trim())}
+                          onClick={() => handleResubmit(indent.id)}
+                        >
+                          {resubmitLoading[indent.id] ? <CircularProgress size={18} color="inherit" /> : 'Resubmit to Finance'}
                         </Button>
                       </TableCell>
                     </TableRow>
