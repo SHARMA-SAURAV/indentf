@@ -294,6 +294,7 @@ const IndentProjectCard = ({ indent, onReviewProducts, actionLoading }) => {
         mb: 2,
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
         borderRadius: 2,
+        // width: '100%',
         '&:before': { display: 'none' }
       }}
     >

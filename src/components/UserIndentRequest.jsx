@@ -791,13 +791,26 @@ const UserIndentRequest = () => {
               component="form"
               onSubmit={handleSubmit}
               noValidate
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, width: '100%' }}
             >
-              <Card sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4, boxShadow: '0 4px 32px 0 rgba(25, 118, 210, 0.10)', background: '#f8fafc', mb: 3 }}>
-                <Typography variant="h5" fontWeight={700} color="primary.main" sx={{ mb: 2, letterSpacing: 1 }}>
+              <Card sx={{
+                p: { xs: 3, sm: 6 },
+                borderRadius: 6,
+                boxShadow: '0 8px 32px 0 rgba(25, 118, 210, 0.18)',
+                background: 'linear-gradient(135deg, #f8fafc 80%, #e3f2fd 100%)',
+                mb: 3,
+                width: '100%',
+                minHeight: '100vh',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                justifyContent: 'flex-start',
+              }}>
+                <Typography variant="h4" fontWeight={800} color="primary.main" sx={{ mb: 3, letterSpacing: 2, textAlign: 'center', textShadow: '0 2px 8px #1976d222' }}>
                   Create New Indent
                 </Typography>
-                <Grid container spacing={3}>
+                <Grid container spacing={4}>
                   <Grid item xs={12}>
 
                   </Grid>
@@ -832,7 +845,10 @@ const UserIndentRequest = () => {
                   </Grid>
                   {/* --- NEW PROJECT AND HEAD SELECTION FIELDS --- */}
                   <Grid container spacing={2} alignItems="center" justifyContent="flex-start">
-                    <Grid item xs={12} sm={3}>
+                    <Grid item xs={12} sm={3}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 2 ,
+                        marginTop:"-17px"
+                      }}>
                       <TextField
                         select
                         label="Select Project"
@@ -845,6 +861,7 @@ const UserIndentRequest = () => {
                             backgroundColor: '#fff',
                             borderRadius: 2,
                             padding: '0 12px',
+                            width: "200px"
                           },
                         }}
                       >
@@ -856,7 +873,10 @@ const UserIndentRequest = () => {
                       </TextField>
                     </Grid>
 
-                    <Grid item xs={12} sm={3}>
+                    <Grid item xs={12} sm={3}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 2 ,
+                        marginTop:"-17px"
+                      }}>
                       <TextField
                         select
                         label="Project Head"
@@ -869,6 +889,7 @@ const UserIndentRequest = () => {
                             backgroundColor: '#fff',
                             borderRadius: 2,
                             padding: '0 12px',
+                            width: "200px"
                           },
                         }}
                       >
@@ -1335,17 +1356,20 @@ const UserIndentRequest = () => {
             <TableContainer
               component={Paper}
               sx={{
-                borderRadius: 4,
-                boxShadow: 6,
+                borderRadius: 3,
+                boxShadow:  '0 2px 16px #0d47a122',
                 background: 'linear-gradient(135deg, #f8fafc 60%, #e3eafc 100%)',
-                mt: 4,
-                p: { xs: 2, md: 4 },
-                maxWidth: 1400,
+                mt: 2,
+                p: { xs: 1, md: 3 },
+                Width: '100%',
+                maxWidth: '100vw',
                 mx: 'auto',
                 border: '1.5px solid #e3e6ef',
+                overflowX: 'auto'
+                
               }}
             >
-              <Table sx={{ minWidth: 1100, background: 'transparent' }} aria-label="track indents table">
+              <Table sx={{ minWidth: 1600, background: 'transparent' }} aria-label="track indents table">
                 <TableHead>
                   <TableRow sx={{ background: 'linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%)' }}>
                     <TableCell />

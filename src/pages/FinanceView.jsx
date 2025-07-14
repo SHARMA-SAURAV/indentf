@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useRef } from "react";
 import axios from "../api/api";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCoins, faCheck, faTimes, faEye, faCreditCard } from '@fortawesome/free-solid-svg-icons';
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import {
   Card,
   CardContent,
@@ -138,7 +142,7 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
                   Approved Amount
                 </Typography>
                 <Typography variant="h6" sx={{ color: '#2e7d32', fontWeight: 600 }}>
-                  ₹{approvedAmount.toLocaleString()}
+                  {approvedAmount.toLocaleString()}
                 </Typography>
               </Paper>
             </Grid>
@@ -148,7 +152,7 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
                   Rejected Amount
                 </Typography>
                 <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 600 }}>
-                  ₹{rejectedAmount.toLocaleString()}
+                  {rejectedAmount.toLocaleString()}
                 </Typography>
               </Paper>
             </Grid>
@@ -158,7 +162,7 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
                   Total Original
                 </Typography>
                 <Typography variant="h6" sx={{ color: ACCENT_COLOR, fontWeight: 600 }}>
-                  ₹{indent?.totalIndentCost?.toLocaleString()}
+                  {indent?.totalIndentCost?.toLocaleString()}
                 </Typography>
               </Paper>
             </Grid>
@@ -197,8 +201,8 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
                         </Typography>
                       </TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>₹{item.perPieceCost}</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>₹{item.totalCost}</TableCell>
+                      <TableCell>{item.perPieceCost}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{item.totalCost}</TableCell>
                     </TableRow>
                   ))
                 )}
@@ -234,8 +238,8 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
                           </Typography>
                         </TableCell>
                         <TableCell>{item.quantity}</TableCell>
-                        <TableCell>₹{item.perPieceCost}</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>₹{item.totalCost}</TableCell>
+                        <TableCell>{item.perPieceCost}</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{item.totalCost}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -268,7 +272,7 @@ const PaymentCompletionDialog = ({ open, onClose, indent, onSubmit }) => {
           startIcon={loading ? <CircularProgress size={16} /> : <FontAwesomeIcon icon={faCheck} />}
           sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
         >
-          {loading ? 'Processing...' : `Complete Payment (₹${approvedAmount.toLocaleString()})`}
+          {loading ? 'Processing...' : `Complete Payment (${approvedAmount.toLocaleString()})`}
         </Button>
       </DialogActions>
     </Dialog>
@@ -380,8 +384,8 @@ const ProductReviewDialog = ({ open, onClose, indent, onSubmit }) => {
                     </Typography>
                   </TableCell>
                   <TableCell>{item.quantity}</TableCell>
-                  <TableCell>₹{item.perPieceCost}</TableCell>
-                  <TableCell>₹{item.totalCost}</TableCell>
+                  <TableCell>{item.perPieceCost}</TableCell>
+                  <TableCell>{item.totalCost}</TableCell>
                   <TableCell>
                     <ProductStatusChip status={item.productStatus} />
                   </TableCell>
@@ -602,6 +606,90 @@ const getTrackingSteps = (indent) => {
 const FinanceView = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const pdfRefs = useRef({});
+
+  // PDF download handler for Track Indents (text-based PDF)
+  const handleDownloadPdf = (indentId) => {
+    const indent = trackingIndents.find(i => i.id === indentId);
+    if (!indent) {
+      alert('Indent not found');
+      return;
+    }
+    // Use landscape orientation for wide tables
+    const doc = new jsPDF({ orientation: 'landscape' });
+    let y = 10;
+    doc.setFontSize(16);
+    doc.text(`Indent Report`, 10, y);
+    y += 8;
+    doc.setFontSize(12);
+    doc.text(`Indent Id: ${indent.id}`, 10, y);
+    y += 7;
+    doc.text(`Project Name: ${indent.project?.projectName || ''}`, 10, y);
+    y += 7;
+    doc.text(`Purpose: ${indent.purpose || ''}`, 10, y);
+    y += 7;
+    doc.text(`Department: ${indent.department || ''}`, 10, y);
+    y += 7;
+    doc.text(`Total Cost: ${indent.totalIndentCost?.toLocaleString()} Rs`, 10, y);
+    y += 10;
+
+    // Tracking Steps Table
+    const steps = getTrackingSteps(indent);
+    if (steps.length > 0) {
+      doc.setFontSize(13);
+      doc.text('Tracking Steps', 10, y);
+      y += 6;
+      doc.setFontSize(10);
+      const stepRows = steps.map(s => [s.role, s.remark, s.status, s.date ? new Date(s.date).toLocaleString() : '']);
+      autoTable(doc, {
+        head: [['Role', 'Remark', 'Status', 'Date']],
+        body: stepRows,
+        startY: y,
+        theme: 'grid',
+        styles: { fontSize: 9 },
+        margin: { left: 10, right: 10 },
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    }
+
+    // Products/Items Table
+    doc.setFontSize(13);
+    doc.text('Products/Items', 10, y);
+    y += 6;
+    doc.setFontSize(10);
+    const items = (indent.items || indent.products || []);
+    const itemRows = items.map(item => [
+      item.itemName,
+      item.description,
+      item.specificationModelDetails || 'N/A',
+      item.quantity,
+      `${item.perPieceCost}`,
+      `${item.totalCost}`,
+      item.productStatus?.replace(/_/g, ' '),
+      item.flaRemarks || '',
+      item.slaRemarks || '',
+      item.storeRemarks || '',
+      item.financeRemarks || '',
+      item.purchaseRemarks || ''
+    ]);
+    autoTable(doc, {
+      head: [['Item Name', 'Description', 'Specs', 'Qty', 'Unit Cost', 'Total Cost', 'Status', 'FLA Remarks', 'SLA Remarks', 'Store Remarks', 'Finance Remarks', 'Purchase Remarks']],
+      body: itemRows,
+      startY: y,
+      theme: 'grid',
+      styles: { fontSize: 8, cellWidth: 'auto', overflow: 'linebreak' },
+      margin: { left: 5, right: 5 },
+      tableWidth: 'auto',
+      didDrawPage: (data) => {
+        // Add page number if needed
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+      }
+    });
+
+    doc.save(`Indent_${indent.indentNumber}_Report.pdf`);
+  };
 
   const [tabIndex, setTabIndex] = useState(0);
   const [approvalIndents, setApprovalIndents] = useState([]);
@@ -790,10 +878,10 @@ const FinanceView = () => {
                   <TableCell>{indent.projectHead || 'N/A'}</TableCell>
                   <TableCell>{indent.department || 'N/A'}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>
-                    ₹{displayAmount?.toLocaleString()}
+                    {displayAmount?.toLocaleString()}
                     {type === 'payment' && displayAmount !== indent.totalIndentCost && (
                       <Typography variant="caption" display="block" sx={{ color: SUBTEXT_COLOR }}>
-                        (Original: ₹{indent.totalIndentCost?.toLocaleString()})
+                        (Original: {indent.totalIndentCost?.toLocaleString()})
                       </Typography>
                     )}
                   </TableCell>
@@ -843,8 +931,8 @@ const FinanceView = () => {
                       </>
                     )}
                   </TableCell>
-                    
-                  {console.log("adjfadsjieenenklesjlk"+indent.combinedPdfPath)}
+
+                  {console.log("adjfadsjieenenklesjlk" + indent.combinedPdfPath)}
                   {/* Attachments column for payment type */}
                   <TableCell>
                     {indent.combinedPdfPath ? (
@@ -852,7 +940,7 @@ const FinanceView = () => {
                     ) : (
                       <Typography variant="caption" color="textSecondary">No Attachment</Typography>
                     )}
-                  </TableCell>   
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={8} sx={{ p: 0 }}>
@@ -882,8 +970,8 @@ const FinanceView = () => {
                                 <TableCell>{item.description}</TableCell>
                                 <TableCell>{item.specificationModelDetails || 'N/A'}</TableCell>
                                 <TableCell>{item.quantity}</TableCell>
-                                <TableCell>₹{item.perPieceCost}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>₹{item.totalCost}</TableCell>
+                                <TableCell>{item.perPieceCost}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{item.totalCost}</TableCell>
                                 <TableCell>
                                   <ProductStatusChip status={item.productStatus} />
                                 </TableCell>
@@ -1040,11 +1128,11 @@ const FinanceView = () => {
                               {isOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                             </IconButton>
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>{indent.indentNumber}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{indent.id}</TableCell>
                           <TableCell>{indent.project.projectName}</TableCell>
                           <TableCell>{indent.purpose}</TableCell>
                           <TableCell>{indent.department}</TableCell>
-                          <TableCell>₹{indent.totalIndentCost}</TableCell>
+                          <TableCell>{indent.totalIndentCost}</TableCell>
                           <TableCell>
                             <ProductStatusChip status={indent.status} />
                           </TableCell>
@@ -1053,60 +1141,75 @@ const FinanceView = () => {
                           <TableCell colSpan={7} sx={{ p: 0 }}>
                             <Collapse in={isOpen} timeout="auto" unmountOnExit>
                               <Box sx={{ p: 3, backgroundColor: '#f8fafc' }}>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 1 }}>
-                                  Tracking Steps
-                                </Typography>
-                                {steps.length > 0 ? (
-                                  <TrackingStepsTable steps={steps} />
-                                ) : (
-                                  <Typography sx={{ color: '#888', fontStyle: 'italic', py: 2 }}>
-                                    No tracking steps available for this indent.
+                                {/* PDF Download Button */}
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    size="small"
+                                    onClick={() => handleDownloadPdf(indent.id)}
+                                    sx={{ fontWeight: 600 }}
+                                  >
+                                    Download PDF
+                                  </Button>
+                                </Box>
+                                {/* PDF Content Wrapper */}
+                                <div ref={el => (pdfRefs.current[indent.id] = el)}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 1 }}>
+                                    Tracking Steps
                                   </Typography>
-                                )}
-                                {/* Product/Item Table */}
-                                <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mt: 3, mb: 1 }}>
-                                  All Products/Items
-                                </Typography>
-                                <Table size="small">
-                                  <TableHead>
-                                    <TableRow>
-                                      <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Specs</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Unit Cost</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>FLA Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>SLA Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Store Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Finance Remarks</TableCell>
-                                      <TableCell sx={{ fontWeight: 700 }}>Purchase Remarks</TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  <TableBody>
-                                    {(indent.items || indent.products || []).map((item) => (
-                                      <TableRow key={item.id}>
-                                        <TableCell>{item.itemName}</TableCell>
-                                        <TableCell>{item.description}</TableCell>
-                                        <TableCell>{item.specificationModelDetails || 'N/A'}</TableCell>
-                                        <TableCell>{item.quantity}</TableCell>
-                                        <TableCell>₹{item.perPieceCost}</TableCell>
-                                        <TableCell>₹{item.totalCost}</TableCell>
-                                        <TableCell>
-                                          <FileViewerButton indent={item} />
-                                        </TableCell>
-                                        <TableCell>{item.productStatus?.replace(/_/g, ' ')}</TableCell>
-                                        <TableCell>{item.flaRemarks}</TableCell>
-                                        <TableCell>{item.slaRemarks}</TableCell>
-                                        <TableCell>{item.storeRemarks}</TableCell>
-                                        <TableCell>{item.financeRemarks}</TableCell>
-                                        <TableCell>{item.purchaseRemarks}</TableCell>
+                                  {steps.length > 0 ? (
+                                    <TrackingStepsTable steps={steps} />
+                                  ) : (
+                                    <Typography sx={{ color: '#888', fontStyle: 'italic', py: 2 }}>
+                                      No tracking steps available for this indent.
+                                    </Typography>
+                                  )}
+                                  {/* Product/Item Table */}
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mt: 3, mb: 1 }}>
+                                    All Products/Items
+                                  </Typography>
+                                  <Table size="small">
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Specs</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Unit Cost</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>FLA Remarks</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>SLA Remarks</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Store Remarks</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Finance Remarks</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Purchase Remarks</TableCell>
                                       </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
+                                    </TableHead>
+                                    <TableBody>
+                                      {(indent.items || indent.products || []).map((item) => (
+                                        <TableRow key={item.id}>
+                                          <TableCell>{item.itemName}</TableCell>
+                                          <TableCell>{item.description}</TableCell>
+                                          <TableCell>{item.specificationModelDetails || 'N/A'}</TableCell>
+                                          <TableCell>{item.quantity}</TableCell>
+                                          <TableCell>{item.perPieceCost}</TableCell>
+                                          <TableCell>{item.totalCost}</TableCell>
+                                          <TableCell>
+                                            <FileViewerButton indent={item} />
+                                          </TableCell>
+                                          <TableCell>{item.productStatus?.replace(/_/g, ' ')}</TableCell>
+                                          <TableCell>{item.flaRemarks}</TableCell>
+                                          <TableCell>{item.slaRemarks}</TableCell>
+                                          <TableCell>{item.storeRemarks}</TableCell>
+                                          <TableCell>{item.financeRemarks}</TableCell>
+                                          <TableCell>{item.purchaseRemarks}</TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </div>
                               </Box>
                             </Collapse>
                           </TableCell>

@@ -1,3 +1,6 @@
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -51,6 +54,122 @@ const ACCENT_COLOR = "#0d47a1";
 const SUBTEXT_COLOR = "#8E99A3";
 
 const PurchasePanel = () => {
+  // Download PDF for Track Indent
+  const handleDownloadTrackIndentPdf = (indent) => {
+    // Use landscape orientation for wide tables
+    const doc = new jsPDF({ orientation: 'landscape' });
+    let y = 10;
+    doc.setFontSize(16);
+    doc.text(`Indent Report`, 10, y);
+    y += 8;
+    doc.setFontSize(12);
+    doc.text(`Indent Id: ${indent.id}`, 10, y);
+    y += 7;
+    doc.text(`Project Name: ${indent.project?.projectName || ''}`, 10, y);
+    y += 7;
+    doc.text(`Purpose: ${indent.purpose || ''}`, 10, y);
+    y += 7;
+    doc.text(`Department: ${indent.department || ''}`, 10, y);
+    y += 7;
+    doc.text(`Total Cost: ${indent.totalIndentCost?.toLocaleString()} Rs`, 10, y);
+    y += 10;
+
+    // Tracking Steps Table
+    const steps = getTrackingSteps(indent);
+    if (steps.length > 0) {
+      doc.setFontSize(13);
+      doc.text('Tracking Steps', 10, y);
+      y += 6;
+      doc.setFontSize(10);
+      const stepRows = steps.map(s => [s.role, s.remark, s.status, s.date ? new Date(s.date).toLocaleString() : '']);
+      autoTable(doc, {
+        head: [['Role', 'Remark', 'Status', 'Date']],
+        body: stepRows,
+        startY: y,
+        theme: 'grid',
+        styles: { fontSize: 9 },
+        margin: { left: 10, right: 10 },
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    }
+
+    // Products/Items Table
+    doc.setFontSize(13);
+    doc.text('Products/Items', 10, y);
+    y += 6;
+    doc.setFontSize(10);
+    const items = (indent.items || indent.products || []);
+    const itemRows = items.map(item => [
+      item.itemName,
+      item.description,
+      item.specificationModelDetails || 'N/A',
+      item.quantity,
+      `${item.perPieceCost}`,
+      `${item.totalCost}`,
+      item.productStatus?.replace(/_/g, ' '),
+      item.flaRemarks || '',
+      item.slaRemarks || '',
+      item.storeRemarks || '',
+      item.financeRemarks || '',
+      item.purchaseRemarks || ''
+    ]);
+    autoTable(doc, {
+      head: [['Item Name', 'Description', 'Specs', 'Qty', 'Unit Cost', 'Total Cost', 'Status', 'FLA Remarks', 'SLA Remarks', 'Store Remarks', 'Finance Remarks', 'Purchase Remarks']],
+      body: itemRows,
+      startY: y,
+      theme: 'grid',
+      styles: { fontSize: 8, cellWidth: 'auto', overflow: 'linebreak' },
+      margin: { left: 5, right: 5 },
+      tableWidth: 'auto',
+      didDrawPage: (data) => {
+        // Add page number if needed
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+      }
+    });
+
+    doc.save(`Indent_${indent.indentNumber}_Report.pdf`);
+  };
+  // Helper to get items array for track indents
+  const getTrackIndentItems = (indent) => indent.products && indent.products.length > 0 ? indent.products : (indent.items || []);
+
+  // Helper to get all remarks for each item in track indent
+  const getTrackItemRemarkHistory = (item) => {
+    return [
+      { role: 'FLA', remark: item.flaRemarks, date: item.flaRemarksDate },
+      { role: 'SLA', remark: item.slaRemarks, date: item.slaRemarksDate },
+      { role: 'Store', remark: item.storeRemarks, date: item.storeRemarksDate },
+      { role: 'Finance', remark: item.financeRemarks, date: item.financeReamrksDate },
+      { role: 'Purchase', remark: item.purchaseRemarks, date: item.purchaseRemarkDate },
+    ].filter(r => r.remark);
+  };
+
+  // Table to show remark history for an item in track indent
+  const TrackItemRemarkHistoryTable = ({ item }) => {
+    const remarks = getTrackItemRemarkHistory(item);
+    if (remarks.length === 0) return null;
+    return (
+      <Table size="small" sx={{ background: '#f8fafc', borderRadius: 2, mt: 1, mb: 2 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Panel/User</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Remark</TableCell>
+            <TableCell sx={{ fontWeight: 700, color: ACCENT_COLOR }}>Date</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {remarks.map((r, idx) => (
+            <TableRow key={idx}>
+              <TableCell sx={{ fontWeight: 600 }}>{r.role}</TableCell>
+              <TableCell>{r.remark}</TableCell>
+              <TableCell sx={{ color: '#666' }}>{r.date ? new Date(r.date).toLocaleString() : ''}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
   const [tab, setTab] = useState(0);
   const [indents, setIndents] = useState([]);
   const [remarkMap, setRemarkMap] = useState({});
@@ -1369,7 +1488,7 @@ const PurchasePanel = () => {
 
       {/* Track Indents Tab */}
       {tab === 2 && (
-        <Box sx={{ width: '100%', maxWidth: 1200, mx: 'auto', background: '#fff', borderRadius: 3, boxShadow: '0 2px 16px #0d47a122', p: { xs: 1, md: 3 }, mt: 2 }}>
+        <Box sx={{ width: '100%', maxWidth: '100vw', mx: 'auto', background: '#fff', borderRadius: 3, boxShadow: '0 2px 16px #0d47a122', p: { xs: 1, md: 3 }, mt: 2, overflowX: 'auto' }}>
           {trackingLoading ? (
             <Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>
           ) : trackingError ? (
@@ -1378,7 +1497,7 @@ const PurchasePanel = () => {
             <Typography sx={{ color: SUBTEXT_COLOR, textAlign: 'center', fontWeight: 600, fontSize: 20, py: 4 }}>No indents found.</Typography>
           ) : (
             <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', background: 'transparent' }}>
-              <Table sx={{ minWidth: 900, background: 'transparent' }} aria-label="track indents table">
+            <Table sx={{ minWidth: 1600, background: 'transparent' }} aria-label="track indents table">
                 <TableHead>
                   <TableRow sx={{ background: 'linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%)' }}>
                     <TableCell />
@@ -1419,6 +1538,60 @@ const PurchasePanel = () => {
                           <TableCell style={{ paddingBottom: 0, paddingTop: 0, background: '#f8fafc' }} colSpan={8}>
                             <Collapse in={isOpen} timeout="auto" unmountOnExit>
                               <Box sx={{ pl: 1, pr: 1, pb: 2, pt: 2 }}>
+                                {/* Indent Items Table for Track Indents */}
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR }}>
+                                    Indent Items
+                                  </Typography>
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleDownloadTrackIndentPdf(indent)}
+                                    sx={{ bgcolor: ACCENT_COLOR }}
+                                  >
+                                    Download PDF
+                                  </Button>
+                                </Box>
+                                <Table size="small" sx={{ mb: 2 }}>
+                                  <TableHead>
+                                    <TableRow>
+                                      <TableCell sx={{ fontWeight: 600 }}>Item Name</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Specs</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Qty</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Unit Cost</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Total Cost</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Attachment</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>FLA Remarks</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>SLA Remarks</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Store Remarks</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Finance Remarks</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Purchase Remarks</TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {getTrackIndentItems(indent).map((item) => (
+                                      <TableRow key={item.id}>
+                                        <TableCell>{item.itemName}</TableCell>
+                                        <TableCell>{item.description}</TableCell>
+                                        <TableCell>{item.specs || item.specification || '-'}</TableCell>
+                                        <TableCell>{item.quantity}</TableCell>
+                                        <TableCell>₹{item.perPieceCost}</TableCell>
+                                        <TableCell>₹{item.totalCost}</TableCell>
+                                        <TableCell>
+                                          <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
+                                        </TableCell>
+                                        <TableCell>{item.productStatus}</TableCell>
+                                        <TableCell>{item.flaRemarks || '-'}</TableCell>
+                                        <TableCell>{item.slaRemarks || '-'}</TableCell>
+                                        <TableCell>{item.storeRemarks || '-'}</TableCell>
+                                        <TableCell>{item.financeRemarks || '-'}</TableCell>
+                                        <TableCell>{item.purchaseRemarks || '-'}</TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
                                 <Typography variant="subtitle1" sx={{ fontWeight: 700, color: ACCENT_COLOR, mb: 1 }}>Tracking Steps</Typography>
                                 {steps.length > 0 ? (
                                   <TrackingStepsTable steps={steps} />
