@@ -846,8 +846,9 @@ const UserIndentRequest = () => {
                   {/* --- NEW PROJECT AND HEAD SELECTION FIELDS --- */}
                   <Grid container spacing={2} alignItems="center" justifyContent="flex-start">
                     <Grid item xs={12} sm={3}
-                      sx={{ display: 'flex', alignItems: 'center', gap: 2 ,
-                        marginTop:"-17px"
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 2,
+                        marginTop: "-17px"
                       }}>
                       <TextField
                         select
@@ -871,11 +872,13 @@ const UserIndentRequest = () => {
                           </MenuItem>
                         ))}
                       </TextField>
+                      
                     </Grid>
 
                     <Grid item xs={12} sm={3}
-                      sx={{ display: 'flex', alignItems: 'center', gap: 2 ,
-                        marginTop:"-17px"
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 2,
+                        marginTop: "-17px"
                       }}>
                       <TextField
                         select
@@ -1250,9 +1253,14 @@ const UserIndentRequest = () => {
                               size="small"
                             />
                           </TableCell>
-                          {console.log("indent.combinedPdfPath", indent.combinedPdfPath.substring(17))}
-                          <FileViewerButtonResubmit fileName={indent.combinedPdfPath.substring(17)} />
-                         
+                          {indent.combinedPdfPath && (
+                            <FileViewerButtonResubmit
+                              fileName={indent.combinedPdfPath.substring(17)}
+                            />
+                          )}
+
+                          
+
                           <TableCell>
                             <TextField
                               size="small"
@@ -1357,7 +1365,7 @@ const UserIndentRequest = () => {
               component={Paper}
               sx={{
                 borderRadius: 3,
-                boxShadow:  '0 2px 16px #0d47a122',
+                boxShadow: '0 2px 16px #0d47a122',
                 background: 'linear-gradient(135deg, #f8fafc 60%, #e3eafc 100%)',
                 mt: 2,
                 p: { xs: 1, md: 3 },
@@ -1366,7 +1374,7 @@ const UserIndentRequest = () => {
                 mx: 'auto',
                 border: '1.5px solid #e3e6ef',
                 overflowX: 'auto'
-                
+
               }}
             >
               <Table sx={{ minWidth: 1600, background: 'transparent' }} aria-label="track indents table">
@@ -1392,6 +1400,7 @@ const UserIndentRequest = () => {
                     </TableRow>
                   ) : (
                     allIndents.map((indent, idx) => {
+                      // console.log("Indent details",indent);
                       const isOpen = openTrackingIdx === idx;
                       const effectiveTotalCost = (indent.items || [])
                         .filter(item => !item.productStatus?.toLowerCase().includes('rejected'))
@@ -1600,7 +1609,6 @@ const UserIndentRequest = () => {
                                                           <TableCell>{r.role}</TableCell>
                                                           <TableCell>{r.remark}</TableCell>
 
-                                                          {console.log("date", r.date)}
                                                           <TableCell>{r.date && !isNaN(new Date(r.date)) ? new Date(r.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</TableCell>
                                                         </TableRow>
                                                       ))}
