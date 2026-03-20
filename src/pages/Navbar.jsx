@@ -56,7 +56,9 @@ const Navbar = () => {
             WebkitTextFillColor: 'transparent'
           }}
         >
-          Indent Management System
+
+          Finance & Purchase Management System
+
         </Typography>
 
         {/* If logged in, show user info and logout */}
@@ -159,7 +161,7 @@ const Navbar = () => {
               borderRadius: 2,
               bgcolor: '#1565c0',
               '&:hover': {
-                bgcolor: '#0d47a1'
+                bgcolor: 'white',
               }
             }}
           >

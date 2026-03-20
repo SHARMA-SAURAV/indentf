@@ -184,9 +184,9 @@ const FLADashboard = () => {
     const rejected = [];
 
     indent.items.forEach((item) => {
-      if (selectedProducts[item.id]) {
+      if (selectedProducts[item.id] === true) {
         approved.push(item.id);
-      } else if (productRemarks[item.id]?.trim()) {
+      } else if (selectedProducts[item.id] === false) {
         rejected.push(item.id);
       }
     });
@@ -289,17 +289,16 @@ const FLADashboard = () => {
   const TrackingStepsTable = ({ indent }) => {
     // Indent Info Table
     const infoRows = [
-      { label: "Indent Number", value: indent.indentNumber },
+      { label: "Indent ID", value: indent.id },
       { label: "Project Name", value: indent.project.projectName },
       { label: "Department", value: indent.department },
       { label: "Purpose", value: indent.purpose },
       { label: "Description", value: indent.description },
       {
         label: "Total Cost",
-        value: `₹${
-          indent.totalIndentCost?.toLocaleString() ||
+        value: `₹${indent.totalIndentCost?.toLocaleString() ||
           indent.totalCost?.toLocaleString()
-        }`,
+          }`,
       },
       { label: "Status", value: indent.status?.replace(/_/g, " ") },
       {
@@ -446,92 +445,49 @@ const FLADashboard = () => {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Item Name</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Category</TableCell>
+                {/* <TableCell sx={{ fontWeight: 700 }}>Description</TableCell> */}
                 <TableCell sx={{ fontWeight: 700 }}>Qty</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Per Piece Cost</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Unit Price</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Total Cost</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Attachment</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>FLA Remarks</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>SLA Remarks</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Store Remarks</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Finance Remarks</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Purchase Remarks</TableCell>
+                {/* <TableCell sx={{ fontWeight: 700 }}>Action</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Remark</TableCell> */}
               </TableRow>
             </TableHead>
             <TableBody>
-              {(indent.items || []).map((item, idx) => (
-                <TableRow key={item.id || idx}>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {item.itemName || item.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        maxWidth: 200,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {item.description}
-                    </Typography>
-                  </TableCell>
+              {indent.products.map((item) => (
+                <TableRow key={item.id} sx={{ background: item.productStatus?.includes('REJECTED') ? '#ffebee' : item.productStatus?.includes('APPROVED') ? '#e8f5e9' : 'inherit' }}>
+                  <TableCell>{item.itemName}</TableCell>
+                  <TableCell>{indent.projectHead}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell>₹{item.perPieceCost?.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Typography sx={{ fontWeight: 600 }}>
-                      ₹
-                      {(
-                        (item.perPieceCost || 0) *
-                        (item.quantity || 0)
-                      ).toLocaleString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={(() => {
-                        const statusMap = {
-                          PENDING: "Pending at FLA",
-                          APPROVED_BY_FLA: "Pending at SLA",
-                          REJECTED_BY_FLA: "Rejected by FLA",
-                          APPROVED_BY_SLA: "Pending at Store",
-                          REJECTED_BY_SLA: "Rejected by SLA",
-                          APPROVED_BY_STORE: "Pending at Finance",
-                          REJECTED_BY_STORE: "Rejected by Store",
-                          APPROVED_BY_FINANCE: "Pending at Purchase",
-                          REJECTED_BY_FINANCE: "Rejected by Finance",
-                          COMPLETED: "Completed",
-                          REJECTED_BY_PURCHASE: "Rejected by Purchase",
-                          PAYMENT_REJECTED: "Payment Rejected",
-                        };
-                        return (
-                          statusMap[
-                            item.productStatus || "PENDING"
-                          ] ||
-                          item.productStatus ||
-                          "PENDING"
-                        );
-                      })()}
-                      size="small"
-                      sx={{
-                        backgroundColor: getStatusColor(
-                          item.productStatus || "PENDING"
-                        ),
-                        color: "white",
-                        fontSize: "0.75rem",
-                      }}
-                    />
-                  </TableCell>
+                  <TableCell>₹{item.totalCost?.toLocaleString()}</TableCell>
+                  <TableCell>{item.productStatus?.replace(/_/g, ' ')}</TableCell>
                   <TableCell>
                     {/* Attachment column: show FileViewerButton if file exists, else 'No file' */}
+                    {console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh------", item.attachmentPath)}
                     {item.attachmentPath || item.fileName ? (
                       <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
                     ) : (
-                      <Typography variant="caption" color="text.secondary">No file</Typography>
+                      <Typography variant="caption" color="text.secondary">No Attachment</Typography>
                     )}
                   </TableCell>
 
-                  <TableCell>
+
+                  <TableCell>{item.flaRemarks}</TableCell>
+                  <TableCell>{item.slaRemarks}</TableCell>
+                  <TableCell>{item.storeRemarks}</TableCell>
+                  <TableCell>{item.financeRemarks}</TableCell>
+                  <TableCell>{item.purchaseRemarks}</TableCell>
+
+                  {/* <TableCell>
                     <Stack direction="row" spacing={1}>
                       <FormControlLabel
                         control={
@@ -583,7 +539,7 @@ const FLADashboard = () => {
                           : false
                       }
                     />
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>
@@ -630,8 +586,8 @@ const FLADashboard = () => {
                           step.status === "Rejected"
                             ? "#d32f2f"
                             : step.status === "Review Added"
-                            ? "#1976d2"
-                            : "#388e3c",
+                              ? "#1976d2"
+                              : "#388e3c",
                         fontWeight: 600,
                       }}
                     >
@@ -710,42 +666,42 @@ const FLADashboard = () => {
   // };
 
 
-const handleResubmitToFinance = async (indentId) => {
-  const file = returnedFileMap[indentId];
-  const remark = returnedRemarkMap[indentId];
-  if (!remark) {
-    alert("Please enter a remark before resubmitting.");
-    return;
-  }
-  setReturnedLoading(prev => ({ ...prev, [indentId]: true }));
-
-  try {
-    // 1. Upload the file first if present
-    if (file) {
-      const uploadForm = new FormData();
-      uploadForm.append("file", file);
-      uploadForm.append("role", "STORE"); // or "FLA"/"SLA"/appropriate role
-      await axios.post(`/upload/${indentId}/upload`, uploadForm, {
-        // headers: { "Content-Type": "multipart/form-data" }
-      });
+  const handleResubmitToFinance = async (indentId) => {
+    const file = returnedFileMap[indentId];
+    const remark = returnedRemarkMap[indentId];
+    if (!remark) {
+      alert("Please enter a remark before resubmitting.");
+      return;
     }
+    setReturnedLoading(prev => ({ ...prev, [indentId]: true }));
 
-    // 2. Send remarks through PUT
-    await axios.put(`/resubmit/${indentId}`, null, {
-      params: { remarks: remark }
-    });
+    try {
+      // 1. Upload the file first if present
+      if (file) {
+        const uploadForm = new FormData();
+        uploadForm.append("file", file);
+        uploadForm.append("role", "STORE"); // or "FLA"/"SLA"/appropriate role
+        await axios.post(`/upload/${indentId}/upload`, uploadForm, {
+          // headers: { "Content-Type": "multipart/form-data" }
+        });
+      }
 
-    alert("Indent resubmitted to Finance successfully.");
-    setReturnedIndents(prev => prev.filter(i => i.id !== indentId));
-    setReturnedFileMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
-    setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
-  } catch (err) {
-    console.error(err);
-    alert("Failed to resubmit indent.");
-  } finally {
-    setReturnedLoading(prev => ({ ...prev, [indentId]: false }));
-  }
-};
+      // 2. Send remarks through PUT
+      await axios.put(`/resubmit/${indentId}`, null, {
+        params: { remarks: remark }
+      });
+
+      alert("Indent resubmitted to Finance successfully.");
+      setReturnedIndents(prev => prev.filter(i => i.id !== indentId));
+      setReturnedFileMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+      setReturnedRemarkMap(prev => { const c = { ...prev }; delete c[indentId]; return c; });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to resubmit indent.");
+    } finally {
+      setReturnedLoading(prev => ({ ...prev, [indentId]: false }));
+    }
+  };
 
 
 
@@ -753,7 +709,7 @@ const handleResubmitToFinance = async (indentId) => {
 
 
 
-  
+
   return (
     <Box
       sx={{
@@ -1010,7 +966,7 @@ const handleResubmitToFinance = async (indentId) => {
                                   };
                                   return (
                                     statusMap[
-                                      item.productStatus || "PENDING"
+                                    item.productStatus || "PENDING"
                                     ] ||
                                     item.productStatus ||
                                     "PENDING"
@@ -1031,7 +987,7 @@ const handleResubmitToFinance = async (indentId) => {
                               {item.attachmentPath || item.fileName ? (
                                 <FileViewerButton fileName={item.fileName} attachmentPath={item.attachmentPath} />
                               ) : (
-                                <Typography variant="caption" color="text.secondary">No file</Typography>
+                                <Typography variant="caption" color="text.secondary">No Attachment</Typography>
                               )}
                             </TableCell>
                             <TableCell>
@@ -1089,7 +1045,7 @@ const handleResubmitToFinance = async (indentId) => {
                                 // Only disable if neither approve nor reject is selected
                                 disabled={
                                   selectedProducts[item.id] !== true &&
-                                  selectedProducts[item.id] !== false
+                                    selectedProducts[item.id] !== false
                                     ? true
                                     : false
                                 }
@@ -1280,7 +1236,7 @@ const handleResubmitToFinance = async (indentId) => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                    <TableCell sx={{ fontWeight: 700 }}>Indent Number</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Indent ID</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Project Name</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Finance Remarks</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Date Returned</TableCell>
@@ -1292,7 +1248,7 @@ const handleResubmitToFinance = async (indentId) => {
                 <TableBody>
                   {returnedIndents.map(indent => (
                     <TableRow key={indent.id}>
-                      <TableCell>{indent.indentNumber}</TableCell>
+                      <TableCell>{indent.id}</TableCell>
                       <TableCell>{indent.project.projectName}</TableCell>
                       <TableCell>{indent.financeRemarks}</TableCell>
                       <TableCell>{indent.financeReamrksDate ? new Date(indent.financeReamrksDate).toLocaleString() : '-'}</TableCell>
